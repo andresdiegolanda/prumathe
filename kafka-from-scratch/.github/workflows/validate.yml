@@ -1,0 +1,30 @@
+# Validation workflow for a standalone copy of the course (this folder as the repository root).
+# Inside the courses repository, GitHub runs the equivalent workflow at the repository root,
+# .github/workflows/validate-kafka.yml, which runs these same steps with working-directory set
+# to this folder. Keep the two in step.
+name: Validate course and lab client
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run build && npm run check
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: |
+            labs/pom.xml
+            labs/spring/pom.xml
+      - run: mvn -B -f labs/pom.xml package
+      - run: mvn -B -f labs/spring/pom.xml package
+      - run: docker compose -f labs/compose.yaml config --quiet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-pages-dist
+          path: dist

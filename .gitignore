@@ -1,0 +1,9 @@
+# Trabajo interno: no versionar salvo el readme
+tmp/*
+!tmp/README.md
+
+# Archivos temporales de Office (aparecen mientras un .pptx o .docx esta abierto)
+~$*
+
+# Carpeta de salida de herramientas de escritorio, creada en la raiz al entregar archivos
+Claude outputs/

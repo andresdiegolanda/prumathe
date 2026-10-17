@@ -1,0 +1,2060 @@
+KAFKA FROM SCRATCH. COURSE NOTES
+Apache Kafka 4.1.2 | 2026-10-17 | v1.1
+
+01. Your first Kafka cluster
+=================================================================
+A small, real system. A safe place to ask “what if?”
+
+Give every piece a job
+A producer writes events. A broker stores them. A consumer reads them. Docker runs these programs in isolated containers; a volume keeps broker data when a container restarts.
+→ A container is a running program. An image is its recipe.
+
+Connect from the right place
+Inside the Compose network, clients use kafka1:9092. From your computer, they use localhost:19092. Bootstrap finds the cluster; advertised listeners tell clients where to connect next.
+→ localhost inside a container means that container.
+
+Make the experiment repeatable
+This course uses three combined broker/controller nodes, Kafka 4.1.2 and named volumes. Combined roles keep the lab small; production controllers are usually isolated. All sample data is fictional.
+→ Browser diagrams simulate. Docker labs run real Kafka.
+
+DOCKER ACTIVITY
+1. Get the lab kit
+Use “Download labs” above. Extract the ZIP. Open a terminal in its labs folder. Install Docker Desktop (Windows/macOS) or Docker Engine with Compose v2 (Linux), then start Docker. Allow about 8 GB of Docker memory; optional services need more. First use requires internet to download images.
+
+docker version
+docker compose version
+
+Observe: A Server version and Compose v2. If Server is missing, start Docker.
+
+2. Build the client once
+The supplied Java client exposes small, readable experiments. Its entire source is included. No Java installation is needed on your computer.
+
+docker compose build lab
+
+Observe: The image kafka-course-lab:1.1 is built. The first build downloads Maven dependencies.
+
+3. Start three nodes
+Run from the labs folder. This creates only the course’s named Docker project. Ports 19092, 29092 and 39092 must be free.
+
+docker compose up -d --wait
+
+Observe: kafka1, kafka2 and kafka3 are healthy. On a slow machine, rerun after a minute.
+
+4. Ask Kafka who is there
+The client requests metadata from the broker. It connects through Docker’s internal network.
+
+docker compose run --rm lab cluster
+
+Observe: Three broker IDs: 1, 2 and 3. This is your first real response from Kafka.
+
+5. Pause safely
+Stop when you finish; volumes keep the data. Start again with up -d --wait. Use down --volumes only when you deliberately want to erase all course data.
+
+docker compose stop
+docker compose up -d --wait
+
+Observe: The same cluster returns. Keep it running for the next lesson.
+
+CHECKPOINT
+1. A client runs inside Docker. Which address does it use?
+A. kafka1:9092
+B. localhost:19092
+C. localhost:9092
+Answer: A. The internal listener advertises names on the Docker network. The published host port is for clients outside that network.
+
+2. You run docker compose stop and later up -d --wait. What happens to the records in the course topics?
+A. They are kept: broker data lives in named volumes
+B. They are deleted when the containers stop
+C. They are kept only if a consumer was running
+Answer: A. stop ends the processes; the named volumes survive until you deliberately run down --volumes.
+
+3. Why does the course run three nodes with both broker and controller roles?
+A. To keep the lab small; production usually isolates controllers
+B. Because KRaft requires every broker to be a controller
+C. Because a controller cannot run without also being a broker
+Answer: A. Combined roles are a teaching shortcut. Dedicated controllers isolate metadata work from data traffic and failures.
+
+
+02. An event is a fact
+=================================================================
+Keep what happened. Let each reader decide what to do.
+
+Write the past tense
+OrderPlaced records a fact that already happened. ShipOrder is a command asking someone to act. Our fictional café publishes orders once so billing and the kitchen can react independently.
+→ A useful event says what happened, to which entity, and when.
+
+Append; do not overwrite
+A partition is an ordered log. New records go at the end. Reading a record does not remove it, so two applications can read the same history at different speeds.
+→ Consumption and deletion are separate decisions.
+
+Replay has a boundary
+A new reader can replay retained records. It cannot recover records already removed by retention. Replaying a payment event must not charge a customer again: external effects need their own deduplication.
+→ A log lets you reread history; it does not undo side effects.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 1
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Append three facts
+Produce three fictional café orders with stable keys.
+
+docker compose run --rm lab seed 1
+
+Observe: Three acknowledged records, with partition and offset.
+
+3. Read the log
+This reader directly assigns partitions and starts at the earliest retained offset. It does not store a group checkpoint.
+
+docker compose run --rm lab read 1
+
+Observe: Three records appear.
+
+4. Read it again
+Run the identical command. Compare the offsets.
+
+docker compose run --rm lab read 1
+
+Observe: The same records and offsets. Reading did not delete anything.
+
+CHECKPOINT
+1. What happens to a record after a consumer reads it?
+A. It is deleted immediately
+B. It stays until the cleanup policy removes it
+C. It moves to another topic
+Answer: B. The broker cleans data according to retention and compaction policies, independently of an ordinary consumer reading it.
+
+2. Which of these names is an event, in the sense this lesson uses?
+A. OrderPlaced
+B. ShipOrder
+C. GetOrderStatus
+Answer: A. An event states a fact in the past tense. ShipOrder is a command; GetOrderStatus is a query.
+
+3. A new consumer group starts reading a topic from the beginning. What can it see?
+A. Only the records still retained; what retention removed is gone
+B. Every record ever written to the topic
+C. Only the records written after the group was created
+Answer: A. Replay reaches back to the earliest retained offset, not to the first record ever written.
+
+
+03. Inside a record
+=================================================================
+Key, value, timestamp, headers. Four different jobs.
+
+The envelope and the payload
+The key often identifies an entity: order-42. The value holds the fact. Kafka stores bytes, not a mandatory JSON structure; a serializer turns application values into those bytes.
+→ A key is not a unique-record constraint.
+
+Context travels with the fact
+Headers can carry a trace ID or schema version. A timestamp can represent producer creation time or broker append time, depending on topic settings. Event time inside the payload can be different again.
+→ Be explicit about which clock a timestamp describes.
+
+The address arrives later
+Kafka assigns a partition offset after appending a record. Topic + partition + offset identifies a log position, not a universal business event. The same fact can be republished at another position.
+→ Use a separate event ID when business deduplication matters.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 2
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Send an envelope
+The sample producer attaches event-type and trace-id headers.
+
+docker compose run --rm lab seed 2
+
+Observe: Three records acknowledged.
+
+3. Inspect every field
+Read the key, value, headers, timestamp, partition and offset together.
+
+docker compose run --rm lab read 2
+
+Observe: Headers are printed separately from the JSON value.
+
+4. Repeat the business key
+Produce the same sample again, then read.
+
+docker compose run --rm lab seed 2
+docker compose run --rm lab read 2
+
+Observe: Six records. Repeated keys did not overwrite earlier records.
+
+CHECKPOINT
+1. Can two records have the same key?
+A. Yes; a key can identify an entity across many events
+B. No; Kafka rejects the second one
+C. Only if their values differ
+Answer: A. Keys guide partitioning and compaction. They do not reject duplicate writes.
+
+2. Where does the offset of a record come from?
+A. The broker assigns it when it appends the record to a partition
+B. The producer chooses it before sending
+C. It is derived from the record timestamp
+Answer: A. The address arrives after the append. That is why the same fact can be republished at another position.
+
+3. You must recognize the same business fact published twice at different positions. What identifies it?
+A. An event ID inside the record, chosen by the application
+B. Its topic, partition and offset
+C. The broker timestamp
+Answer: A. Topic, partition and offset identify a log position. Business identity has to travel inside the record.
+
+
+04. One topic, many logs
+=================================================================
+A partition is the unit of order and parallel work.
+
+Name the stream
+A topic is a named stream, such as orders. It is divided into partitions. Each partition has its own sequence of offsets, so offset 4 can exist in partition 0 and partition 1.
+→ An offset only has meaning inside its partition.
+
+Scale by splitting work
+Different partition leaders can live on different brokers. Clients can read or write several partitions in parallel. More partitions also mean more metadata, files, replication and recovery work.
+→ Partition count is a design choice, not a free speed dial.
+
+Do not invent a global order
+Kafka preserves the log order within a partition. It does not promise an order across partitions. If two events must stay ordered, design their keys and producer behavior for the same partition.
+→ Partition 0 offset 8 is not “before” partition 1 offset 3.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 3
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Inspect the topic
+Preparation created a topic with three partitions and three replicas per partition.
+
+docker compose run --rm lab describe 3
+
+Observe: Partitions 0, 1 and 2, each with a leader and an ISR list.
+
+3. Write to all lanes
+This lesson deliberately chooses each partition to make the addresses obvious.
+
+docker compose run --rm lab seed 3
+
+Observe: Records acknowledged in all three partitions.
+
+4. Compare addresses
+Read and group the output mentally by partition.
+
+docker compose run --rm lab read 3
+
+Observe: Offset 0 occurs in three partitions. The display order is not a total event order.
+
+CHECKPOINT
+1. Which ordering is guaranteed by a partitioned log?
+A. One total order for the topic
+B. Order within each partition
+C. Order by the customer’s clock
+Answer: B. The partition is the ordering boundary. Timestamps do not create cross-partition ordering.
+
+2. Offset 4 exists in partition 0 and offset 4 exists in partition 1. Are they the same record?
+A. No: an offset only has meaning inside its partition
+B. Yes: offsets are unique across the topic
+C. Only if both records share the same key
+Answer: A. Each partition counts its own offsets from zero. Two partitions have two independent sequences.
+
+3. What does adding partitions buy, and what does it cost?
+A. More parallel readers and writers, at the price of more metadata, files and recovery work
+B. A total order across the topic, at no cost
+C. More copies of each record
+Answer: A. Partitions divide work; replicas copy it. Neither creates an order across partitions.
+
+
+05. Keys choose a lane
+=================================================================
+Keep related facts together without creating a hot spot.
+
+Hash the serialized key
+The standard Java producer hashes a non-null serialized key with Murmur2, takes a positive value, and applies modulo partition count. Identical bytes map to the same partition while that count stays fixed.
+→ Same key bytes + same partition count = same partition.
+
+Choose the ordering boundary
+An order ID groups one order’s events. A store ID groups a whole store, which can overload one partition. A null key follows the client’s partitioning strategy; do not assume round-robin.
+→ Choose the smallest entity whose events need ordering.
+
+Adding lanes can move keys
+Changing partition count changes the modulo result for many keys. Earlier records remain in their original partitions. A migration may need a new topic and a deliberate cutover.
+→ Adding partitions does not redistribute old records.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 4
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Observe key routing
+The default Java partitioner routes repeated order keys.
+
+docker compose run --rm lab seed 4
+docker compose run --rm lab read 4
+
+Observe: Repeated keys share a partition.
+
+3. Add a partition
+Increase this lesson topic from three to four partitions.
+
+docker compose run --rm lab expand 4 4
+
+Observe: PartitionCount is now 4.
+
+4. Send the same keys again
+Compare new and earlier records; some keys may move.
+
+docker compose run --rm lab seed 4
+docker compose run --rm lab read 4
+
+Observe: Earlier records remain where they were. The partitioner has not migrated them.
+
+CHECKPOINT
+1. You add partitions. What happens to existing records?
+A. They are automatically rehashed
+B. They stay in their original partitions
+C. They lose their offsets
+Answer: B. Only subsequent partition choices use the new count. Old data does not move to preserve key ordering for you.
+
+2. Two records with the same key, the same partition count and the same partitioner. Where do they go?
+A. To the same partition
+B. To consecutive partitions, round-robin
+C. To whichever partition has fewer records
+Answer: A. Same key bytes, same count, same hash, same modulo. The partitioner does not look at load.
+
+3. You want all the events of one order to stay ordered, and you also want to spread load. Which key?
+A. The order ID: the smallest entity whose events need ordering
+B. The store ID: it groups more events together
+C. A null key: the client spreads it best
+Answer: A. A larger entity concentrates load on one partition; a null key gives up ordering altogether.
+
+
+06. The producer’s waiting room
+=================================================================
+Batching, compression, acknowledgments and timeouts.
+
+Collect a batch
+send() typically places a record in the producer’s buffer. The producer batches records by destination partition. batch.size and linger.ms influence how full a batch becomes before it is sent.
+→ Calling send() is not the same as a successful acknowledgment.
+
+Trade latency for efficiency
+Larger batches and compression can reduce network and disk work. Waiting to fill batches can add latency. Measure with your event size, key distribution and latency budget.
+→ Throughput without a latency target is an incomplete result.
+
+Handle success and failure
+Use callbacks or futures to observe completion. acks controls broker confirmation; delivery.timeout.ms bounds delivery attempts. A timeout can leave an uncertain outcome: the write may have reached Kafka.
+→ A retry needs a duplicate strategy.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 5
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Measure small batches
+Send 2,000 synthetic records with linger 0 and small batches.
+
+docker compose run --rm lab benchmark 5 0 1024
+
+Observe: Elapsed time and producer metrics. Save the result.
+
+3. Allow batching
+Send the same workload with a short linger and larger batch size.
+
+docker compose run --rm lab benchmark 5 20 65536
+
+Observe: Compare batch-size-avg and records-per-request-avg. Results depend on your machine.
+
+4. Account for all records
+Inspect end offsets after both runs. A benchmark that loses records is misleading.
+
+docker compose run --rm lab offsets 5
+
+Observe: The sum of end offsets is 4,000 on the freshly prepared topic.
+
+CHECKPOINT
+1. send() returned without an immediate error. What does that guarantee?
+A. The record is already replicated
+B. The consumer processed it
+C. Only that the asynchronous send was accepted; inspect completion
+Answer: C. The returned future or callback carries the broker result. Buffering is not durable delivery.
+
+2. Which two settings decide how full a batch gets before it is sent?
+A. batch.size and linger.ms
+B. acks and retries
+C. max.poll.records and fetch.min.bytes
+Answer: A. batch.size bounds the bytes per batch; linger.ms is how long the producer waits for more records. The other pairs belong to acknowledgment and to the consumer.
+
+3. A send fails after delivery.timeout.ms. What do you know about that record?
+A. The outcome is uncertain: it may or may not have reached Kafka
+B. It was certainly not written
+C. It was written exactly once, so a retry would duplicate it
+Answer: A. A timeout is the absence of an answer, not a negative answer. The retry strategy has to live with duplicates.
+
+
+07. One stream, independent teams
+=================================================================
+Share the work within a group. Share the history across groups.
+
+Give an application a group ID
+Consumers with the same group.id cooperate. In an ordinary consumer group, a partition is assigned to at most one member at a time. That member can own several partitions.
+→ The group is the logical subscriber.
+
+Parallelism has a ceiling
+Three partitions can keep at most three group members busy reading them. A fourth member waits without an assignment. This says nothing about threads used after polling; those require careful ordering and commit design.
+→ More consumers than partitions does not increase read parallelism.
+
+Let another team join
+Kitchen and billing use different group IDs. Each group reads all the retained orders independently and stores its own progress. They do not take events away from one another.
+→ Same group: divide work. Different groups: independent reads.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 6
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Populate the lanes
+Create sample events on all three partitions.
+
+docker compose run --rm lab seed 6
+
+Observe: Six events across three partitions.
+
+3. Start team A
+Keep this terminal running. Open a second terminal in the same labs folder and run the same command. Watch the assignment messages. Stop both with Ctrl+C when done.
+
+docker compose run --rm lab watch 6 kitchen
+
+Observe: The two members divide the three partitions after a rebalance.
+
+4. Start an independent team
+In a third terminal use a different group ID. Stop it with Ctrl+C after observing records.
+
+docker compose run --rm lab watch 6 billing
+
+Observe: Billing reads every partition independently of kitchen.
+
+CHECKPOINT
+1. Five consumers in one group read three partitions. How many can have assignments?
+A. At most three
+B. All five read every record
+C. Exactly one
+Answer: A. Ordinary consumer groups assign whole partitions. The extra members remain idle until the assignment changes.
+
+2. Kitchen and billing both need every order. How do they subscribe?
+A. Each with its own group.id, so each reads the whole retained history
+B. Both with the same group.id, so the work is shared
+C. One group, with two partitions assigned to each application
+Answer: A. Same group divides work; different groups read independently. Two applications that both need everything are two groups.
+
+3. Within one ordinary group, how many members can read the same partition at the same time?
+A. At most one
+B. As many as the replication factor
+C. Any number, taking turns
+Answer: A. Whole-partition assignment is what keeps per-partition order inside a group. Share groups change this rule, with other guarantees.
+
+
+08. A bookmark, not a receipt
+=================================================================
+Position, committed offset and lag are different measurements.
+
+Track the next record
+A consumer’s position is the next offset it will fetch. Its committed offset is the durable bookmark used after a restart. Commit 3 means “resume at 3,” not “record 3 is complete.”
+→ After processing offset n, usually commit n + 1.
+
+Measure distance
+For a simple log, lag is log-end offset minus committed offset. It measures distance in offsets, not seconds or business completion. Gaps from compaction or transactions mean it is not always an exact record count.
+→ Low lag can coexist with wrong business results.
+
+Reset with intention
+auto.offset.reset applies when no valid committed offset exists. It does not override a valid bookmark. To replay a group, stop its members and deliberately reset its offsets.
+→ earliest does not mean “start over every time.”
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 7
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Create a backlog
+Publish the sample events.
+
+docker compose run --rm lab seed 7
+
+Observe: Three records in one partition.
+
+3. Process and commit
+The client processes a bounded batch and synchronously commits its next position.
+
+docker compose run --rm lab consume 7 bookmarks
+
+Observe: Three records; committed next offset 3.
+
+4. Restart the same group
+Run again and inspect lag.
+
+docker compose run --rm lab consume 7 bookmarks
+docker compose run --rm lab lag 7 bookmarks
+
+Observe: No old records; lag 0. earliest did not override the commit.
+
+5. Replay deliberately
+The group must be stopped. Reset only this lab group, then read again.
+
+docker compose run --rm lab reset 7 bookmarks
+docker compose run --rm lab consume 7 bookmarks
+
+Observe: The same three records are processed again.
+
+CHECKPOINT
+1. You processed offsets 0, 1 and 2. What offset should you commit?
+A. 2
+B. 3
+C. Either 2 or 3; both resume correctly
+Answer: B. A committed offset identifies the next record to resume from. Committing 2 would replay record 2.
+
+2. What does lag measure for an ordinary consumer group?
+A. The distance in offsets between the log end and the committed position
+B. The seconds since the last commit
+C. The exact number of unprocessed business events
+Answer: A. Lag counts offsets, and offsets can have gaps from compaction or transaction markers. It is not time and not business completion.
+
+3. A group has valid committed offsets and auto.offset.reset=earliest. On restart it...
+A. Resumes from the committed offset; earliest applies only without a valid bookmark
+B. Starts again from offset 0
+C. Skips to the latest offset
+Answer: A. The reset policy answers "where do I start when there is no bookmark". A valid bookmark wins.
+
+
+09. When the team changes
+=================================================================
+Membership, assignment, heartbeats and processing time.
+
+Join, leave, reassign
+When members join or leave, the group redistributes partitions. A coordinator broker manages group membership. Committed offsets let a new owner resume a partition.
+→ Partition ownership can change while the process is alive.
+
+Alive is not the same as progressing
+Heartbeats show membership liveness. max.poll.interval.ms limits how long a consumer may go between polls. A long processing batch can lose its assignment even if the host is healthy.
+→ Bound processing time and handle partition revocation.
+
+Know which protocol you run
+Kafka 4.x supports the newer consumer group protocol with server-side assignment. Clients must opt in with group.protocol=consumer. Classic cooperative assignment is a separate mechanism; this lab explicitly uses classic.
+→ Check client and broker versions before changing protocols.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 8
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start member one
+Leave it running in terminal A.
+
+docker compose run --rm lab watch 8 team
+
+Observe: One member is assigned all three partitions.
+
+3. Add member two
+In terminal B run the same command. In terminal C produce sample events.
+
+docker compose run --rm lab watch 8 team
+# Terminal C
+docker compose run --rm lab seed 8
+
+Observe: Assignment callbacks report redistribution; events are divided between the members.
+
+4. Remove a member
+Press Ctrl+C in terminal B. Observe A, then stop A too.
+
+docker compose run --rm lab describe-group team
+
+Observe: A eventually owns all three partitions again. The group command reports membership while A is running.
+
+CHECKPOINT
+1. A consumer processes one batch for too long. What can happen?
+A. Kafka adds partitions automatically
+B. Its assignment can be revoked
+C. Its records are deleted
+Answer: B. Exceeding max.poll.interval.ms can remove a member from active ownership. Work and offset commits must account for that.
+
+2. Who tracks membership and triggers a rebalance for a consumer group?
+A. The group coordinator, a broker
+B. The producer that writes the topic
+C. The consumer with the lowest member ID
+Answer: A. Each group has a coordinator broker. Members heartbeat to it and it drives reassignment.
+
+3. The lab sets group.protocol=classic. What does the newer protocol (group.protocol=consumer) change?
+A. Assignment moves to the server side; clients opt in explicitly
+B. Several members of one group can share a partition
+C. Offsets stop being committed to Kafka
+Answer: A. The server-side protocol reduces disruptive rebalances. Sharing a partition is what share groups do, a different model.
+
+
+10. Copies that follow a leader
+=================================================================
+A partition can survive the loss of a broker.
+
+One leader per partition
+The leader handles writes for a partition. Follower replicas fetch its log. A replication factor of three means three copies on three brokers, not three partitions.
+→ Partitioning divides work; replication copies it.
+
+Track the in-sync replicas
+ISR is the set of replicas considered in sync with the leader. A slow or failed follower can leave it. Replica placement and failure domains determine which failures your copies can survive.
+→ Three copies on one laptop still share one laptop’s fate.
+
+Promote an eligible replica
+When a leader fails, Kafka can elect another eligible replica. Clients refresh metadata and retry. Availability depends on controller quorum and the remaining eligible replicas, not just on a replica count.
+→ Failover is a protocol, not an instantaneous switch.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 9
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Locate the leader
+This lab assigns the single partition replicas in order 1,2,3. Check the actual leader before the failure.
+
+docker compose run --rm lab seed 9
+docker compose run --rm lab describe 9
+
+Observe: Three replicas and three ISR members before failure.
+
+3. Stop broker 1
+Stop only this course service. The remaining two controllers still form a majority.
+
+docker compose stop kafka1
+docker compose run --rm lab describe 9
+
+Observe: If 1 was leader, a surviving broker becomes leader. ISR eventually shrinks.
+
+4. Read, then restore
+Use the surviving brokers to read, then bring the original node back.
+
+docker compose run --rm lab read 9
+docker compose up -d --wait
+docker compose run --rm lab describe 9
+
+Observe: Records remain readable. After catch-up, ISR contains all three again.
+
+CHECKPOINT
+1. Replication factor 3 means…
+A. Three independent consumer groups
+B. Three copies of each partition
+C. Three total-order streams
+Answer: B. Replicas are copies of a partition. They do not increase that partition’s consumer parallelism.
+
+2. A follower stops keeping up with the leader. What happens to it?
+A. It leaves the ISR until it catches up
+B. It becomes leader to relieve the load
+C. The partition stops accepting writes at once
+Answer: A. The ISR is the set of replicas considered in sync. Leaving it does not stop writes by itself; min.insync.replicas decides that.
+
+3. Three replicas in three containers on one laptop. Which failure can they survive?
+A. One container stopping; not the laptop itself
+B. Any failure, because there are three copies
+C. Only a disk failure, not a process failure
+Answer: A. Copies protect against the failure domains they do not share. Three copies on one machine share that machine.
+
+
+11. What does “saved” mean?
+=================================================================
+acks, minimum ISR and the price of staying available.
+
+Choose the acknowledgment
+acks=0 waits for no broker response. acks=1 waits for the leader. acks=all waits for the in-sync replicas required by the write protocol. None of these means a consumer processed the event.
+→ Producer acknowledgment is a storage guarantee, not a business receipt.
+
+Set a floor for safe writes
+With acks=all, min.insync.replicas=2 requires at least two ISR members. If the ISR shrinks below two, writes fail. With acks=1, this setting does not force two replicas to acknowledge.
+→ acks=all and min.insync.replicas work together.
+
+Prefer an explicit failure
+A replication factor of three and minimum ISR of two can keep accepting writes after one replica loss. Refusing writes under worse conditions protects the chosen durability contract. It is not a substitute for backups or tested recovery.
+→ An unavailable write can be safer than an acknowledged loss.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 10
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Write with all replicas
+The topic requires min ISR 3 to demonstrate a failure while keeping controller quorum.
+
+docker compose run --rm lab seed 10
+
+Observe: The write succeeds with three ISR members.
+
+3. Lose one replica
+Stop kafka3. Wait until describe shows only two ISR members.
+
+docker compose stop kafka3
+docker compose run --rm lab describe 10
+
+Observe: Two live ISR members; the configured minimum remains 3.
+
+4. Observe the refusal
+This failure is intentional. The client uses a bounded delivery timeout.
+
+docker compose run --rm lab seed 10
+
+Observe: A NotEnoughReplicas error or delivery timeout, not a successful acknowledgment.
+
+5. Restore the contract
+Bring the third replica back and retry once all three are in ISR.
+
+docker compose up -d --wait
+docker compose run --rm lab describe 10
+docker compose run --rm lab seed 10
+
+Observe: Writes succeed again.
+
+CHECKPOINT
+1. ISR has one member, min ISR is 2, acks=all. What happens?
+A. The write succeeds on one copy
+B. The write is rejected or retries until timeout
+C. The write succeeds as soon as the leader has it
+Answer: B. The current ISR cannot meet the configured minimum. The producer must handle the error.
+
+2. acks=1, min.insync.replicas=2 and the ISR has one member. What happens to the write?
+A. It is accepted: with acks=1 only the leader has to acknowledge
+B. It is rejected with NotEnoughReplicas
+C. It waits until a second replica joins the ISR
+Answer: A. min.insync.replicas is enforced for acks=all writes. With acks=1 the setting does not protect the write.
+
+3. What does a successful acks=all acknowledgment tell you?
+A. The required in-sync replicas stored the record
+B. A consumer processed the record
+C. The record can never be lost, whatever happens
+Answer: A. It is a storage guarantee bounded by the ISR and the minimum you configured. Not a business receipt, not an absolute.
+
+
+12. Who keeps the cluster’s map?
+=================================================================
+KRaft controllers agree on metadata; brokers serve event data.
+
+Separate data from metadata
+Brokers store topic partitions. The KRaft metadata log records the cluster’s structure: topics, partition leadership and configuration. A controller quorum replicates this metadata using consensus.
+→ The metadata log is not your orders topic.
+
+A majority must agree
+Three controllers need two for a majority. Five need three. One lost controller is tolerable in a healthy three-controller quorum; two lost controllers prevent metadata progress.
+→ Quorum size and topic replication factor solve different problems.
+
+Respect the lab’s shortcut
+Our nodes run both roles, so stopping one removes a broker and a controller. In production, dedicated controllers isolate resource pressure and failures. Existing data operations and metadata operations can behave differently during quorum loss.
+→ Observe each operation; do not call the entire cluster simply “up.”
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 11
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Inspect the metadata quorum
+Use the native Kafka tool inside a running broker.
+
+docker compose exec kafka1 /opt/kafka/bin/kafka-metadata-quorum.sh --bootstrap-server kafka1:9092 describe --status
+
+Observe: LeaderId, high watermark and current voters are shown.
+
+3. Remove one voter
+Keep kafka1 and kafka2 running.
+
+docker compose stop kafka3
+docker compose run --rm lab create-extra 11
+
+Observe: A new topic can still be created with the two-controller majority.
+
+4. Restore the cluster
+Bring back kafka3 before continuing. Do not leave future labs without quorum.
+
+docker compose up -d --wait
+docker compose run --rm lab cluster
+
+Observe: Three nodes are available again.
+
+CHECKPOINT
+1. How many healthy voters does a three-controller quorum need?
+A. One
+B. Two
+C. All three always
+Answer: B. A majority of three is two. This consensus quorum is separate from the ISR of an application topic.
+
+2. What does the KRaft metadata log contain?
+A. The cluster structure: topics, partition leadership, configuration
+B. The records of every application topic
+C. Only the committed offsets of consumer groups
+Answer: A. Metadata and data are separate logs. Your orders topic lives on brokers; the map of the cluster lives in the controller quorum.
+
+3. In this lab, stopping kafka3 removes...
+A. A broker and a controller at once, because each node has both roles
+B. Only a broker; the controllers run elsewhere
+C. Only a controller; the broker keeps running
+Answer: A. That is the lab shortcut to keep in mind: one stop affects both data serving and metadata voting.
+
+
+13. History has a horizon
+=================================================================
+Segments, retention time and the earliest readable offset.
+
+Write in segments
+Kafka appends records to an active log segment. Older segments become eligible for cleanup. Time retention and size retention limit stored history; size limits apply per partition.
+→ Deletion works on segments, not on individual record timers.
+
+Let the beginning move
+When old segments are deleted, the earliest offset advances. Offsets are not renumbered. A consumer whose bookmark is now too old needs an offset reset policy or a recovery decision.
+→ A slow consumer does not prevent ordinary retention deletion.
+
+Budget recovery time
+Retention must cover outage time, detection time and catch-up time, with room for growth. Tiered storage can extend storage options when configured with a compatible remote storage implementation; it is not an automatic backup.
+→ Your recovery plan must finish before the history disappears.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 12
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Create short-lived history
+The topic uses retention.ms=10000 and segment.ms=1000. The lab broker checks retention every 5 seconds.
+
+docker compose run --rm lab seed 12
+docker compose run --rm lab offsets 12
+
+Observe: Beginning 0, end 3 on a fresh topic.
+
+3. Roll the segment
+Wait at least 2 seconds, then append again so the previous segment can close.
+
+docker compose run --rm lab seed 12
+
+Observe: New records have higher offsets.
+
+4. Observe cleanup
+Wait 20 to 40 seconds and inspect. Cleanup is asynchronous; repeat if the beginning has not advanced.
+
+docker compose run --rm lab offsets 12
+docker compose run --rm lab read 12
+
+Observe: The beginning eventually moves above zero. No offset renumbering occurs.
+
+CHECKPOINT
+1. A record was deleted by retention. Can resetting to earliest restore it?
+A. Yes, earliest means offset zero forever
+B. No, earliest means the first retained offset
+C. Only with a new group ID
+Answer: B. Resetting changes the reader position. It cannot recreate data the broker has removed.
+
+2. Which unit does time retention delete?
+A. Whole log segments, once they are eligible
+B. Individual records, as each one expires
+C. The whole partition at once
+Answer: A. Kafka works on segments. A record is deleted when its segment is, which is why the beginning moves in jumps.
+
+3. Old segments were deleted. What happens to the offsets of the surviving records?
+A. They keep their numbers; only the earliest offset advances
+B. They are renumbered from zero
+C. They shift down by the number of deleted records
+Answer: A. Offsets are stable addresses. A committed bookmark stays meaningful even after retention runs.
+
+
+14. Keep the latest known value
+=================================================================
+A log can also rebuild a table.
+
+Interpret keys as rows
+A compacted topic eventually retains at least the latest value for each key, subject to tombstone handling. Consumers can rebuild current state by applying changes in partition order. Compaction does not happen at write time.
+→ Compaction is asynchronous cleanup, not an upsert API.
+
+Leave a deletion marker
+A record with a non-null key and a null value is a tombstone. It tells a rebuilding table to remove the key. Tombstones themselves can be removed after delete.retention.ms. The string "null" is not a null value.
+→ A deletion has to travel before its marker disappears.
+
+Keep the addresses stable
+Compaction leaves gaps but preserves the order and offsets of surviving records. With cleanup.policy=compact,delete, retention can also remove segments, including the latest value of a key.
+→ A compacted log is a change history with a cleanup policy.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 13
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Write a changing table
+Write A=10, B=20, A=30, then a tombstone for B.
+
+docker compose run --rm lab compact-seed 13
+
+Observe: Four ACK lines. The last one is the tombstone for B: its value is null, which read prints as <null> in the next steps.
+
+3. Rebuild the table
+Apply all retained records in order to an in-memory map.
+
+docker compose run --rm lab table 13
+
+Observe: A=30; B is absent, even before the cleaner runs.
+
+4. Observe asynchronous cleanup
+After 2 seconds, append another A value to roll the segment. Inspect again after 30 to 60 seconds. Cleaner timing is not a correctness condition.
+
+docker compose run --rm lab put 13 A 40
+docker compose run --rm lab read 13
+
+Observe: Older versions may disappear after cleaning. Surviving offsets are unchanged. The reconstructed table still has the latest A.
+
+CHECKPOINT
+1. Which value represents a tombstone?
+A. The JSON text {"deleted":true}
+B. A null value with a non-null key
+C. An empty string on any key
+Answer: B. Null is a protocol-level missing value, not a JSON string or a conventional deleted field.
+
+2. When does compaction remove an older value for a key?
+A. Asynchronously, when the cleaner runs over closed segments
+B. At write time, as soon as the newer value arrives
+C. When a consumer reads past it
+Answer: A. Compaction is cleanup, not an upsert. Until it runs, a reader applying the log in order still gets the right table.
+
+3. cleanup.policy=compact,delete. Can the latest value of a key disappear?
+A. Yes: retention can delete segments, including a key’s latest value
+B. No: compaction always preserves the latest value
+C. Only if that value is a tombstone
+Answer: A. With both policies, time or size retention still applies to segments. Compaction alone keeps the latest value; the combination does not promise it.
+
+
+15. The crash between two actions
+=================================================================
+Process, commit, crash. The order changes the guarantee.
+
+Commit before the effect
+If the application commits the input offset and then crashes before its effect, the restarted consumer skips work. This is the at-most-once risk: a record may be processed zero times.
+→ A bookmark ahead of work can lose work.
+
+Commit after the effect
+If the effect succeeds and the app crashes before committing, the record is read again. This is the at-least-once tradeoff: duplicates must be safe. Auto-commit is not proof that business work completed.
+→ An offset commit and a database write are separate transactions.
+
+Plan for poison events
+Bound retries. A dead-letter topic can preserve failed events with error context, but publishing there and committing input must be coordinated. Routing around one event can break entity ordering; decide deliberately.
+→ A dead-letter topic needs an owner and a replay procedure.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 14
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Publish the input
+Each event has an event ID to make duplicates recognizable.
+
+docker compose run --rm lab seed 14
+
+Observe: Three input events.
+
+3. Fail after the effect
+The client writes the first result to a separate effects topic, then exits without committing the input. A nonzero exit is intentional.
+
+docker compose run --rm lab delivery crash
+
+Observe: EFFECT WRITTEN, followed by an intentional failure.
+
+4. Restart and inspect
+Run without the injected crash, then read the output.
+
+docker compose run --rm lab delivery resume
+docker compose run --rm lab read-topic lab14-effects
+
+Observe: The first event ID appears twice. At-least-once delivery needs duplicate handling.
+
+CHECKPOINT
+1. An effect succeeds, then the process crashes before committing. What is the risk?
+A. The input may be processed again
+B. Kafka deletes the input
+C. The broker rolls back the external effect
+Answer: A. The durable bookmark still points before that record. The external effect is outside Kafka’s offset transaction.
+
+2. The application commits the offset and then crashes before applying the effect. The restart...
+A. Skips that record: at-most-once
+B. Repeats the effect: at-least-once
+C. Blocks until the effect is confirmed
+Answer: A. The bookmark already points past the record, so nobody comes back for it. Committing first trades duplicates for loss.
+
+3. Why is a dead-letter topic not a complete answer to poison events?
+A. Routing around an event can break per-entity ordering, and the topic needs an owner and a replay procedure
+B. Kafka cannot write to two topics from one application
+C. Dead-letter topics are not retained
+Answer: A. The mechanism is easy; the policy is the work: what to skip, who looks, how it comes back.
+
+
+16. Two different kinds of duplicate
+=================================================================
+A network retry is not a repeated business request.
+
+Make producer retries safe
+An idempotent producer uses a producer identity and sequence numbers. Kafka can recognize retrying the same batch and avoid appending it twice within that protocol. It requires compatible acks, retries and in-flight settings.
+→ Enable idempotence explicitly when teaching or reviewing a configuration.
+
+Two send calls are two writes
+Calling send() twice with identical key and value creates two logical records. Restarting an application and resending a business request is also not automatically deduplicated by producer idempotence.
+→ Idempotent production is not business deduplication.
+
+Choose a business identity
+An idempotent sink records a stable event ID together with its effect in one atomic database transaction. A unique constraint can reject reapplication. An in-memory set is only a demo: it disappears on restart.
+→ The deduplication record and the effect must succeed together.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 15
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Send the same event twice
+The sample uses enable.idempotence=true and two separate send calls.
+
+docker compose run --rm lab duplicate 15
+
+Observe: Two acknowledgments with different offsets.
+
+3. Read the evidence
+Inspect both records and their identical event ID.
+
+docker compose run --rm lab read 15
+
+Observe: Two copies of the same business event.
+
+4. Demonstrate application deduplication
+The client builds a transient set of event IDs. This illustrates the decision; it is not a durable sink implementation.
+
+docker compose run --rm lab dedup 15
+
+Observe: One APPLY and one SKIP. Explain why production needs atomic persistent storage.
+
+CHECKPOINT
+1. With idempotence enabled, you call send() twice with the same value. How many records?
+A. Always one
+B. Two logical records
+C. Zero; duplicate keys are rejected
+Answer: B. Idempotence recognizes protocol retries, not the semantic equality of two application sends.
+
+2. What does the idempotent producer use to recognize a retried batch?
+A. A producer ID and sequence numbers
+B. The record key
+C. The event ID inside the value
+Answer: A. The broker tracks sequences per producer and partition. It never looks inside your payload.
+
+3. An idempotent sink must...
+A. Record the event ID and apply the effect in one atomic transaction
+B. Keep a set of seen IDs in memory
+C. Rely on the producer’s sequence numbers
+Answer: A. If the deduplication record and the effect can succeed separately, a crash between them reopens the duplicate.
+
+
+17. Make the boundary atomic
+=================================================================
+Output records and input offsets can commit together.
+
+Begin, write, commit or abort
+A transactional producer can write to multiple partitions atomically. A stable transactional.id fences an older producer instance using the same identity. Aborted records may exist physically but are hidden from read_committed consumers.
+→ Physical presence and committed visibility are different.
+
+Commit progress with output
+A Kafka-to-Kafka processor writes its output and calls sendOffsetsToTransaction with the next input offsets and group metadata. The transaction commits both, or neither. Disable input auto-commit.
+→ Exactly-once processing requires the whole read-process-write protocol.
+
+Name what is outside
+Kafka transactions do not include an email, a payment API or an arbitrary database transaction. read_committed waits behind open transactions at the last stable offset; this can affect apparent lag and latency.
+→ “Exactly once” must always name its boundary.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 16
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Commit and abort
+One transaction writes COMMITTED, another writes ABORTED then aborts.
+
+docker compose run --rm lab transactions 16
+
+Observe: Both writes reach the log; only one transaction commits.
+
+3. Compare isolation
+Read first without transaction filtering, then with read_committed.
+
+docker compose run --rm lab read 16 read_uncommitted
+docker compose run --rm lab read 16 read_committed
+
+Observe: Uncommitted sees both values. Committed sees only COMMITTED. Offsets may have gaps from control records.
+
+4. Process atomically
+Seed the input, then run the transactional processor twice. It commits its output and input offsets together.
+
+docker compose run --rm lab seed 16
+docker compose run --rm lab eos 16
+docker compose run --rm lab eos 16
+
+Observe: The second run emits no new output for already committed input. Inspect the source to see sendOffsetsToTransaction.
+
+CHECKPOINT
+1. What can a Kafka transaction atomically include?
+A. Kafka output records and consumer offsets
+B. Any external payment automatically
+C. All HTTP calls in the application
+Answer: A. External effects require a separate coordination pattern. Kafka’s atomic boundary covers Kafka records and transactional offset commits.
+
+2. A read_committed consumer reaches an open transaction. What does it see?
+A. It stops at the last stable offset until the transaction commits or aborts
+B. The uncommitted records, flagged as pending
+C. Only the aborted records
+Answer: A. That waiting is why read_committed can show more apparent lag and latency than read_uncommitted.
+
+3. What does a stable transactional.id give you across restarts?
+A. Fencing: an older instance with the same ID is rejected
+B. Automatic deduplication of business requests
+C. Exactly-once delivery to any external system
+Answer: A. Fencing protects the Kafka boundary from a zombie writer. Business deduplication and external effects remain your design.
+
+
+18. A contract that can evolve
+=================================================================
+Bytes need an agreed meaning.
+
+Separate storage from meaning
+Kafka brokers accept bytes; they do not inherently validate your JSON business fields. A schema defines the contract. A registry stores schema versions and checks compatibility according to configured rules.
+→ A registry is an ecosystem component, not the Kafka broker.
+
+Ask who must read whose data
+Backward compatibility means a new reader can read data written with the old schema. Forward compatibility means an old reader can read new data. Full requires both. Transitive modes compare against all prior registered versions.
+→ Compatibility direction is about reader and writer versions.
+
+Evolve deliberately
+In Avro, adding a field with a suitable default can let a new reader consume older data. Changing a string field to an incompatible type can fail. Wire framing and schema-ID placement depend on the registry and serializer.
+→ A compatible schema change can still change business meaning.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 17
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Check the compatible change
+The client tests an Avro v2 reader with a new currency field and default against v1 writer data. Schemas ship with the source.
+
+docker compose run --rm lab schema compatible
+
+Observe: COMPATIBLE. This is the same underlying reader/writer compatibility idea a registry enforces.
+
+3. Break the contract
+Change the amount field from string to an incompatible record type in the supplied example.
+
+docker compose run --rm lab schema incompatible
+
+Observe: INCOMPATIBLE with a type mismatch explanation.
+
+4. Prove the broker is not the validator
+Produce arbitrary bytes as a string into the lesson topic. This deliberately bypasses an Avro serializer.
+
+docker compose run --rm lab put 17 order-1 not-avro
+docker compose run --rm lab read 17
+
+Observe: Kafka stores the value. Contract enforcement belongs in serializers, consumers and your governance.
+
+CHECKPOINT
+1. Backward compatibility asks whether…
+A. The old reader can read new data
+B. The new reader can read old data
+C. The broker can parse JSON
+Answer: B. Backward: new reader, old writer data. The lab uses Avro’s compatibility checker directly so no registry account is needed.
+
+2. You add a field with a default to an Avro record. Can the new reader read old data?
+A. Yes: the default fills the missing field, so the change is backward compatible
+B. No: any new field breaks compatibility
+C. Only if the registry is in FORWARD mode
+Answer: A. That is the classic safe evolution. Removing the default, or changing a type, is where it breaks.
+
+3. You produce bytes that do not match the schema straight to a topic. What does the broker do?
+A. It stores them: enforcement lives in serializers, consumers and governance
+B. It rejects them with a schema error
+C. It converts them to the registered schema
+Answer: A. The broker stores bytes. A registry and validating serializers are ecosystem components, not the broker.
+
+
+19. Move data without a custom loop
+=================================================================
+Workers run connectors. Connectors create tasks.
+
+Four pieces, four roles
+A worker is the runtime. A connector defines a data integration. A task performs a portion of the work. A converter translates Connect’s data representation to or from Kafka bytes. A source imports; a sink exports.
+→ The number of tasks depends on what the connector can split.
+
+Keep coordination durable
+Distributed workers use internal Kafka topics for connector configurations, status and source offsets. Sink progress uses consumer-group offsets. Standalone mode uses local configuration and a local source-offset file.
+→ Source position and Kafka consumer offset are different coordinates.
+
+Inspect the tasks too
+A connector can show RUNNING while one of its tasks is FAILED. Check task status, error traces, source progress and actual data flow. This small lab uses the bundled file connector in standalone mode.
+→ A green connector is not proof that records are moving.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 18
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start a file source
+The optional service runs the official Kafka file connector. Its sample file and offsets live on a dedicated volume.
+
+docker compose --profile connect up -d connect
+
+Observe: A standalone Connect worker starts on internal port 8083.
+
+3. Append a line
+The helper appends to the connector’s source file inside the container.
+
+docker compose exec connect sh /course/connect/append.sh
+
+Observe: A new line is added to the file. The connector publishes it into lab18.
+
+4. Inspect task and data
+Read the Connect REST status from the client, then read Kafka.
+
+docker compose run --rm lab connect-status
+docker compose run --rm lab read 18
+
+Observe: Connector and task state plus the file line in Kafka. If startup is slow, repeat after a few seconds.
+
+5. Stop the optional service
+Release memory before continuing. Its offset file remains in the volume.
+
+docker compose --profile connect stop connect
+
+Observe: Connect stops; Kafka stays up.
+
+CHECKPOINT
+1. The connector status is RUNNING. Is the pipeline healthy?
+A. Always
+B. Not necessarily; inspect tasks and data progress
+C. Only if there is one worker
+Answer: B. Connector lifecycle and task execution have separate status. Real data progress is the end-to-end check.
+
+2. Where does a distributed Connect cluster keep connector configurations and source progress?
+A. In internal Kafka topics
+B. In a local file on each worker
+C. In the consumer group of the sink
+Answer: A. Standalone mode uses local files, which is what this lab runs. Distributed workers coordinate through Kafka itself.
+
+3. What does a converter do?
+A. Translates between Connect’s data representation and Kafka bytes
+B. Splits a connector into tasks
+C. Reads lines from the source file
+Answer: A. Connector, task and converter are three roles. Mixing them up is the usual source of debugging confusion.
+
+
+20. From a database to an event
+=================================================================
+CDC captures changes. An outbox gives them business intent.
+
+Capture the database’s log
+Change data capture reads committed database changes, often starting with a snapshot then streaming a transaction log. Inserts, updates and deletes are database facts, not automatically well-designed business events.
+→ CDC is not the same as event sourcing.
+
+Avoid the dual-write gap
+Writing a database row and then publishing to Kafka creates a crash window. An outbox writes the business row and an event row in the same database transaction. A relay or CDC connector later publishes the outbox.
+→ Atomic creation does not mean duplicate-free relay.
+
+Preserve identity across retries
+The outbox event ID survives relay retries. Consumers can deduplicate it. The lab uses PostgreSQL and a small polling relay so the crash boundary is visible; it is not a Debezium deployment.
+→ An outbox solves atomic event creation; delivery still needs a policy.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 19
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start PostgreSQL
+The optional database has sample-only credentials and no published host port.
+
+docker compose --profile database up -d --wait postgres
+
+Observe: PostgreSQL becomes healthy.
+
+3. Commit the order and outbox
+The Java client uses one database transaction. Kafka is not called in this step.
+
+docker compose run --rm lab outbox create
+
+Observe: One order and one event row commit together. A repeated run uses the same stable demo ID safely.
+
+4. Publish, then crash
+The relay writes to Kafka and fails before marking the row sent. The nonzero exit is intentional.
+
+docker compose run --rm lab outbox crash
+
+Observe: The event is in Kafka and still pending in the outbox.
+
+5. Retry and inspect
+Retry the relay and inspect stable event IDs. Stop PostgreSQL when done.
+
+docker compose run --rm lab outbox relay
+docker compose run --rm lab read 19
+docker compose --profile database stop postgres
+
+Observe: Two copies can share one event ID. Explain how an idempotent sink would apply it once.
+
+CHECKPOINT
+1. What must be in one database transaction for an outbox?
+A. The business change and the outbox row
+B. Every downstream consumer
+C. The Kafka broker’s entire log
+Answer: A. The database commits both rows together. Publication is a separate, retryable stage that can produce duplicates.
+
+2. Why does writing a row and then publishing to Kafka need an outbox?
+A. A crash between the two writes loses the event or the row; the outbox makes creation atomic
+B. Kafka cannot be called from a database transaction
+C. To make publishing faster
+Answer: A. The dual-write gap is a crash window. The outbox closes it by making the event a row in the same transaction.
+
+3. The relay crashed after Kafka acknowledged and before marking the row sent. What happens next?
+A. The retry publishes the event again; consumers deduplicate by event ID
+B. Kafka deletes the first copy
+C. The database rolls back the order
+Answer: A. An outbox solves atomic creation; delivery is still at-least-once and needs a policy on the reading side.
+
+
+21. A stream becomes a table
+=================================================================
+Kafka Streams is a library inside your application.
+
+Describe a topology
+A KStream is a sequence of events. A KTable interprets keyed updates as a changing table. A topology connects operators such as filter, map, groupByKey and count. Kafka Streams runs in your Java process.
+→ Kafka Streams is not a separate broker service.
+
+Back up local state
+Stateful operators use local stores and changelog topics. A task can restore its store from the changelog after losing local state. application.id identifies the application’s group and internal topic namespace.
+→ Local state is useful; a changelog makes it recoverable.
+
+Changing keys changes the plan
+A key-changing operation before grouping or joining can require a repartition topic. Partitions determine task parallelism. The lab builds a real keyed count with exactly_once_v2 and a named store.
+→ Inspect the topology and internal topics, not just the output.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 20
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Run the topology
+Keep the process in terminal A. It counts events per key and writes updates to lab20-counts.
+
+docker compose run --rm lab streams 20
+
+Observe: Topology description and eventually RUNNING.
+
+3. Feed and inspect
+In terminal B publish orders and read the output. Cache is disabled for visible updates.
+
+docker compose run --rm lab seed 20
+docker compose run --rm lab read-topic lab20-counts read_committed
+
+Observe: Counts increase for repeated keys. Stop A with Ctrl+C.
+
+4. Restore in a fresh container
+Run the topology again. Its temporary local state is gone, but its Kafka changelog remains. Then seed again from B.
+
+docker compose run --rm lab streams 20
+
+Observe: Counts continue after restoration instead of restarting at zero. Stop the process when done.
+
+CHECKPOINT
+1. How does a stateful Streams task recover lost local state?
+A. From its changelog, when configured for logging
+B. From the input topic, by reprocessing everything from offset 0
+C. It cannot recover
+Answer: A. Changelog topics back the state store. Restore time depends on retained state size and available resources.
+
+2. Where does Kafka Streams run?
+A. Inside your application process, as a library
+B. As a separate service on the broker
+C. Inside Kafka Connect workers
+Answer: A. No cluster to install: the topology, its tasks and their local stores live in your JVM.
+
+3. You change the key before groupByKey. What may the topology need?
+A. A repartition topic
+B. A second application.id
+C. A larger replication factor
+Answer: A. Grouping needs records with the same key on the same partition; a key change breaks that, so Streams reshuffles through Kafka.
+
+
+22. Which minute does it belong to?
+=================================================================
+Event time, stream time, grace and joins.
+
+Use the event’s clock
+Processing time is when your code runs. Event time is when the event happened. Kafka Streams uses record timestamps by default. Its stream time advances with the maximum observed timestamp for the task; wall-clock waiting alone does not advance it.
+→ Late arrival is measured relative to stream progress.
+
+Give late events a budget
+A tumbling window puts records into non-overlapping time buckets. Grace allows out-of-order events until the window closes relative to stream time. After that, a late record is dropped from the aggregation.
+→ A longer grace period trades result finality for completeness.
+
+Join on key and time
+Stream-stream joins need matching keys and a time window. Stream-table joins enrich an event from table state under the chosen semantics. Co-partitioning and compatible key serializers matter. Unbounded waits create unbounded state.
+→ A join is a state and time design, not just a SQL word.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 21
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start a windowed count
+In terminal A, run a real Streams topology with 10-second windows and 5-second grace.
+
+docker compose run --rm lab windows 21
+
+Observe: The topology becomes RUNNING.
+
+3. Send controlled timestamps
+In terminal B send records in the order t=1s, 12s, 4s, 30s, 2s, all on the same partition.
+
+docker compose run --rm lab window-seed 21
+
+Observe: t=4s can still update [0,10). After t=30s, t=2s is too late.
+
+4. Inspect the window
+Read the windowed output. Updates are intermediate results, not only final results. Stop A when done.
+
+docker compose run --rm lab read-topic lab21-windows read_committed
+
+Observe: The first window reaches count 2; the final too-late event does not make it 3.
+
+CHECKPOINT
+1. Does waiting one real minute necessarily advance Kafka Streams stream time?
+A. Yes, it uses the wall clock
+B. No, event timestamps advance stream time
+C. Only if the consumer keeps polling
+Answer: B. Event-time operations progress with observed record timestamps. Wall-clock punctuation is a separate mechanism.
+
+2. Window [0, 10 s) with 5 s grace. Stream time is 12 s and a record with t = 4 s arrives.
+A. It is accepted and updates the window
+B. It is dropped as late
+C. It opens a new window
+Answer: A. The window closes at 10 + 5 = 15 s of stream time. At 12 s it is still open.
+
+3. A stream-stream join needs...
+A. Matching keys within a time window, with co-partitioned inputs
+B. Only matching keys, at any time
+C. A table on one of the two sides
+Answer: A. Without a window the state to hold is unbounded. Without co-partitioning the matching records may never meet in the same task.
+
+
+23. Identity, permission, privacy
+=================================================================
+Authentication, authorization and encryption answer different questions.
+
+Know who is connecting
+TLS can encrypt connections and optionally authenticate clients with certificates. SASL authenticates a principal using mechanisms such as SCRAM or OAuth. A password on a plaintext connection is not confidentiality.
+→ Authentication asks “who are you?”
+
+Grant the smallest useful permission
+ACLs decide whether a principal can perform an operation on a resource: read a topic, write a topic, use a group. Authentication alone does not authorize those operations.
+→ Authorization asks “what may you do?”
+
+Keep the lab boundary explicit
+The main lab uses plaintext on an isolated Docker network and host ports bound to 127.0.0.1. The optional ACL broker uses SASL/PLAIN only on an internal network, with public demo credentials. It teaches authorization, not production security.
+→ Production needs TLS, secret management, rotation and audited least privilege.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 22
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start the ACL sandbox
+This is a separate single-node broker with no host port. Demo credentials are intentionally public.
+
+docker compose --profile security up -d --wait secure
+
+Observe: The secure service is healthy. It uses authentication plus ACLs, without TLS in this isolated demo.
+
+3. Apply least privilege
+The admin creates a topic, grants a writer permission to write, and grants a reader permission to read.
+
+docker compose run --rm lab acl setup
+
+Observe: ACLs created for User:writer and User:reader.
+
+4. Compare authorized and denied
+Try one write as each principal. A denied write is the expected result. The client disables producer idempotence for this test on purpose: an idempotent producer first requests a producer id, and that request is authorized by IDEMPOTENT_WRITE on the cluster or WRITE on some topic, so the reader would fail earlier with ClusterAuthorizationException instead of reaching the topic permission check.
+
+docker compose run --rm lab acl writer
+docker compose run --rm lab acl reader
+
+Observe: Writer succeeds. Reader gets TopicAuthorizationException. Valid credentials do not imply write permission.
+
+5. Stop the sandbox
+Release its resources. The main course cluster remains running.
+
+docker compose --profile security stop secure
+
+Observe: The optional broker stops.
+
+CHECKPOINT
+1. A client is authenticated. Does that guarantee it can write any topic?
+A. Yes
+B. No; authorization is a separate check
+C. Only for topics it has already read from
+Answer: B. A valid identity still needs permission for each requested resource and operation.
+
+2. What does SASL/PLAIN on a plaintext listener give you, and what does it not?
+A. Authentication, but no confidentiality: credentials travel unencrypted
+B. Both authentication and encryption
+C. Authorization for every topic
+Answer: A. Who you are, what you may do and who can read the wire are three separate questions. Only TLS answers the third.
+
+3. A principal has READ on a topic and no WRITE. It tries to produce.
+A. TopicAuthorizationException
+B. The write succeeds: READ implies WRITE
+C. The broker creates the missing ACL automatically
+Answer: A. Permissions are per operation and resource. In this lab the client also turns off idempotence so the denial shows at the topic check.
+
+
+24. Observe the system, not one light
+=================================================================
+Use metrics, logs and a business-level probe together.
+
+Start with a user-visible question
+“Did this order arrive within our target?” is more useful than “is the process running?” Measure end-to-end latency and correctness, then use broker and client metrics to explain the result.
+→ An uptime check is not a delivery check.
+
+Look at pressure and replication
+Track under-replicated partitions, offline partitions, ISR changes, request latency, disk use and controller health. On clients, inspect errors, retries, buffer pressure, poll time and lag trends.
+→ A trend plus a symptom is more actionable than one threshold.
+
+Diagnose before scaling
+Growing lag might come from a slow dependency, a hot partition, repeated failures or insufficient consumer capacity. Adding consumers cannot fix one hot partition or a failing database.
+→ Find the constrained resource before adding more workers.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 23
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Create observable work
+Publish the sample and register a group bookmark at the beginning.
+
+docker compose run --rm lab seed 23
+docker compose run --rm lab reset 23 ops
+
+Observe: The group begins behind the log end.
+
+3. Read the backlog
+Compare each partition’s committed position, end and lag.
+
+docker compose run --rm lab lag 23 ops
+
+Observe: A positive lag indicates unread positions. It does not measure elapsed seconds.
+
+4. Drain and verify
+Process the input, then inspect the metrics again.
+
+docker compose run --rm lab consume 23 ops
+docker compose run --rm lab lag 23 ops
+
+Observe: Lag reaches zero. Check actual printed events as well as the numeric result.
+
+5. Look at broker logs
+Inspect recent broker messages without assuming that every warning is an incident.
+
+docker compose logs --tail 40 kafka1
+
+Observe: Relate messages to operations you performed. A healthy process alone proves little about delivery.
+
+CHECKPOINT
+1. Lag grows on one partition while other partitions are idle. First suspect?
+A. Skewed keys or a partition-specific bottleneck
+B. Not enough consumer groups
+C. The replication factor is too low
+Answer: A. Partition-level evidence matters. More idle consumers cannot split ownership of one ordinary-group partition.
+
+2. Which question is the better starting point for an alert?
+A. Did this order arrive within our target?
+B. Is the consumer process running?
+C. Is the broker log quiet?
+Answer: A. Start from what the user sees, then use metrics and logs to explain it. A running process delivers nothing by itself.
+
+3. Lag grows on every partition and the consumer waits on a slow database. Adding consumers will...
+A. Not help: the constrained resource is the database
+B. Drain the backlog proportionally
+C. Reduce the lag on the busiest partition
+Answer: A. Find the constraint before scaling. More workers waiting on the same dependency wait together.
+
+
+25. Scale the right dimension
+=================================================================
+Storage, throughput, partitions and consumers are separate budgets.
+
+Estimate before provisioning
+A first storage estimate is events per second × average serialized bytes × retention seconds × replication factor. Add indexes, metadata, headroom and uneven distribution; compression changes the actual footprint.
+→ Estimate with units, then measure with your own payloads.
+
+Find the hottest lane
+Total topic throughput can hide a hot key. One key stays on one partition under the same partitioner and count. Splitting the key may increase parallelism but weaken the ordering boundary your application relies on.
+→ A key design is also a capacity design.
+
+Move replicas deliberately
+Adding a broker does not by itself balance existing partitions onto it. Replica reassignment moves data and consumes network and disk capacity. Use throttling, monitor ISR and plan the rollback before large moves.
+→ Capacity is usable only when data and work can reach it.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 24
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Create a hot key
+Send 90% of events with one key and inspect the partition distribution.
+
+docker compose run --rm lab skew 24
+
+Observe: One partition receives most records.
+
+3. Inspect the imbalance
+End offsets reveal the uneven load on a freshly prepared topic.
+
+docker compose run --rm lab offsets 24
+
+Observe: Partition counts are far from equal.
+
+4. Increase lanes, keep the key
+Expand to six partitions and send again. The hot key still maps to only one lane.
+
+docker compose run --rm lab expand 24 6
+docker compose run --rm lab skew 24
+docker compose run --rm lab offsets 24
+
+Observe: More partitions did not split the hot key. Explain the business tradeoff before changing that key.
+
+CHECKPOINT
+1. You add a broker. What happens to existing partition placement automatically?
+A. All partitions balance immediately
+B. Nothing guarantees redistribution; plan reassignment
+C. All consumer offsets reset
+Answer: B. A new broker is capacity, not a completed data migration. Reassignment or an appropriate balancing tool must move replicas.
+
+2. Rough storage for 1,000 events per second of 1 KB, one day of retention, replication factor 3. Order of magnitude?
+A. About 260 GB before overhead
+B. About 9 GB
+C. About 2.6 TB
+Answer: A. 1,000 × 1,000 bytes × 86,400 s × 3 is about 259 GB. Indexes, metadata, headroom and compression move the real number.
+
+3. A hot key sends 90% of the traffic to one partition. Doubling the partitions...
+A. Does not split that key: it still lands on one partition
+B. Halves that partition’s load
+C. Moves the old records of that key
+Answer: A. One key maps to one partition under the same partitioner. Changing the key design is a business decision about ordering.
+
+
+26. A second cluster is another system
+=================================================================
+Replication across clusters is a recovery design.
+
+Distinguish replicas from mirrors
+In-cluster replicas share a partition’s log identity. Cross-cluster replication copies events into another cluster with its own topic metadata and offsets. MirrorMaker 2 uses Kafka Connect to coordinate this work.
+→ Offset 100 in one cluster need not be offset 100 in another.
+
+Choose a recovery contract
+RPO is the amount of data loss you can tolerate; RTO is how long recovery may take. Asynchronous replication can lag. Failover must handle client routing, group progress, schemas, permissions and application state.
+→ A mirror without a failover drill is an untested assumption.
+
+Make the lab’s limit visible
+This lab runs a second single-broker cluster and a small one-shot copy client. It demonstrates offset independence and duplicates. It does not implement MirrorMaker 2 checkpoint translation, heartbeats or automatic failover.
+→ Copying records is only one part of disaster recovery.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 25
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start a destination cluster
+The optional mirror broker is independent and has no host port.
+
+docker compose --profile mirror up -d --wait mirror
+
+Observe: A second cluster is healthy.
+
+3. Prepare source events
+Publish three events into the main cluster.
+
+docker compose run --rm lab seed 25
+
+Observe: Three source events.
+
+4. Copy and compare
+The demo pre-seeds one destination record, then copies the source and prints both addresses.
+
+docker compose run --rm lab mirror
+
+Observe: Source offset 0 maps to destination offset 1 on a fresh destination. IDs, not offsets, connect the same business event.
+
+5. Repeat, then stop
+Repeat the naive copy to reveal duplicates. This is why production replication needs durable progress.
+
+docker compose run --rm lab mirror
+docker compose --profile mirror stop mirror
+
+Observe: The copy adds records again. The demonstration is deliberately at least once.
+
+CHECKPOINT
+1. Can you blindly reuse source offsets in another cluster?
+A. Yes, offsets are global IDs
+B. No, positions belong to their cluster’s logs
+C. Yes, if both clusters run the same Kafka version
+Answer: B. Cross-cluster progress requires deliberate translation or replay policy. A copied event may have a different target offset.
+
+2. What does MirrorMaker 2 use to run cross-cluster replication?
+A. Kafka Connect
+B. The in-cluster replica fetchers
+C. Kafka Streams
+Answer: A. Cross-cluster copying is integration work, so it runs as connectors. In-cluster replication is a different mechanism with a shared log identity.
+
+3. RPO and RTO are...
+A. How much data loss you tolerate, and how long recovery may take
+B. The replication factor and the ISR minimum
+C. The producer and consumer timeouts
+Answer: A. They are business targets, and they are only real once a failover drill has met them.
+
+
+27. When work sharing is the goal
+=================================================================
+Share groups use record acknowledgments instead of partition ownership.
+
+Change the unit of assignment
+An ordinary consumer group assigns partitions to members. A share group can distribute records from the same partition among multiple consumers, with acquisition locks and acknowledgments.
+→ Sharing a partition’s work changes processing-order assumptions.
+
+Accept, release or reject
+A shared record is temporarily acquired. Accept acknowledges completion; release makes it available for redelivery; reject marks it as not to be delivered again to that group. Failed or expired acquisitions can be redelivered.
+→ A lock is not a successful business effect.
+
+Respect the version boundary
+In Kafka 4.1, the version this course pins, share groups are a preview that must be enabled; since Kafka 4.2 they are production-ready. Use the separate experimental broker; ordinary course labs use consumer groups.
+→ A preview invites you to experiment; check the readiness of the version you run before relying on it.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 26
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Start the experimental broker
+The optional broker isolates preview configuration from the main course cluster.
+
+docker compose --profile share up -d --wait share
+
+Observe: The share service is healthy.
+
+3. Enable the feature
+Kafka 4.1 requires share.version=1. The command may report it is already enabled on a repeated lab.
+
+docker compose exec share /opt/kafka/bin/kafka-features.sh --bootstrap-server share:9092 upgrade --feature share.version=1
+
+Observe: Feature level 1 is enabled.
+
+4. Run the shared-consumption experiment
+The client creates a fresh single-partition topic, sends six records, releases its first delivery and accepts later deliveries.
+
+docker compose run --rm lab share
+
+Observe: A RELEASE is followed by redelivery and ACCEPT operations. Record acknowledgment is visible.
+
+5. Stop the preview service
+Keep experiments isolated from later work.
+
+docker compose --profile share stop share
+
+Observe: The experimental broker stops.
+
+CHECKPOINT
+1. Why can a share group use more consumers than partitions?
+A. It can distribute individual records from a partition
+B. It secretly creates new partitions
+C. It removes all ordering and storage
+Answer: A. Share groups coordinate record acquisition and acknowledgment. They are a different consumption model from ordinary groups.
+
+2. A share consumer releases a record. What happens?
+A. It becomes available for redelivery
+B. It is deleted from the topic
+C. It is marked as processed
+Answer: A. Accept finishes it, release returns it to the pool, reject keeps it from coming back to that group.
+
+3. Share groups in this course’s Kafka 4.1 lab are...
+A. A preview that must be enabled with share.version=1; production-ready since Kafka 4.2
+B. The default consumption model for every topic
+C. Unavailable in any Kafka 4.x
+Answer: A. The course pins 4.1.2 deliberately. Check the readiness of the version you run before relying on share groups.
+
+
+28. Ship an order. Survive a failure.
+=================================================================
+Bring the pieces together and defend your choices.
+
+Start from a contract
+The café needs every accepted order transformed into one ready-for-kitchen event in Kafka. Order IDs are keys. Input and output have three partitions and replication factor three. External kitchen side effects remain outside the Kafka transaction.
+→ State the ordering, durability and processing boundaries before coding.
+
+Inject a failure with a prediction
+A transactional processor writes output, then aborts before committing input progress. Predict what read_committed will show. Restart the processor, stop one broker, then read the output and inspect ISR.
+→ A useful experiment starts with an expected observation.
+
+Explain what the result proves
+Verify one committed output per input event ID, no remaining group lag and availability after one broker failure. This demonstrates the stated Kafka boundary on this lab, not universal exactly-once delivery, production capacity or disaster recovery.
+→ Good engineers can name both the guarantee and its limit.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 27
+
+Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+
+2. Publish a known workload
+Send six orders with stable event IDs. Record the expected total before running the processor.
+
+docker compose run --rm lab seed 27
+
+Observe: Six acknowledged input records.
+
+3. Abort after producing output
+The processor writes inside a transaction, then aborts without committing input offsets.
+
+docker compose run --rm lab eos 27 abort
+docker compose run --rm lab read-topic lab27-output read_committed
+
+Observe: Zero committed output records from the aborted run.
+
+4. Recover and repeat
+Run normally twice. The second run should find no remaining input.
+
+docker compose run --rm lab eos 27
+docker compose run --rm lab eos 27
+docker compose run --rm lab verify 27
+
+Observe: PASS: six unique committed outputs and zero lag.
+
+5. Lose one broker
+Stop kafka1 and verify through the surviving brokers. Then restore it.
+
+docker compose stop kafka1
+docker compose run --rm lab verify 27
+docker compose up -d --wait
+
+Observe: The same six committed outputs remain readable. All services are restored afterward.
+
+6. Defend the design
+Explain: why this key, why three replicas, why min ISR 2, why read_committed, what happens if the kitchen API times out, and what evidence would trigger an alert. Mark the lab complete only after you can explain each.
+
+docker compose run --rm lab describe 27
+docker compose run --rm lab lag 27 eos-27
+
+Observe: Your explanation connects configuration, observed evidence and the limits of the guarantee.
+
+CHECKPOINT
+1. The Kafka output is exactly once. Is an external kitchen API automatically exactly once too?
+A. Yes, the guarantee crosses every API
+B. No; that effect needs its own idempotency or coordination
+C. Only if the API is called inside the Kafka transaction
+Answer: B. Kafka’s transaction includes Kafka writes and input offsets. A downstream API is another transaction boundary.
+
+2. The processor writes its output and aborts before committing the input offsets. read_committed shows...
+A. None of that run’s output
+B. The output, marked as aborted
+C. Half of the output
+Answer: A. Aborted records can exist on disk, but a read_committed reader never sees them. The input stays unconsumed for the next run.
+
+3. One broker stops and verify still passes. What did that prove?
+A. Committed data and availability survive one broker loss in this lab
+B. The system survives any outage
+C. Exactly-once delivery to the kitchen API
+Answer: A. Name both the guarantee and its limit: three replicas, min ISR 2, one failure, this topology, this laptop.
+
+
+29. Read and write with Spring
+=================================================================
+A complete Java application. The same Kafka concepts.
+
+Write with KafkaTemplate
+POST /orders/order-42 receives a JSON event. OrderProducer calls KafkaTemplate.send(topic, orderId, event). The key is the order ID; JsonSerializer turns the Java record into bytes. The HTTP response waits for the broker acknowledgment and includes partition and offset.
+→ A successful send confirms storage under acks=all, not kitchen processing.
+
+Read with @KafkaListener
+OrderConsumer receives a ConsumerRecord<String, OrderPlaced>. Spring manages polling and the spring-kitchen group. With auto-commit disabled and AckMode.RECORD, a normal listener return triggers committing the next offset. earliest applies only when the group has no valid committed position.
+→ A crash after the effect and before the commit can repeat the effect.
+
+Connect code to guarantees
+KafkaConfig declares a NewTopic with three partitions, three replicas and min ISR 2. A second HTTP request is a new send, even with the same event ID. The in-memory /received list is only an observation tool. On a listener error, this example stops the listener without committing the failed record.
+→ Spring simplifies the client code; it does not erase Kafka’s transaction boundaries.
+
+DOCKER ACTIVITY
+1. Build and start the example
+Finish lesson 01 first. From labs, build the included Spring Boot 3.5.16 / Java 21 project and start it beside the cluster. Its NewTopic bean creates spring-orders. Repeating this step keeps existing events and group progress.
+
+docker compose up -d --wait
+docker compose --profile spring up -d --build --wait spring
+
+Observe: spring is healthy. HTTP is available at localhost:18080; Docker clients use spring:8080.
+
+2. Publish a JSON event
+The included request file avoids shell-specific quoting. The path supplies the key order-42. Open spring/src/main/java/course/spring/OrderProducer.java to follow KafkaTemplate.send.
+
+docker compose run --rm http --fail-with-body -i -X POST http://spring:8080/orders/order-42 -H Content-Type:application/json --data-binary @/requests/order.json
+
+Observe: HTTP 202 and JSON with topic spring-orders, partition, offset and eventId evt-spring-42.
+
+3. Observe the listener
+Read the bounded in-memory observation list and application logs. If the list is empty, retry after a second. OrderConsumer.java shows @KafkaListener and the consumed key, event and offset.
+
+docker compose run --rm http --fail-with-body http://spring:8080/received
+docker compose logs --tail 15 spring
+
+Observe: The event appears with key order-42. Logs contain RECEIVED and its partition/offset.
+
+4. Send the same request twice
+Submit the same event again. Idempotent production handles transport retries; it does not deduplicate two HTTP requests. Compare offsets in the observation list.
+
+docker compose run --rm http --fail-with-body -X POST http://spring:8080/orders/order-42 -H Content-Type:application/json --data-binary @/requests/order.json
+docker compose run --rm http --fail-with-body http://spring:8080/received
+
+Observe: After the listener catches up, two entries share the event ID and key but have different offsets.
+
+5. Inspect committed progress
+Wait until the populated partition has lag zero before the next step. Inspect application.yml: group-id, auto-offset-reset, enable-auto-commit and ack-mode.
+
+docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --group spring-kitchen --describe
+
+Observe: The populated partition has LAG 0. Empty partitions can show “-” (no committed offset). CURRENT-OFFSET is the next record to consume.
+
+6. Restart the application
+The in-memory observation list clears, but the group’s committed offsets stay in Kafka. earliest does not rewind a group that already has valid offsets.
+
+docker compose restart spring
+docker compose --profile spring up -d --wait spring
+docker compose run --rm http --fail-with-body http://spring:8080/received
+
+Observe: The list is [] after the restart: previously committed records are not replayed. Publish a new event to see the listener resume.
+
+7. Stop and read the source
+Stop the application when done. The complete project and a bilingual source walkthrough are in labs/spring/README.md. Design durable business deduplication before adding payments or another external effect.
+
+docker compose --profile spring stop spring
+
+Observe: The app stops; topic data and committed group offsets remain in the course broker volumes.
+
+CHECKPOINT
+1. KafkaTemplate.send succeeds. What does this prove?
+A. The broker acknowledged the write under the producer settings
+B. Every consumer processed the event
+C. The business event can never be duplicated
+Answer: A. The producer future describes the write. Consumer processing and business deduplication are separate concerns.
+
+2. With enable-auto-commit=false and AckMode.RECORD, when is the next offset committed?
+A. After the listener returns normally for that record
+B. Before the listener runs
+C. Every five seconds, by the broker
+Answer: A. The container commits per record on a normal return. A crash between the effect and that commit can repeat the effect.
+
+3. The listener throws. What does this example do?
+A. Stops the listener and leaves the failed record uncommitted
+B. Skips the record and commits
+C. Sends the record to a dead-letter topic automatically
+Answer: A. CommonContainerStoppingErrorHandler makes the failure visible and keeps the bookmark honest. Retries and a DLT are a separate design decision.
+
+

@@ -1,0 +1,31 @@
+server:
+  port: 8080
+spring:
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:19092,localhost:29092,localhost:39092}
+    admin:
+      fail-fast: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 15000
+        request.timeout.ms: 5000
+    consumer:
+      group-id: spring-kitchen
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: course.spring
+        spring.json.value.default.type: course.spring.OrderPlaced
+        spring.json.use.type.headers: false
+    listener:
+      ack-mode: record
+logging:
+  level:
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO

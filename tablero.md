@@ -1,0 +1,32 @@
+# Tablero del repositorio
+
+Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato compatible con TODO.md: cada título de sección es una columna, cada checkbox una card, el dueño en negrita al final. Cada card es una línea de estado más un enlace al documento dueño del hecho (regla 7 del README): la historia está en `CHANGELOG.md`, el cómo de cada curso en sus `docs/`; el porqué no se repite acá. Editable a mano; si se quiere drag and drop, las extensiones kanban.md o Taskboard leen este mismo archivo.
+
+## Backlog
+
+- [ ] **Pasar la lección 29 a Spring Boot 4.x**: 3.5.16 es la última 3.5 open source y su soporte open source terminó el 30/06/2026; lo que el ejemplo usa existe sin cambios en Spring Kafka 4 ([`labs/spring/README.md`](kafka-from-scratch/labs/spring/README.md)); requiere reconstruir la imagen y correr la suite `spring`. **Andrés**
+- [ ] **Revisar el curso sobre Kafka 4.2 o 4.3**: share groups production-ready desde 4.2 y argumentos de CLI estandarizados (KIP-1147) que cambian comandos de las lecciones; sección Versiones del [README del curso](kafka-from-scratch/README.md) y §5.1 de la [revisión del 17/10](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). Es una versión mayor del curso, no un cambio de etiqueta. **Andrés**
+- [ ] **Probar los brokers sin `user: "0:0"`**: con volúmenes nuevos, si la imagen `apache/kafka` como `appuser` escribe bien en los volúmenes con nombre, sacar el root y actualizar la nota de [`labs/README.md`](kafka-from-scratch/labs/README.md); si no, documentar por qué se queda (§4.9 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md)). **Andrés**
+- [ ] **CLI nativa de Kafka al lado de cada comando del `lab`**: un bloque "con la CLI de Kafka" por lección (`kafka-console-producer.sh`, `kafka-console-consumer.sh`, `kafka-consumer-groups.sh --reset-offsets`, `kafka-configs.sh`, `kafka-topics.sh --alter`); §6.3 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). **Andrés**
+- [ ] **Unidad 8 de Spring completa**: lecciones 30 a 33 sobre el mismo proyecto (`DefaultErrorHandler`, reintentos y DLT; transacciones con `KafkaTransactionManager`; concurrencia del listener; pruebas con Testcontainers); §6.4 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). Después de pasar a Boot 4.x. **Andrés**
+- [ ] **Métricas ejecutables en la lección 24**: perfil `metrics` (exportador JMX más Prometheus, o al menos `JmxTool`) para que particiones subreplicadas y latencia se vean en vivo; §6.5 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). **Andrés**
+- [ ] **Temas de 4.x que faltan**: ELR (KIP-966, aparece en `describe` y no se explica), un paso con `group.protocol=consumer` en la lección 09, y declarar en el README el alcance que queda afuera (almacenamiento por niveles, cuotas); §6.6 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). **Andrés**
+- [ ] **Compactación con observación determinista**: que algún paso o suite asegure que el limpiador borró `A=10` y `B=20` (rotar el segmento, esperar `max.compaction.lag.ms`, comparar offsets o `kafka-dump-log.sh`); §6.7 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). **Andrés**
+- [ ] **Publicar el curso de Kafka en Cloudflare Pages**: después de la primera versión en GitHub, con directorio raíz `kafka-from-scratch`; pasos en [`docs/DEPLOYMENT.md`](kafka-from-scratch/docs/DEPLOYMENT.md). **Andrés**
+- [ ] **Próximo curso**: tema sin decidir; el patrón es el de `kafka-from-scratch/` (regla 1 del README). **Andrés**
+
+## En curso
+
+- [ ] **Volver a correr las suites Docker sobre la 1.1.0**: el cliente Java se separó en clases, cambiaron los dos Dockerfile y los health checks; hasta que `core`, `failures`, `integrations` y `spring` pasen sobre `kafka-course-lab:1.1`, la evidencia de plataforma de [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md) es la de la 1.0.0. En la laptop, con Docker levantado, desde `kafka-from-scratch/labs`: `docker compose build lab`, `docker compose up -d --wait`, y desde la raíz del curso las cuatro suites en orden. **Andrés**
+- [ ] **Primera versión del repositorio en GitHub**: README, CHANGELOG, tablero, la revisión y la 1.1.0 del curso listos; falta crear el repositorio remoto, el primer commit y el push. **Andrés**
+
+## Hecho
+
+- [x] **Revisión del curso de Kafka aplicada (1.1.0, 17/10)**: las tres cosas previas a publicar, los nueve defectos, la vigencia de versiones en los textos, formato y separación del cliente Java, tres preguntas por lección con distractores reales, y las cuatro apariencias; detalle en [`CHANGELOG.md`](CHANGELOG.md) y en [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md). Quedan como cards propias lo que la revisión dejó para versiones siguientes. **Andrés**
+- [x] **Workflow de validación en la raíz del repositorio**: [`.github/workflows/validate-kafka.yml`](.github/workflows/validate-kafka.yml) con `working-directory: kafka-from-scratch`; el de adentro del curso queda como copia para una publicación independiente. **Andrés**
+- [x] **Guía de publicación del curso al día con el repositorio de cursos**: [`docs/DEPLOYMENT.md`](kafka-from-scratch/docs/DEPLOYMENT.md) describe las dos situaciones (carpeta del repositorio, con raíz `kafka-from-scratch` en Cloudflare Pages, o copia independiente). **Andrés**
+- [x] **Kafka from scratch, v1.0.0**: 29 lecciones, laboratorios Docker y las suites `core`, `failures`, `integrations` y `spring` ejecutadas el 15/10 ([`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md)). **Andrés**
+
+---
+
+*Prácticas permanentes (no son cards): CHANGELOG en la misma sesión que el cambio, commit por hito, afirmaciones de producto verificadas (reglas 4 y 5 del README).*

@@ -1,0 +1,43 @@
+# Valida el curso kafka-from-scratch en cada push y pull request: construye el sitio, corre las
+# verificaciones estáticas (programa bilingüe, modelos en cada apariencia, enlaces, cobertura de
+# comandos, versiones), compila el cliente Java y el ejemplo Spring y valida el Compose. No corre
+# las suites Docker, que se ejecutan en una laptop (ver kafka-from-scratch/docs/VALIDATION.md).
+# Es el mismo workflow que kafka-from-scratch/.github/workflows/validate.yml, que solo se activa
+# cuando esa carpeta es la raíz de un repositorio propio.
+name: Validar kafka-from-scratch
+on:
+  push:
+    paths:
+      - 'kafka-from-scratch/**'
+      - '.github/workflows/validate-kafka.yml'
+  pull_request:
+    paths:
+      - 'kafka-from-scratch/**'
+      - '.github/workflows/validate-kafka.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kafka-from-scratch
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run build && npm run check
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: |
+            kafka-from-scratch/labs/pom.xml
+            kafka-from-scratch/labs/spring/pom.xml
+      - run: mvn -B -f labs/pom.xml package
+      - run: mvn -B -f labs/spring/pom.xml package
+      - run: docker compose -f labs/compose.yaml config --quiet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kafka-from-scratch-dist
+          path: kafka-from-scratch/dist
