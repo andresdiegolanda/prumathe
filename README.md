@@ -1,6 +1,25 @@
-# Learning. Cursos técnicos
+<p align="center"><a href="docs/logo/"><img src="docs/logo/prumathe-lockup-outlined.svg" alt="Prumathe" width="480"></a></p>
 
-Repositorio de cursos técnicos: [github.com/andresdiegolanda/learning](https://github.com/andresdiegolanda/learning), con copia de trabajo local en `D:\_claude\learning`. Cada curso es una carpeta independiente que se puede copiar a cualquier lugar y abrir en un navegador sin servidor, cuenta ni instalación. El primero es [`kafka-from-scratch/`](kafka-from-scratch/), y marca el patrón para los que sigan: visual, bilingüe (inglés y español rioplatense), con laboratorios reales en Docker y evidencia de validación.
+# Prumathe. Cursos para aprender tecnologías complejas
+
+*Prumathe is the Etruscan name of Prometheus. Courses that make complex technologies learnable: see the mechanism, run the experiment, name the limit.*
+
+## Misión
+
+Prumathe existe para facilitar el aprendizaje de las tecnologías complejas: las que sostienen los sistemas que usamos todos los días y que la documentación oficial explica para quien ya las entiende. Entre esa documentación y la persona que necesita construir algo con ellas hay una distancia que suele cubrirse a golpes, en producción. Los cursos de Prumathe cubren esa distancia antes.
+
+Un curso de Prumathe toma una tecnología de base (Kafka primero; Docker y las que sigan) y la vuelve aprendible para desarrolladores y arquitectos que trabajan en sistemas orientados a eventos, Java y Spring e integración empresarial. Siempre de la misma manera:
+
+- **Se ve el mecanismo.** Cada idea tiene un modelo visual que se puede manipular: mover un señalador, hacer caer un broker, cambiar una clave. Primero la intuición, después el nombre.
+- **Se prueba con las manos.** Cada lección tiene un laboratorio real, en la propia máquina, con el resultado esperado escrito antes de ejecutar y aserciones que dicen si pasó o no. Un diagrama no prueba nada; un experimento sí.
+- **Se nombra la garantía y su límite.** Cada afirmación dice dentro de qué frontera vale ("exactamente una vez" siempre dice de qué), porque lo que da problemas en producción no es lo que la tecnología hace, sino lo que se supuso que hacía.
+- **En dos idiomas, el mismo contenido.** Inglés y español rioplatense, con los términos técnicos tal como aparecen en las herramientas.
+- **Verificado y fechado.** Cada afirmación sobre un producto se contrasta con su documentación oficial, las versiones se fijan y lo que no se ejecutó se dice.
+- **Abierto y portable.** Un curso es una carpeta que se abre en un navegador, sin cuenta, sin servidor, sin instalar nada; los laboratorios corren en Docker en la computadora de quien aprende. Licencia MIT.
+
+El nombre: Prumathe es como los etruscos llamaban a Prometeo, el que le acercó a la gente el fuego y, con el fuego, los oficios. Acá el fuego son las tecnologías que mueven los sistemas de todos los días, y acercarlo quiere decir que cualquiera con ganas pueda abrirlas, tocarlas y entenderlas.
+
+Repositorio: [github.com/andresdiegolanda/prumathe](https://github.com/andresdiegolanda/prumathe), con copia de trabajo local en `D:\_claude\prumathe`. Cada curso es una carpeta independiente; el primero es [`kafka-from-scratch/`](kafka-from-scratch/), y marca el patrón para los que sigan.
 
 ## Estructura
 
@@ -8,6 +27,7 @@ Repositorio de cursos técnicos: [github.com/andresdiegolanda/learning](https://
 - `CHANGELOG.md`: registro de todos los cambios del repositorio.
 - `tablero.md`: kanban del repositorio en Markdown, la fuente única de trabajo pendiente y en curso (columnas como títulos, cards de una línea con checkbox, enlace y dueño). Compatible con las extensiones kanban.md y Taskboard para vista con drag and drop.
 - `reviews/`: revisiones de los cursos, una por archivo con fecha y versión revisada (`AAAA-MM-DD-<curso>-v<versión>.md`). Cada hallazgo dice cómo se estableció (leído, ejecutado, contrastado con fuente, o no verificado) y qué hacer; lo que se decide corregir pasa al tablero. Primera: [`2026-10-17-kafka-from-scratch-v1.0.0.md`](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md), aplicada el mismo día en la 1.1.0 del curso.
+- `docs/logo/`: la identidad de Prumathe: la marca es la P del alfabeto etrusco, un asta con un gancho abierto, dibujada de un solo trazo y con una llama sobre el asta: una antorcha que es también la letra. Archivos: `prumathe-mark` (la marca), `prumathe-favicon` (dibujado aparte, con trazo más grueso para 16 px), `prumathe-lockup` (la marca con el nombre en minúscula, en Inter; la variante `-outlined` lleva el texto como trazado y es la que se usa donde no se puede contar con la tipografía), en SVG y PNG. Verde `#21664e` y naranja `#d77936` sobre papel `#f6f5ed`. Cada curso lleva su propia copia de lo que usa (favicon e ícono de la cabecera) para seguir siendo independiente; las revisiones anteriores están en `tmp/_obsoleto/logo-revisiones-2026-10-18/`.
 - `.github/workflows/`: lo que GitHub corre solo. [`validate-kafka.yml`](.github/workflows/validate-kafka.yml) construye y verifica el curso de Kafka en cada push que lo toque (sitio, verificaciones estáticas, compilación Java y Spring, Compose); las suites Docker no corren ahí.
 - `tmp/`: trabajo interno no versionado (scripts de una vez, pruebas, lo que sobra en `_obsoleto/`); solo se versiona su [`README.md`](tmp/README.md).
 - Próximas carpetas: un curso por carpeta, al mismo nivel que `kafka-from-scratch/`, cada uno con su README, su licencia y su validación.

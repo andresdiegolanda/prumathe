@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 340 340" role="img" aria-labelledby="title desc">
+  <title id="title">Prumathe mark</title>
+  <desc id="desc">An Etruscan-style open P drawn as one monoline stroke, with an orange teardrop flame on top of the stem: a torch that is also the letter P.</desc>
+  <rect width="340" height="340" fill="#f6f5ed"/>
+  <path d="M131 313V133C176 133 217 159 217 199" fill="none" stroke="#21664e" stroke-width="36" stroke-linecap="butt" stroke-linejoin="round"/><path d="M131 27C103 59 105 91 131 117C157 91 159 59 131 27Z" fill="#d77936"/>
+</svg>

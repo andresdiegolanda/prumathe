@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" role="img" aria-labelledby="title desc">
+  <title id="title">Prumathe favicon</title>
+  <desc id="desc">The Prumathe torch P at favicon size.</desc>
+  <rect width="16" height="16" rx="2" fill="#f6f5ed"/>
+  <path d="M5.5 15.2V6.4C8.1 6.4 10.5 7.8 10.5 10.2" fill="none" stroke="#21664e" stroke-width="2.6" stroke-linecap="butt" stroke-linejoin="round"/><path d="M5.5 0.8C4 2.4 4.1 4 5.5 5.3C6.9 4 7 2.4 5.5 0.8Z" fill="#d77936"/>
+</svg>

@@ -130,7 +130,7 @@ header {
   flex-shrink: 0;
 }
 .brand svg {
-  width: 32px;
+  width: 18px;
   height: 36px;
 }
 .brand strong {
@@ -1101,7 +1101,8 @@ header {
     font-size: 0.5rem;
   }
   .brand svg {
-    width: 25px;
+    width: 15px;
+    height: 30px;
   }
   .header-actions {
     gap: 5px;

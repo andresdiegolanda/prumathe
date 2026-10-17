@@ -48,7 +48,9 @@
         /[&<>"']/g,
         (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
       );
-  const icon = `<svg viewBox="0 0 32 36" fill="none" aria-hidden="true"><path d="M10 7v22M10 13l14-6M10 23l14 6" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="5" r="4" style="fill:var(--mint)" stroke="currentColor"/><circle cx="10" cy="18" r="4" style="fill:var(--mint)" stroke="currentColor"/><circle cx="10" cy="31" r="4" style="fill:var(--mint)" stroke="currentColor"/><circle cx="25" cy="6" r="4" style="fill:var(--mint)" stroke="currentColor"/><circle cx="25" cy="30" r="4" style="fill:var(--mint)" stroke="currentColor"/></svg>`;
+  /* The Prumathe mark: an Etruscan-style open P drawn as one stroke, with a flame on the stem, in
+     the palette of the active skin. */
+  const icon = `<svg viewBox="99 21 142 298" aria-hidden="true"><path d="M131 313V133C176 133 217 159 217 199" fill="none" stroke="var(--green)" stroke-width="36" stroke-linecap="butt" stroke-linejoin="round"/><path d="M131 27C103 59 105 91 131 117C157 91 159 59 131 27Z" fill="var(--orange)"/></svg>`;
   const themeName = (x) =>
     ({
       light: t('Classic', 'Clásico'),
