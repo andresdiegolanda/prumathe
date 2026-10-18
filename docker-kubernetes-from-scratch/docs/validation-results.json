@@ -1,0 +1,628 @@
+{
+  "version": "1.0.0",
+  "date": "2026-10-18",
+  "transport": "Docker CLI; Kubernetes kubectl inside kind control-plane via Docker with TLS verification",
+  "coverage": "Final successful steps consolidated from lessons 00 to 19 and corrected lessons 20 to 24; not a single uninterrupted run",
+  "steps": [
+    {
+      "lesson": 0,
+      "step": 1,
+      "passed": true,
+      "durationMs": 318
+    },
+    {
+      "lesson": 0,
+      "step": 2,
+      "passed": true,
+      "durationMs": 1
+    },
+    {
+      "lesson": 0,
+      "step": 3,
+      "passed": true,
+      "durationMs": 985
+    },
+    {
+      "lesson": 0,
+      "step": 4,
+      "passed": true,
+      "durationMs": 6386
+    },
+    {
+      "lesson": 1,
+      "step": 1,
+      "passed": true,
+      "durationMs": 472
+    },
+    {
+      "lesson": 1,
+      "step": 2,
+      "passed": true,
+      "durationMs": 447
+    },
+    {
+      "lesson": 1,
+      "step": 3,
+      "passed": true,
+      "durationMs": 456
+    },
+    {
+      "lesson": 1,
+      "step": 4,
+      "passed": true,
+      "durationMs": 488
+    },
+    {
+      "lesson": 2,
+      "step": 1,
+      "passed": true,
+      "durationMs": 346
+    },
+    {
+      "lesson": 2,
+      "step": 2,
+      "passed": true,
+      "durationMs": 1652
+    },
+    {
+      "lesson": 2,
+      "step": 3,
+      "passed": true,
+      "durationMs": 469
+    },
+    {
+      "lesson": 2,
+      "step": 4,
+      "passed": true,
+      "durationMs": 1953
+    },
+    {
+      "lesson": 3,
+      "step": 1,
+      "passed": true,
+      "durationMs": 164
+    },
+    {
+      "lesson": 3,
+      "step": 2,
+      "passed": true,
+      "durationMs": 158
+    },
+    {
+      "lesson": 3,
+      "step": 3,
+      "passed": true,
+      "durationMs": 487
+    },
+    {
+      "lesson": 3,
+      "step": 4,
+      "passed": true,
+      "durationMs": 457
+    },
+    {
+      "lesson": 4,
+      "step": 1,
+      "passed": true,
+      "durationMs": 994
+    },
+    {
+      "lesson": 4,
+      "step": 2,
+      "passed": true,
+      "durationMs": 850
+    },
+    {
+      "lesson": 4,
+      "step": 3,
+      "passed": true,
+      "durationMs": 791
+    },
+    {
+      "lesson": 4,
+      "step": 4,
+      "passed": true,
+      "durationMs": 954
+    },
+    {
+      "lesson": 5,
+      "step": 1,
+      "passed": true,
+      "durationMs": 5517
+    },
+    {
+      "lesson": 5,
+      "step": 2,
+      "passed": true,
+      "durationMs": 400
+    },
+    {
+      "lesson": 5,
+      "step": 3,
+      "passed": true,
+      "durationMs": 5510
+    },
+    {
+      "lesson": 5,
+      "step": 4,
+      "passed": true,
+      "durationMs": 557
+    },
+    {
+      "lesson": 6,
+      "step": 1,
+      "passed": true,
+      "durationMs": 868
+    },
+    {
+      "lesson": 6,
+      "step": 2,
+      "passed": true,
+      "durationMs": 766
+    },
+    {
+      "lesson": 6,
+      "step": 3,
+      "passed": true,
+      "durationMs": 991
+    },
+    {
+      "lesson": 6,
+      "step": 4,
+      "passed": true,
+      "durationMs": 149
+    },
+    {
+      "lesson": 7,
+      "step": 1,
+      "passed": true,
+      "durationMs": 892
+    },
+    {
+      "lesson": 7,
+      "step": 2,
+      "passed": true,
+      "durationMs": 340
+    },
+    {
+      "lesson": 7,
+      "step": 3,
+      "passed": true,
+      "durationMs": 775
+    },
+    {
+      "lesson": 7,
+      "step": 4,
+      "passed": true,
+      "durationMs": 153
+    },
+    {
+      "lesson": 8,
+      "step": 1,
+      "passed": true,
+      "durationMs": 337
+    },
+    {
+      "lesson": 8,
+      "step": 2,
+      "passed": true,
+      "durationMs": 870
+    },
+    {
+      "lesson": 8,
+      "step": 3,
+      "passed": true,
+      "durationMs": 1607
+    },
+    {
+      "lesson": 8,
+      "step": 4,
+      "passed": true,
+      "durationMs": 6060
+    },
+    {
+      "lesson": 9,
+      "step": 1,
+      "passed": true,
+      "durationMs": 888
+    },
+    {
+      "lesson": 9,
+      "step": 2,
+      "passed": true,
+      "durationMs": 506
+    },
+    {
+      "lesson": 9,
+      "step": 3,
+      "passed": true,
+      "durationMs": 397
+    },
+    {
+      "lesson": 9,
+      "step": 4,
+      "passed": true,
+      "durationMs": 425
+    },
+    {
+      "lesson": 10,
+      "step": 1,
+      "passed": true,
+      "durationMs": 873
+    },
+    {
+      "lesson": 10,
+      "step": 2,
+      "passed": true,
+      "durationMs": 155
+    },
+    {
+      "lesson": 10,
+      "step": 3,
+      "passed": true,
+      "durationMs": 9819
+    },
+    {
+      "lesson": 10,
+      "step": 4,
+      "passed": true,
+      "durationMs": 3597
+    },
+    {
+      "lesson": 11,
+      "step": 1,
+      "passed": true,
+      "durationMs": 159
+    },
+    {
+      "lesson": 11,
+      "step": 2,
+      "passed": true,
+      "durationMs": 322
+    },
+    {
+      "lesson": 11,
+      "step": 3,
+      "passed": true,
+      "durationMs": 170
+    },
+    {
+      "lesson": 11,
+      "step": 4,
+      "passed": true,
+      "durationMs": 626
+    },
+    {
+      "lesson": 12,
+      "step": 1,
+      "passed": true,
+      "durationMs": 873
+    },
+    {
+      "lesson": 12,
+      "step": 2,
+      "passed": true,
+      "durationMs": 898
+    },
+    {
+      "lesson": 12,
+      "step": 3,
+      "passed": true,
+      "durationMs": 511
+    },
+    {
+      "lesson": 12,
+      "step": 4,
+      "passed": true,
+      "durationMs": 1527
+    },
+    {
+      "lesson": 13,
+      "step": 1,
+      "passed": true,
+      "durationMs": 103
+    },
+    {
+      "lesson": 13,
+      "step": 2,
+      "passed": true,
+      "durationMs": 295
+    },
+    {
+      "lesson": 13,
+      "step": 3,
+      "passed": true,
+      "durationMs": 4820
+    },
+    {
+      "lesson": 13,
+      "step": 4,
+      "passed": true,
+      "durationMs": 1001
+    },
+    {
+      "lesson": 14,
+      "step": 1,
+      "passed": true,
+      "durationMs": 1284
+    },
+    {
+      "lesson": 14,
+      "step": 2,
+      "passed": true,
+      "durationMs": 493
+    },
+    {
+      "lesson": 14,
+      "step": 3,
+      "passed": true,
+      "durationMs": 490
+    },
+    {
+      "lesson": 14,
+      "step": 4,
+      "passed": true,
+      "durationMs": 31421
+    },
+    {
+      "lesson": 15,
+      "step": 1,
+      "passed": true,
+      "durationMs": 554
+    },
+    {
+      "lesson": 15,
+      "step": 2,
+      "passed": true,
+      "durationMs": 3182
+    },
+    {
+      "lesson": 15,
+      "step": 3,
+      "passed": true,
+      "durationMs": 266
+    },
+    {
+      "lesson": 15,
+      "step": 4,
+      "passed": true,
+      "durationMs": 764
+    },
+    {
+      "lesson": 16,
+      "step": 1,
+      "passed": true,
+      "durationMs": 511
+    },
+    {
+      "lesson": 16,
+      "step": 2,
+      "passed": true,
+      "durationMs": 477
+    },
+    {
+      "lesson": 16,
+      "step": 3,
+      "passed": true,
+      "durationMs": 31464
+    },
+    {
+      "lesson": 16,
+      "step": 4,
+      "passed": true,
+      "durationMs": 1326
+    },
+    {
+      "lesson": 17,
+      "step": 1,
+      "passed": true,
+      "durationMs": 513
+    },
+    {
+      "lesson": 17,
+      "step": 2,
+      "passed": true,
+      "durationMs": 251
+    },
+    {
+      "lesson": 17,
+      "step": 3,
+      "passed": true,
+      "durationMs": 231
+    },
+    {
+      "lesson": 17,
+      "step": 4,
+      "passed": true,
+      "durationMs": 1063
+    },
+    {
+      "lesson": 18,
+      "step": 1,
+      "passed": true,
+      "durationMs": 529
+    },
+    {
+      "lesson": 18,
+      "step": 2,
+      "passed": true,
+      "durationMs": 819
+    },
+    {
+      "lesson": 18,
+      "step": 3,
+      "passed": true,
+      "durationMs": 6055
+    },
+    {
+      "lesson": 18,
+      "step": 4,
+      "passed": true,
+      "durationMs": 7083
+    },
+    {
+      "lesson": 19,
+      "step": 1,
+      "passed": true,
+      "durationMs": 4918
+    },
+    {
+      "lesson": 19,
+      "step": 2,
+      "passed": true,
+      "durationMs": 496
+    },
+    {
+      "lesson": 19,
+      "step": 3,
+      "passed": true,
+      "durationMs": 32643
+    },
+    {
+      "lesson": 19,
+      "step": 4,
+      "passed": true,
+      "durationMs": 279
+    },
+    {
+      "lesson": 20,
+      "step": 1,
+      "passed": true,
+      "durationMs": 631
+    },
+    {
+      "lesson": 20,
+      "step": 2,
+      "passed": true,
+      "durationMs": 224
+    },
+    {
+      "lesson": 20,
+      "step": 3,
+      "passed": true,
+      "durationMs": 6160
+    },
+    {
+      "lesson": 20,
+      "step": 4,
+      "passed": true,
+      "durationMs": 33038
+    },
+    {
+      "lesson": 21,
+      "step": 1,
+      "passed": true,
+      "durationMs": 3228
+    },
+    {
+      "lesson": 21,
+      "step": 2,
+      "passed": true,
+      "durationMs": 273
+    },
+    {
+      "lesson": 21,
+      "step": 3,
+      "passed": true,
+      "durationMs": 281
+    },
+    {
+      "lesson": 21,
+      "step": 4,
+      "passed": true,
+      "durationMs": 464
+    },
+    {
+      "lesson": 22,
+      "step": 1,
+      "passed": true,
+      "durationMs": 527
+    },
+    {
+      "lesson": 22,
+      "step": 2,
+      "passed": true,
+      "durationMs": 4877
+    },
+    {
+      "lesson": 22,
+      "step": 3,
+      "passed": true,
+      "durationMs": 7434
+    },
+    {
+      "lesson": 22,
+      "step": 4,
+      "passed": true,
+      "durationMs": 7040
+    },
+    {
+      "lesson": 23,
+      "step": 1,
+      "passed": true,
+      "durationMs": 277
+    },
+    {
+      "lesson": 23,
+      "step": 2,
+      "passed": true,
+      "durationMs": 256
+    },
+    {
+      "lesson": 23,
+      "step": 3,
+      "passed": true,
+      "durationMs": 241
+    },
+    {
+      "lesson": 23,
+      "step": 4,
+      "passed": true,
+      "durationMs": 254
+    },
+    {
+      "lesson": 24,
+      "step": 1,
+      "passed": true,
+      "durationMs": 519
+    },
+    {
+      "lesson": 24,
+      "step": 2,
+      "passed": true,
+      "durationMs": 1278
+    },
+    {
+      "lesson": 24,
+      "step": 3,
+      "passed": true,
+      "durationMs": 31536
+    },
+    {
+      "lesson": 24,
+      "step": 4,
+      "passed": true,
+      "durationMs": 1253
+    }
+  ],
+  "hostHttp": {
+    "check": "Published host HTTP endpoint",
+    "ok": true
+  },
+  "ui": {
+    "desktopPages": 200,
+    "languages": [
+      "en",
+      "es"
+    ],
+    "themes": [
+      "light",
+      "dark",
+      "reading",
+      "projector"
+    ],
+    "mobileViews": 2,
+    "mobileWidth": 390,
+    "fileProtocolExecuted": false
+  }
+}

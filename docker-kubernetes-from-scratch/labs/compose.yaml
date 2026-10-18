@@ -1,0 +1,25 @@
+name: prumathe-dk
+services:
+  app:
+    image: prumathe-signal:1.0.0
+    build: ./app
+    environment:
+      MESSAGE: hello-compose
+    ports:
+      - "127.0.0.1:18080:8080"
+    volumes:
+      - signal-data:/data
+    secrets:
+      - demo_token
+    mem_limit: 128m
+    cpus: 0.5
+  toolbox:
+    image: prumathe-signal:1.0.0
+    profiles: [tools]
+    entrypoint: [python, /app/probe.py]
+    command: ["http://app:8080", "hello-compose"]
+volumes:
+  signal-data:
+secrets:
+  demo_token:
+    file: ./demo-token.txt

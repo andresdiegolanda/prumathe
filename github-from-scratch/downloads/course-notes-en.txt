@@ -1,0 +1,1332 @@
+GITHUB FROM SCRATCH. COURSE NOTES
+Git + GitHub | 2026-10-18 | v1.1.0
+
+00. Before you start
+=================================================================
+Learn to predict what changes, where and for whom.
+
+A question before a button
+Our team maintains the Faro library guide. Two people change its opening hours. Before choosing an operation, ask which version each person has, what is recorded and what they want to share. Naming that state is the skill this course practices.
+→ Explain the change in state before naming the command.
+
+Three kinds of evidence
+The browser is an illustrative model. Local experiments execute real Git with no account or network. GitHub activities use your own practice repository online. A diagram, a local PASS and an actual review each demonstrate something different.
+→ Say whether you simulated, executed or observed.
+
+Choose your depth
+Read the three scenes, change the model, predict an experiment and explain three checkpoint answers. Commands are available in an expandable block. Install Git 2.32 or later and Node.js 22 or later for the local kit. Without a GitHub account, use the explicitly labeled case studies in online lessons.
+→ Progress records your declaration, not automatic verification.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Can a real repository exist entirely on your computer?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs setup
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Find the Git and Node versions, the new experiment folder and the initial commit. No remote was configured.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain why installing Git is separate from creating a GitHub account.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. The model shows a successful merge. What have you verified?
+A. The real repository
+B. Only the illustrated mechanism
+C. The application works
+Answer: B. A model supports reasoning. Executing Git and testing the application require separate evidence.
+
+2. What should you remember after a lesson?
+A. Which state changed and why
+B. Every flag in order
+C. The exact commit identifier
+Answer: A. Syntax can be looked up. A prediction needs a mental model.
+
+3. Does completing the case study prove GitHub executed it?
+A. Yes, if all answers are right
+B. Yes, if the diagram is green
+C. No, it records reasoning only
+Answer: C. Keep a case study distinct from an online experiment in your notebook.
+
+GitHub Docs · Git and GitHub: https://docs.github.com/en/get-started/start-your-journey/what-is-github
+
+01. Git and GitHub
+=================================================================
+One records history. The other gives a team a place to collaborate.
+
+The repository is more than a folder
+A working folder contains the files you edit. A Git repository also records versions and relationships between them. Saving guide.txt changes a file; recording a commit adds a historical checkpoint. These are separate acts.
+→ A saved file is not necessarily recorded history.
+
+Local first
+Git can record and inspect history without GitHub. GitHub hosts repositories and adds issues, pull requests and review. A local commit does not appear on GitHub until you transfer it. You can have several copies of a repository.
+→ Recording and sharing are different events.
+
+Who sees the change?
+Ana records new library hours on her laptop. Bruno still sees the old version in his copy. Even when Ana publishes her branch, Bruno must obtain the new history. Treat each copy as a separate place with its own current knowledge.
+→ Always name the copy you are talking about.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Will a new commit require an internet connection or a remote?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs local
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Find two commits and an empty remote list. Inspect guide.txt in the printed folder.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain the difference between save, commit and publish using Ana and Bruno.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. You commit offline. Where is the new history?
+A. In your local repository
+B. On GitHub automatically
+C. Only in your editor
+Answer: A. Git records locally; publishing is another operation.
+
+2. Which object belongs to GitHub collaboration?
+A. A local commit
+B. A pull request discussion
+C. A staging area
+Answer: B. Git stores commits and staging state. GitHub adds the review conversation.
+
+3. Ana saved a file. Can Bruno see it already?
+A. Yes, if both use GitHub
+B. Yes, if the name matches
+C. No, saving alone does not share it
+Answer: C. An editor save has no synchronization guarantee.
+
+GitHub Docs · Git and GitHub: https://docs.github.com/en/get-started/start-your-journey/what-is-github
+
+02. Commits: snapshots with a reason
+=================================================================
+A version is content plus context and ancestry.
+
+A coherent checkpoint
+Imagine photographing the whole library guide after correcting its hours. A commit records a snapshot of the tracked project, a message and metadata, with links to parent commits. Unchanged content can be reused internally; this is not a new full disk copy every time.
+→ Think snapshot first; a diff compares snapshots.
+
+The graph explains the story
+An arrow from a commit to its parent says which recorded state it follows. The initial commit has no parent. A typical commit has one; a merge commit can have more. Commit identifiers name objects, not a sequence of revision numbers.
+→ Read ancestry, not just timestamps.
+
+A reason helps the next reader
+“Fix hours after winter schedule change” helps a reviewer understand why a line moved. “Update file” does not. Group changes by purpose so a future teammate can explain, review or reverse one decision without untangling unrelated edits.
+→ One intelligible decision is a useful unit of history.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+After changing the hours, will the previous commit show the old or new hours?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs snapshots
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Compare the old and current guide printed by Git. Then read the diff and parent identifier.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain why a diff and a snapshot answer different questions.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. What is a diff?
+A. A branch name
+B. A comparison between states
+C. A backup of all GitHub data
+Answer: B. The displayed change depends on which two states you compare.
+
+2. Two snapshots have identical files but different parents. Must they be the same commit?
+A. No, ancestry is part of the commit
+B. Yes, only files matter
+C. Yes, if branch names match
+Answer: A. A commit identifies content and metadata, including parent relationships.
+
+3. Why separate an hours correction from a logo redesign?
+A. Git cannot store both
+B. Each file needs its own repository
+C. They are separate decisions to review or undo
+Answer: C. This is a collaboration choice, not a Git file limit.
+
+Git · git-commit: https://git-scm.com/docs/git-commit
+Pro Git · What is Git?: https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F
+
+03. Three places for a change
+=================================================================
+Editing, preparing and recording are separate decisions.
+
+Your desk
+The working tree is the set of files you currently edit. Ana corrects the hours and starts an unfinished note. Both changes are on her desk. She wants to record only the finished correction.
+→ What is edited can exceed what should be committed.
+
+The next snapshot
+The staging area, also called the index, holds the content selected for the next commit. It is a prepared version, not just a list of filenames. If you stage 10:00 then edit the file to 11:00, the prepared content is still 10:00 until you stage again.
+→ Preparing captures content at that moment.
+
+Read both comparisons
+The ordinary diff compares your working files with the index. The staged diff compares the index with the current commit. In our example, one shows 10:00 to 11:00; the other shows 09:00 to 10:00. A normal commit records the index.
+→ Ask which two states the comparison uses.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+The experiment prepares 10:00 and then saves 11:00. Predict the recorded hours.
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs staging
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Read working file = 11:00, index = 10:00, committed = 10:00. Compare both diffs.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain this result without using the words add or commit as verbs.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. You stage 10:00, then save 11:00. What does a normal commit record?
+A. 11:00
+B. Both versions in one file
+C. 10:00
+Answer: C. The index still holds 10:00. The later edit remains in the working tree.
+
+2. Can a file have both staged and unstaged changes?
+A. Yes, the stored versions can differ
+B. No, it has exactly one state
+C. Only after publishing
+Answer: A. The index and working tree can hold different content for the same path.
+
+3. Which comparison previews a normal commit?
+A. Your files against GitHub
+B. Index against current commit
+C. Two branch names alphabetically
+Answer: B. That comparison isolates the prepared change.
+
+Git · git-add and the index: https://git-scm.com/docs/git-add
+
+04. Branches are movable names
+=================================================================
+A parallel line of work starts with a pointer.
+
+Two names, one starting point
+main names our accepted history. Creating hours from main gives another name to the same commit. No new historical version is required just to create that branch. The names can move independently as work continues.
+→ A branch points to a commit; it is not a folder copy.
+
+Where is the next commit going?
+HEAD usually identifies the current branch. While hours is checked out, a new commit advances hours and leaves main where it was. Switching branches changes the selected history and updates files as needed; Git can refuse if local edits would be overwritten.
+→ Know your current branch before recording work.
+
+Names are agreements
+main is a convention, not a built-in quality guarantee. A branch named production can contain broken work. The team decides what each branch means and what evidence is needed to advance it. A branch is not access isolation.
+→ The name communicates intent; policy enforces it.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Will main move when the helper records an hours change on another branch?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs branches
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Find main at the initial commit and hours at its child. Switching back restores the old hours.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Draw the two pointers and HEAD. Explain what a branch deletion would remove.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. Creating a branch at the current commit adds what?
+A. A new name pointing at that commit
+B. A new snapshot automatically
+C. A GitHub repository
+Answer: A. Names and snapshots are different objects in the mental model.
+
+2. A new commit on hours moves which branch?
+A. Every branch
+B. hours
+C. Only main
+Answer: B. The current branch advances; other branch tips stay where they were.
+
+3. Does main guarantee working code?
+A. Yes, Git tests it
+B. Yes, when it is the default
+C. No, quality needs evidence and policy
+Answer: C. Branch names do not execute tests or reviews.
+
+Pro Git · Branches in a Nutshell: https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell
+
+05. Merging histories
+=================================================================
+Combine work using its shared starting point.
+
+One path is already inside another
+If main has not moved since hours branched off, main can advance to the tip of hours. This fast-forward needs no new merge commit. The existing commits already describe a continuous path.
+→ Fast-forward moves a name along existing history.
+
+Two paths have advanced
+Ana changes the hours while Bruno adds a contact file. The branches diverge. Git uses a shared ancestor and both tips to combine changes. A usual merge commit records the result with both tips as parents.
+→ A merge preserves both lines of ancestry.
+
+Text fits; behavior may not
+Ana changes the opening hour to 10:00. Bruno advertises a workshop at 09:30 in another file. Git can combine those edits without a textual conflict. The resulting guide still contradicts itself. Test the meaning after combining the text.
+→ No textual conflict does not mean no problem.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+One branch edits hours, the other adds contact.txt. Predict the result and number of parents.
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs merge
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Find both files in the merged snapshot and two parent identifiers. The helper also demonstrates a fast-forward separately.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Invent a contradiction that Git could merge without a conflict.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. main is an ancestor of hours. What can a fast-forward do?
+A. Copy only the latest file
+B. Advance main to hours
+C. Erase hours history
+Answer: B. It moves the reference because the path already exists.
+
+2. A normal merge commit of two diverged branches has how many parents?
+A. Zero
+B. One
+C. Two
+Answer: C. The parents retain the two histories that were combined.
+
+3. Git merged two files cleanly. What remains to verify?
+A. That their combined meaning works
+B. Whether Git created any history
+C. Nothing
+Answer: A. Textual compatibility is weaker than behavioral correctness.
+
+Pro Git · Basic Branching and Merging: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+
+06. Conflicts are unanswered questions
+=================================================================
+The tool finds ambiguity; people decide the meaning.
+
+One line, two intentions
+From the same 09:00 starting point, Ana writes 10:00 and Bruno writes 11:00. Both change the same line. Git cannot decide the library schedule. A conflict marks a choice that automatic text integration cannot safely make.
+→ A conflict is information, not proof that history is lost.
+
+Three versions matter
+Read the shared base, the current side and the incoming side. “Ours” and “theirs” depend on the operation, not on who is morally right. Ask each author what they intended before editing the combined result.
+→ Compare intentions against the common base.
+
+Resolve, then verify
+After deciding on 10:30, replace the conflict markers with the agreed text, prepare that result and finish the merge. Removing markers alone is not enough: confirm the guide is consistent. Aborting an unfinished merge is another choice when you need to reconsider.
+→ Resolution is a new decision with its own evidence.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Both branches replace the same hours line. Predict where automatic integration will stop.
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs conflict
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Read the printed conflict markers before the helper resolves to 10:30. Find the final two-parent commit and clean working tree.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+The helper supplies an agreed answer for demonstration. Explain how your real team would obtain that agreement.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. Why does Git stop at a conflicting hours line?
+A. It needs a human choice between incompatible edits
+B. The repository was deleted
+C. The internet disconnected
+Answer: A. Both histories remain available; their intended combination is unresolved.
+
+2. Is deleting all conflict markers sufficient?
+A. Yes, markers are the whole problem
+B. No, check the chosen content and complete the merge
+C. Only if the file is short
+Answer: B. A syntactically clean result can still be wrong.
+
+3. Must the resolution exactly equal one side?
+A. Always
+B. Only with two authors
+C. No, it may express a new agreed result
+Answer: C. The merge result can incorporate a decision neither original side contained.
+
+Pro Git · Basic Branching and Merging: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+
+07. Remotes and independent copies
+=================================================================
+A remote is an address with a local nickname.
+
+Clone makes another repository
+A usual clone copies repository history and checks out a working version. It is not a live shared folder. Editing the clone does not edit the source. Special shallow or partial clones can copy less; our experiments use ordinary complete clones.
+→ A clone is an independent place to work.
+
+origin is a nickname
+A remote configuration associates a name such as origin with an address. That address can be on GitHub, another host or even a local disk. Naming it origin does not make it the official project or grant permission to write.
+→ Location, authority and permission are separate facts.
+
+Your last observation
+origin/main is normally a local remote-tracking reference: your last recorded view of main at origin. It can be stale while someone else publishes new work. Your local main, origin/main and the server’s main are three distinct references.
+→ A remote-tracking reference is knowledge, not a live window.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Two clones share one local remote. Will Bruno see Ana’s published change before fetching?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs remotes
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Find three repository paths. Compare the remote tip with Bruno’s old origin/main.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain what the local bare repository simulates and what it does not test about GitHub permissions.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. Does editing a clone change the source repository immediately?
+A. Yes, it is shared storage
+B. No, it is another repository
+C. Only on the same computer
+Answer: B. Transfer and integration are explicit operations.
+
+2. What does the name origin guarantee?
+A. A local configured address, if it exists
+B. Write access
+C. That it is GitHub
+Answer: A. The name is conventional and can be changed.
+
+3. A teammate pushed. Is your origin/main necessarily current?
+A. Yes, it updates in real time
+B. Yes, while the editor is open
+C. No, you may need to fetch
+Answer: C. Your local observation does not continually poll the remote.
+
+Pro Git · Working with Remotes: https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes
+
+08. Fetch, integrate, publish
+=================================================================
+There is no single magical “sync” operation.
+
+Learn what changed
+Fetching obtains objects and updates configured remote-tracking references. In the usual workflow it does not merge them into your current branch or edit your working files. You can inspect the new history before choosing how to integrate it.
+→ Obtaining information and adopting it are separate.
+
+Choose the integration
+Pull combines fetching with an integration step, whose policy may be fast-forward, merge or rebase depending on options and configuration. First ask whether your histories diverged. A fast-forward-only policy stops rather than silently resolving a divergence.
+→ Understand the policy behind a convenience button.
+
+Publish without discarding others
+A normal push proposes updating a remote reference with your history. If the remote has commits absent from your proposed path, a non-fast-forward rejection protects that work. Fetch, inspect and integrate; forcing is not the default remedy.
+→ A rejection can preserve someone else’s work.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Predict Bruno’s file after fetch and after integration. Then predict a stale push.
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs sync
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+The helper checks that fetch leaves the working file unchanged, integration updates it, and a divergent push is rejected.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain why “I downloaded the commits” need not mean “I am using them”.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. A usual fetch updates origin/main. Does your main necessarily move?
+A. Yes
+B. Only if GitHub is public
+C. No
+Answer: C. Remote observation and current branch are different references.
+
+2. A push is rejected because the remote advanced. What should you understand first?
+A. How the two histories differ
+B. How to bypass all checks
+C. How to delete the remote
+Answer: A. Inspecting ancestry reveals what work an update would retain or discard.
+
+3. Why can two pull buttons behave differently?
+A. Branch names determine every behavior
+B. They can use different integration policies
+C. Git ignores configuration
+Answer: B. Ask which operations and policies the interface invokes.
+
+Git · git-fetch: https://git-scm.com/docs/git-fetch
+Git · git-pull: https://git-scm.com/docs/git-pull
+
+09. Fork, clone and branch
+=================================================================
+Three forms of separation answer different needs.
+
+A branch stays in one repository
+A branch gives a line of work a name within a repository. Teammates with suitable access can publish branches in the same GitHub repository. This is useful when the team shares the repository’s governance.
+→ A new branch is not a new owner.
+
+A fork creates another hosted home
+A GitHub fork is another repository linked to the original in a fork network. You can propose a change from a branch in your fork without having write access to the original. Fork availability and permissions depend on repository visibility and organization policy.
+→ Permission to propose does not imply permission to integrate.
+
+A clone gives you a local workspace
+You can clone your fork and configure origin to point to it, with upstream pointing to the original. Those names are conventions. Updating your fork or clone does not automatically update the original project.
+→ Draw the repositories before drawing branches inside them.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+The helper models an original, a separate fork-like repository and a clone. Which tip changes when publishing to the second repository?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs forks
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+The fork-like repository advances while the original stays still. This local model does not create a GitHub fork network.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Draw where origin and upstream point. State which GitHub features the local experiment cannot verify.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. You want to propose a change without write access to the original. What can help?
+A. Renaming main
+B. A fork, where allowed
+C. Deleting your clone
+Answer: B. A fork gives you a hosted place to publish your proposal.
+
+2. Does pushing to your fork change the original main?
+A. Yes, both are the same repository
+B. Yes, if branch names match
+C. No
+Answer: C. They are separate repositories with separate integration decisions.
+
+3. What is upstream?
+A. A conventional remote name often used for the original
+B. A required GitHub branch
+C. An automatic permission grant
+Answer: A. Read the configured address; do not infer authority from the nickname. In Git, upstream also names the remote branch that a local branch tracks.
+
+GitHub Docs · Forks: https://docs.github.com/en/pull-requests/reference/forks
+
+10. Issues: agree on the problem
+=================================================================
+Describe an observable need before proposing an implementation.
+
+A useful problem statement
+A visitor arrived at 09:00 and found the library closed. An issue can record the observation, expected result and reproduction context. “Fix everything” is hard to evaluate; “the guide must show the winter opening hour” gives the team a concrete question.
+→ Make success observable.
+
+Problem and solution evolve separately
+The issue describes a need. A pull request can propose one solution. Discussion may reveal that both the guide and a workshop notice need updating. A single issue can motivate several changes; writing one does not modify files.
+→ A tracked intention is not an implemented change.
+
+Context that survives the conversation
+Record the affected guide, expected hours, a small acceptance checklist and who can confirm the real schedule. Labels and assignment help organize work, but their meaning comes from team practice. Closing an issue is a workflow event, not proof of correctness.
+→ Track the decision and the evidence supporting it.
+
+ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+1. Prepare a practice repository
+Online: create a repository you own named faro-practice with a README, choosing its visibility consciously. Visibility matters later: with GitHub Free, rulesets exist only in public repositories. Use only invented data. On main, edit the README so it says Open at 09:00, like the guide in the local experiments. Case study without an account: draw that repository on paper and label all later steps as a case study.
+
+
+
+Observe: A real practice repository whose main shows Open at 09:00, or a clearly labeled paper case.
+
+2. Write the need
+Create an issue: “Winter hours disagree”. Include current 09:00, expected 10:00, affected README and the reason. In the paper case, write the same issue.
+
+
+
+Observe: Someone else could tell whether the issue is resolved.
+
+3. Define evidence
+Add two criteria: the guide says 10:00 and no remaining notice says 09:00. Explain who can confirm the intended schedule. Record the issue number if online.
+
+
+
+Observe: Criteria describe behavior and content, not button presses.
+
+4. Challenge the scope
+Would redesigning the logo belong in this issue? Write why. Leave the issue open for the next lesson; do not count a paper exercise as online verification.
+
+
+
+Observe: One focused need that a later proposal can address.
+
+CHECKPOINT
+1. Which issue gives a reviewer a testable outcome?
+A. Improve the project
+B. Do some GitHub work
+C. Show 10:00 in both guide and workshop notice
+Answer: C. Specific observable criteria make disagreements easier to resolve.
+
+2. Does opening an issue change the repository files?
+A. No
+B. Yes, after assignment
+C. Yes, with a bug label
+Answer: A. Planning records and file history are separate.
+
+3. An issue is closed. What do you still need to assess?
+A. Whether its title has a number
+B. Whether the agreed outcome was demonstrated
+C. Whether it has enough labels
+Answer: B. Status is a signal; evidence supports the actual claim.
+
+GitHub Docs · About issues: https://docs.github.com/en/issues/tracking-your-work-with-issues/learning-about-issues/about-issues
+
+11. Pull requests: propose a difference
+=================================================================
+A proposal connects a source branch, a destination and a conversation.
+
+Base and head
+The base is the destination branch; the head is the source of the proposed work. For Faro, base main and head winter-hours means “bring these hours changes into main”. Reversing the comparison asks a different question.
+→ Name the source and destination before reviewing.
+
+A proposal can keep changing
+Opening a pull request does not merge it. New commits on its source branch can update the proposal. The review conversation therefore refers to evolving evidence. A draft communicates that the proposal is still being prepared.
+→ A pull request is a conversation around a change.
+
+Make the difference reviewable
+State the problem, what changes, how you checked it and which issue motivated it. Read the changed files before asking others to review. A small proposal about hours is easier to reason about than one mixed with unrelated formatting.
+→ Reviewability is part of the work.
+
+ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+1. Start from the problem
+Use faro-practice from lesson 10. In GitHub, create winter-hours from main. Paper case: draw both names at the same commit.
+
+
+
+Observe: Two branch names; the accepted guide is unchanged.
+
+2. Record one focused change
+Edit README on winter-hours to say 10:00 and record the change on that branch. Predict which branch stays unchanged before saving. In the case, add a new snapshot only to winter-hours.
+
+
+
+Observe: winter-hours shows 10:00; main still has the previous guide.
+
+3. Open the proposal
+Open a draft pull request with base main and head winter-hours. Describe problem, change and evidence, and link the issue. In the case, write those same fields.
+
+
+
+Observe: The diff contains only the intended hours change.
+
+4. Inspect without integrating
+Compare main and the proposal. Read the changed files and leave it open for review. Explain why a pull request is not the same operation as Git pull.
+
+
+
+Observe: A proposal exists while the destination remains unchanged.
+
+CHECKPOINT
+1. For winter-hours into main, which is the base?
+A. main
+B. winter-hours
+C. The author’s username
+Answer: A. The base receives the proposed integration.
+
+2. Does opening a pull request update main?
+A. Always
+B. No
+C. Only if the diff is small
+Answer: B. Opening and merging are distinct events.
+
+3. You add a commit to the proposal branch. What should reviewers consider?
+A. The proposal cannot change
+B. The old approval proves all future changes
+C. The evidence being reviewed changed
+Answer: C. Review the current proposal, including changes since earlier feedback.
+
+GitHub Docs · Pull requests: https://docs.github.com/en/pull-requests/reference/pull-requests
+
+12. Review: evidence and agreement
+=================================================================
+A green signal answers a specific question, not every question.
+
+Read as the next maintainer
+Review the proposal’s purpose, changed content and evidence. Ask whether the library hours are correct and whether another notice contradicts them. A useful comment names a concrete concern and its consequence, rather than merely stating taste.
+→ Review the decision, not just the spelling.
+
+Human and automated checks
+A review may comment, approve or request changes. A test run checks assertions chosen by its author. Neither alone proves every requirement. For Faro, a script can find “10:00”, but a person must confirm that 10:00 is the intended opening time.
+→ Ask what each piece of evidence actually covers.
+
+The proposal moved
+A later commit can change what was reviewed. Whether an approval remains valid for merging depends on repository rules. Authors cannot approve their own pull request. Practicing alone still allows self-review of the diff, but not an independent approval.
+→ An approval has context, including the version reviewed.
+
+ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+1. Prepare the review
+Use the open proposal from lesson 11. Write two questions: are the hours supported, and are other notices consistent? Paper case: review the same hypothetical diff.
+
+
+
+Observe: A checklist of meaning, not command syntax.
+
+2. Inspect the evidence
+Read the diff yourself. If a willing collaborator is available, ask them to review your practice PR. Alone, record a self-review without claiming independent approval.
+
+
+
+Observe: Concerns refer to specific lines and acceptance criteria.
+
+3. Respond with reasoning
+Draft a response to “the workshop still starts at 09:30”. Decide whether to adjust the notice or explain an exception. Record a focused follow-up change if needed.
+
+
+
+Observe: The response resolves the actual concern with evidence.
+
+4. Review the new state
+Compare the final diff to the original criteria. If online, inspect review status after the new commit. Leave the PR open; rules may differ between repositories.
+
+
+
+Observe: You can explain what was reviewed and what changed afterward.
+
+CHECKPOINT
+1. The test finds 10:00. What does it prove?
+A. That the library really opens then
+B. That the checked text contains 10:00
+C. That the whole project is correct
+Answer: B. The test’s assertion defines its scope.
+
+2. Can the author provide the independent approval on their own PR?
+A. Yes, after a green check
+B. Yes, on a small change
+C. No
+Answer: C. Self-review is useful, but GitHub does not let authors approve their own pull requests.
+
+3. What makes a review comment actionable?
+A. A concrete concern, consequence and suggested direction
+B. Only saying “bad”
+C. Counting changed lines
+Answer: A. The author needs enough context to evaluate and address the concern.
+
+GitHub Docs · Pull request reviews: https://docs.github.com/en/pull-requests/reference/pull-request-reviews
+GitHub Docs · Required reviews and self-approval: https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews
+
+13. Same files, different histories
+=================================================================
+Merge, squash and rebase preserve different kinds of context.
+
+Keep the meeting point
+A merge commit joins histories with multiple parents. You can see where the feature line met main and retain its individual commits. This helps when the sequence of decisions on that line matters to future readers.
+→ Merge keeps the topology of the collaboration.
+
+Keep the resulting decision
+Squashing records the proposal’s combined change as one new commit on the destination. The original feature commits are not ancestors through that integration. This can make main easier to read when a feature contains many temporary corrections.
+→ Squash trades intermediate history for one coherent result.
+
+Replay onto another base
+Rebase replays changes onto a new base, producing new commits when ancestry changes. Coordinate before rewriting work others use. GitHub’s rebase-and-merge creates new commit SHAs; its behavior is not identical to every local rebase case. Choose based on the history you want to maintain.
+→ Equal final files do not imply equal ancestry.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+The same feature is integrated three ways in separate repositories. Predict whether final files and parent counts will match.
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs strategies
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Compare equal tree identifiers, the merge’s two parents, the squash’s single combined commit and replayed commit identities.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Choose a strategy for Faro and defend what history you preserve and lose. The local test does not execute GitHub merge buttons.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. Which strategy normally creates a two-parent meeting point?
+A. Squash
+B. Rebase
+C. Merge commit
+Answer: C. The parent links preserve the joined paths.
+
+2. Can squash and merge produce identical final files?
+A. Yes, while retaining different histories
+B. No, files must differ
+C. Only with no changes
+Answer: A. Content equality and graph equality are different tests.
+
+3. Why coordinate before rebasing shared work?
+A. It disables GitHub forever
+B. Others may depend on the old commit identities
+C. It always deletes all files
+Answer: B. Rewritten ancestry can leave collaborators with different versions of the same logical work.
+
+GitHub Docs · Pull request merges: https://docs.github.com/en/pull-requests/reference/pull-request-merges
+Git · git-rebase: https://git-scm.com/docs/git-rebase
+
+14. Undo without losing the story
+=================================================================
+First identify whether the mistake is edited, recorded or shared.
+
+Undo which state?
+An unfinished edit, a prepared change and a shared commit are different problems. Restoring a working file can discard unrecorded work. Removing a change from staging can leave the edit intact. State the desired result before choosing an undo operation.
+→ “Undo” is a goal, not one universal operation.
+
+Add a corrective decision
+Revert records a new commit that reverses an earlier commit’s effect. The original remains in history, explaining what happened. Reverting can conflict if later work depends on the changed content. It is useful for published work because it does not require moving the shared branch backward.
+→ Correcting history and erasing history are different intentions.
+
+Moving a reference
+Reset can move the current branch and, depending on mode, change the index and working files. A hard reset can discard edits. Reflogs record local reference movements for a limited time; they are not permanent backup. Our lab uses only an isolated soft reset to compare mechanisms.
+→ Protect unrecorded work before changing references or files.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+After reverting the hours change, will the old content and the old history both be restored exactly?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs undo
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+The old content returns through a new commit. In a separate branch the soft reset moves the pointer and keeps the prepared change.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain why these operations can leave similar files but different explanations for teammates.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. A bad commit was already shared. Which operation adds a traceable correction?
+A. Delete the repository
+B. Revert
+C. Rename the branch
+Answer: B. Revert adds history expressing the reversal.
+
+2. Does reverting remove the original commit from history?
+A. No
+B. Always
+C. Only if its files are small
+Answer: A. Both the original decision and its correction remain.
+
+3. Why is a local reflog not a permanent backup?
+A. It only stores screenshots
+B. It requires a pull request
+C. Entries can expire and it belongs to that local repository
+Answer: C. Recovery facilities have scope and retention limits.
+
+Git · git-revert: https://git-scm.com/docs/git-revert
+Git · git-reset: https://git-scm.com/docs/git-reset
+Git · git-reflog: https://git-scm.com/docs/git-reflog
+
+15. Actions: automated evidence
+=================================================================
+An event starts work whose result has a defined scope.
+
+Event, workflow, job, step
+A workflow describes automation. An event such as a pull request update can trigger it. Jobs run on runners, the machines executing the work. Steps within a job run in sequence; jobs can be independent or have dependencies. These names describe a flow of work.
+→ Trace why the run started and what it actually executed.
+
+A meaningful failing example
+Our example checks that README contains 10:00. First try 09:00 and observe failure, then fix the text. A green run means that this assertion passed for that run’s revision. It does not establish opening hours in the real world or deploy the guide.
+→ A useful check can demonstrate both failure and success.
+
+Automation has authority
+A workflow executes code with permissions and possibly secrets. Keep permissions narrow and review changes to workflows like other code. Untrusted contributions must not gain privileged secrets merely by opening a proposal. This course uses a small workflow with read-only repository contents permission.
+→ Automation is code plus authority, not just a green badge.
+
+ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+1. Read the included example
+Open labs/examples/hours.yml and hours.test.mjs in the kit. Predict the result for README with 09:00. Online practice needs Actions enabled and available usage on your account; inspect that before running.
+
+
+
+Observe: One trigger on pull requests, one job, a test and narrow permissions.
+
+2. Prepare the check
+In faro-practice, add hours.yml at .github/workflows/hours.yml and hours.test.mjs at tests/hours.test.mjs on main. Then create a practice branch with README saying 09:00 and open a PR. Case study: draw the event and job without executing GitHub.
+
+
+
+Observe: The failing case is explicit and separate from the earlier PR.
+
+3. Observe failure, then success
+Read the failing run log, change README to 10:00 on the proposal branch and inspect the new run. Case study: explain the two expected outcomes using the test source.
+
+
+
+Observe: Different revisions produce different results. Record run links only if actually executed.
+
+4. Name the missing guarantee
+Explain why this test could pass with an incorrect real schedule. Do not count the paper prediction as an Actions run. Leave the green PR open for the rules lesson.
+
+
+
+Observe: A bounded statement of what the automated evidence proves.
+
+CHECKPOINT
+1. What does a green run for the hours check establish?
+A. The selected assertion passed for that revision
+B. All future commits will pass
+C. The guide was deployed
+Answer: A. Evidence belongs to a particular check and revision.
+
+2. Where do workflow jobs execute?
+A. Inside a branch name
+B. On runners
+C. Inside the issue title
+Answer: B. The runner provides the execution environment.
+
+3. Why review a workflow change carefully?
+A. YAML always grants administrator access
+B. It cannot affect anything
+C. It changes executable code and potentially its authority
+Answer: C. What runs and what it can access are both part of the review.
+
+GitHub Docs · Understanding GitHub Actions: https://docs.github.com/en/actions/get-started/understand-github-actions
+GitHub Docs · Secure use: https://docs.github.com/en/actions/reference/security/secure-use
+
+16. Rules: turn agreements into gates
+=================================================================
+Access, review and checks answer different questions.
+
+Who may do what?
+Repository permissions control capabilities. Authentication establishes who you are; authorization determines what you may do. Being able to read a public repository does not mean you can push to it. A review approval is not a new repository permission.
+→ Identity and permission are different questions.
+
+Require evidence at the destination
+Repository rules can require pull requests, approvals or status checks before a target branch updates. Define which branch the rule targets and which check is required. Availability depends on plan and repository type; inspect your repository rather than assuming every option exists.
+→ A passing check and an enforced required check are different.
+
+The exception is part of the rule
+Bypass permissions, rule activation and branch patterns affect enforcement. A configuration that targets another branch does not protect main. Review who may bypass a requirement and why; describe the actual boundary rather than claiming the repository is simply “protected”.
+→ State the target, requirement and exceptions together.
+
+ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+1. Describe your intended policy
+For faro-practice, write: main needs a PR and a successful hours check. Add independent approval only if you have a second collaborator. Case study: use the same policy on paper.
+
+
+
+Observe: An explicit destination and requirements.
+
+2. Inspect available controls
+In repository settings, inspect rulesets or branch protection available for this practice repository. If unavailable on your plan, continue the labeled case study; do not upgrade just for this lesson.
+
+
+
+Observe: Record the actual availability; a missing option is not failed understanding.
+
+3. Apply and challenge the policy
+In the practice repository only, configure an active rule for main using the existing hours check from lesson 15. Record any bypass actors. Push 09:00 again to see the blocked state, then 10:00 to see the gate open; no need to merge.
+
+
+
+Observe: The PR is blocked with 09:00 and eligible with 10:00, or a clearly labeled prediction if no online rule was configured.
+
+4. Explain the boundary
+Write who could still update the branch and under what exception. Explain why a rule cannot prove the real opening hours.
+
+
+
+Observe: Target, requirements, exceptions and evidence limits are stated together.
+
+CHECKPOINT
+1. You can read a public repository. Can you necessarily push to it?
+A. Yes
+B. Only after cloning
+C. No
+Answer: C. Read and write are different permissions.
+
+2. A check is green but optional. What is missing for enforcement?
+A. An applicable active requirement
+B. A longer branch name
+C. An extra README
+Answer: A. Evidence does not enforce its own use.
+
+3. A ruleset targets release/* only. Does that alone protect main?
+A. Yes, rules apply everywhere
+B. No, the target does not match main
+C. Only after a clone
+Answer: B. Scope is part of the guarantee.
+
+GitHub Docs · About rulesets: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
+
+17. Tags, releases and deployments
+=================================================================
+Naming a version, explaining it and running it are different events.
+
+A name for a chosen point
+A tag such as v1.0 names a chosen point in history. Unlike a branch, it does not automatically advance with new commits. Teams usually treat published version tags as stable agreements, even though Git has operations that can move or delete tags. An annotated tag is an object with author, date and message; a lightweight tag is only a name.
+→ Stability is a publishing policy, not an impossibility of change.
+
+Explain the delivered version
+A GitHub release is based on a tag and can add notes and downloadable assets. Explain the user-visible changes, known limits and upgrade considerations. The tag names the source point; the release adds delivery context.
+→ A version number is less useful without its meaning.
+
+Running is another step
+A deployment puts a chosen artifact into an environment. Publishing a release does not by itself prove anything was deployed; a separately configured automation may connect them. Record the deployed revision and the environment so people can answer what is actually running.
+→ Source version, downloadable artifact and running system are distinct.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+Create v1.0 and then a new main commit. Predict whether the two names still identify the same point.
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs tags
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Compare the tag’s target with main after it advances. Read the guide at each reference.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Write two release-note sentences for Faro. State why this experiment did not publish a GitHub release or deploy anything.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. You add a commit to main after creating v1.0. Where does v1.0 point?
+A. Automatically to the newest commit
+B. To the previously selected point unless explicitly changed
+C. To every branch
+Answer: B. Tags do not advance as branches do.
+
+2. A GitHub release was published. What can you conclude about deployment?
+A. Production updated
+B. All users upgraded
+C. Nothing without evidence of a deployment process
+Answer: C. A separate process must connect publication to an environment.
+
+3. What should release notes explain?
+A. Changes relevant to users and known limits
+B. Only the author’s command history
+C. Only the tag spelling
+Answer: A. Readers need to understand what adopting the version means.
+
+GitHub Docs · About releases: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
+Git · git-tag: https://git-scm.com/docs/git-tag
+
+18. History remembers what you remove
+=================================================================
+Ignoring a file and erasing exposure are different problems.
+
+Choose what belongs in history
+Build outputs, local settings and credentials usually do not belong in a shared source history. A .gitignore rule guides which untracked files Git normally ignores. It does not automatically untrack a file already recorded.
+→ Ignore rules act on selection, not past history.
+
+Deletion is a new snapshot
+Deleting a file and recording that deletion removes it from the new snapshot. Earlier commits can still contain it. A private repository also has readers and possible copies; privacy is not a substitute for keeping credentials out of source history.
+→ Absent now does not mean absent from history.
+
+Respond to the credential first
+If a real credential is exposed, revoke or rotate it first. Then follow the host’s documented cleanup process and coordinate affected clones and forks. Rewriting one repository cannot guarantee removal from every copy. Our lab uses only an unmistakably fake marker.
+→ Stop the authority of the secret before cleaning its traces.
+
+ACTIVITY / EVIDENCE: Git local
+1. Predict before looking
+A fake marker is recorded, ignored and then deleted. Will an earlier commit still show it?
+
+
+
+Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
+
+2. Run the experiment
+Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
+
+node lab.mjs secrets
+
+Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
+
+3. Compare with your prediction
+Observe that .gitignore does not untrack the file, then that deletion leaves the old snapshot readable. No real credentials are used.
+
+
+
+Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
+
+4. Explain the boundary
+Explain why revocation and repository cleanup solve different parts of an exposure.
+
+
+
+Observe: Record four lines: prediction, observation, explanation, limit. Revisit tomorrow without the answer.
+
+CHECKPOINT
+1. A tracked file is added to .gitignore. Is its past content removed?
+A. No
+B. Yes, after refreshing
+C. Only on GitHub
+Answer: A. Ignore rules do not rewrite recorded history.
+
+2. What is the first response to a leaked real credential?
+A. Only delete the latest file
+B. Revoke or rotate the credential
+C. Rename the repository
+Answer: B. Removing text does not invalidate authority already copied elsewhere.
+
+3. Can cleaning one repository prove all copies are clean?
+A. Yes, copies share storage
+B. Yes, if main is clean
+C. No
+Answer: C. Clones, forks and other retained copies have their own state.
+
+GitHub Docs · Removing sensitive data: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository
+Git · gitignore: https://git-scm.com/docs/gitignore
+
+19. A change you can defend
+=================================================================
+Take the library guide from reported problem to an explained delivery.
+
+Start with a state map
+The library changes its winter schedule again. A teammate is editing the workshop notice while you update the guide. Draw local copies, remote references and the proposed branches. Identify the acceptance criteria before choosing operations.
+→ A good plan states what each person knows and intends.
+
+Introduce a disagreement deliberately
+Make the guide say 10:00 and the workshop say 09:30. The text can merge cleanly and still fail the acceptance criteria. Explain whether the workshop is an exception or needs a new time, then record the decision and evidence in the proposal.
+→ Detect a meaning conflict even when Git finds no text conflict.
+
+Deliver a traceable decision
+Choose an integration strategy, verify the resulting guide and name a version if useful. Explain how you would revert a mistaken published change. Hand another person the issue, proposal, evidence and release notes; they should be able to reconstruct the decision.
+→ Completion means an explainable result, not a sequence of clicks.
+
+ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+1. Define the change
+In faro-practice, open a new issue for 10:00 opening with a consistent workshop notice. Create a proposal branch and record the guide and notice as purposeful commits. Close the earlier practice PRs with a note, or merge the 10:00 one as part of this delivery. Without an account, draw the same histories and write a case-study proposal.
+
+
+
+Observe: A need, a destination branch and inspectable snapshots.
+
+2. Challenge the result
+Introduce the 09:30 workshop contradiction, then explain and correct it. Use the hours check if configured and inspect its limits. Obtain a collaborator review if available; otherwise label self-review honestly.
+
+
+
+Observe: Both textual and domain consistency are considered.
+
+3. Integrate with a reason
+Choose merge, squash or rebase and write why. In your practice repository, integrate only when its actual requirements are satisfied; inspect main afterward. Case study: draw the resulting graph and content.
+
+
+
+Observe: The final content meets the issue criteria, with the chosen ancestry.
+
+4. Teach the decision back
+Write a short delivery note with version, change, evidence, untested limits and how to reverse it. Score yourself using the rubric in labs/CAPSTONE.md. Mark each piece as observed, executed or simulated.
+
+
+
+Observe: Another person can reconstruct your reasoning without a command transcript.
+
+CHECKPOINT
+1. All automated checks pass but the workshop starts before opening. What now?
+A. Merge because green is enough
+B. Resolve and verify the domain disagreement
+C. Delete the issue
+Answer: B. Automated checks do not replace criteria they never tested.
+
+2. Which handoff best preserves understanding?
+A. Only the list of commands
+B. Only a green screenshot
+C. Problem, change, evidence, limits and recovery plan
+Answer: C. A future maintainer needs the decision and its boundaries.
+
+3. You cannot access GitHub today. What can you honestly complete?
+A. A labeled case study and local Git evidence
+B. A verified online approval
+C. A verified deployment
+Answer: A. Learning can continue while evidence remains accurately labeled.
+
+GitHub Docs · GitHub flow: https://docs.github.com/en/get-started/using-github/github-flow
+

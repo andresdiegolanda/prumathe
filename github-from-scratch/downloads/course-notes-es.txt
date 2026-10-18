@@ -1,0 +1,1332 @@
+GITHUB DESDE CERO. APUNTES DEL CURSO
+Git + GitHub | 2026-10-18 | v1.1.0
+
+00. Antes de empezar
+=================================================================
+Aprendé a predecir qué cambia, dónde y para quién.
+
+Una pregunta antes de un botón
+Nuestro equipo mantiene la guía de la biblioteca Faro. Dos personas cambian sus horarios. Antes de elegir una operación, preguntá qué versión tiene cada una, qué quedó registrado y qué quieren compartir. Reconocer ese estado es la habilidad que practica el curso.
+→ Explicá el cambio de estado antes de nombrar el comando.
+
+Tres tipos de evidencia
+El navegador es un modelo ilustrativo. Los experimentos locales ejecutan Git real sin cuenta ni red. Las actividades de GitHub usan tu propio repositorio de práctica en línea. Un diagrama, un PASS local y una revisión real demuestran cosas distintas.
+→ Decí si simulaste, ejecutaste u observaste.
+
+Elegí la profundidad
+Leé las tres escenas, cambiá el modelo, predecí un experimento y explicá tres respuestas de control. Los comandos están en un bloque desplegable. Para el kit local instalá Git 2.32 o posterior y Node.js 22 o posterior. Sin cuenta de GitHub, usá los casos de estudio identificados en las lecciones en línea.
+→ El avance registra tu declaración, no una verificación automática.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+¿Puede existir un repositorio real enteramente en tu computadora?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs setup
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Buscá las versiones de Git y Node, la carpeta nueva y el commit inicial. No se configuró ningún remoto.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá por qué instalar Git es independiente de crear una cuenta de GitHub.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. El modelo muestra un merge exitoso. ¿Qué verificaste?
+A. El repositorio real
+B. Solo el mecanismo ilustrado
+C. Que la aplicación funciona
+Respuesta: B. Un modelo permite razonar. Ejecutar Git y probar la aplicación requieren evidencias separadas.
+
+2. ¿Qué deberías recordar después de una lección?
+A. Qué estado cambió y por qué
+B. Cada opción en orden
+C. El identificador exacto del commit
+Respuesta: A. La sintaxis se puede consultar. Una predicción necesita un modelo mental.
+
+3. ¿Completar el caso de estudio prueba que GitHub lo ejecutó?
+A. Sí, si todas las respuestas son correctas
+B. Sí, si el diagrama está verde
+C. No, registra solamente razonamiento
+Respuesta: C. Distinguí el caso de estudio del experimento en línea en tu cuaderno.
+
+GitHub Docs · Git and GitHub: https://docs.github.com/en/get-started/start-your-journey/what-is-github
+
+01. Git y GitHub
+=================================================================
+Uno registra historia. El otro le da al equipo un lugar para colaborar.
+
+El repositorio es más que una carpeta
+Una carpeta de trabajo contiene los archivos que editás. Un repositorio Git también registra versiones y sus relaciones. Guardar guide.txt cambia un archivo; registrar un commit agrega un punto en la historia. Son actos distintos.
+→ Un archivo guardado no necesariamente quedó en la historia.
+
+Primero, lo local
+Git puede registrar y consultar historia sin GitHub. GitHub aloja repositorios y agrega issues, pull requests y revisión. Un commit local no aparece en GitHub hasta que lo transferís. Podés tener varias copias de un repositorio.
+→ Registrar y compartir son eventos distintos.
+
+¿Quién ve el cambio?
+Ana registra horarios nuevos en su laptop. Bruno todavía ve la versión anterior en su copia. Incluso cuando Ana publica su rama, Bruno tiene que obtener la historia nueva. Tratá cada copia como un lugar separado con su propio conocimiento actual.
+→ Siempre nombrá la copia de la que hablás.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+¿Un commit nuevo va a necesitar conexión o un remoto?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs local
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Buscá dos commits y una lista de remotos vacía. Inspeccioná guide.txt en la carpeta indicada.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá la diferencia entre guardar, hacer commit y publicar con Ana y Bruno.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Hacés un commit sin conexión. ¿Dónde está la historia nueva?
+A. En tu repositorio local
+B. En GitHub automáticamente
+C. Solo en tu editor
+Respuesta: A. Git registra localmente; publicar es otra operación.
+
+2. ¿Qué objeto pertenece a la colaboración de GitHub?
+A. Un commit local
+B. La conversación de un pull request
+C. Un área de preparación
+Respuesta: B. Git guarda commits y el estado de preparación. GitHub agrega la conversación de revisión.
+
+3. Ana guardó un archivo. ¿Bruno ya puede verlo?
+A. Sí, si ambos usan GitHub
+B. Sí, si el nombre coincide
+C. No, guardar por sí solo no lo comparte
+Respuesta: C. Guardar en el editor no garantiza sincronización.
+
+GitHub Docs · Git and GitHub: https://docs.github.com/en/get-started/start-your-journey/what-is-github
+
+02. Commits: instantáneas con un motivo
+=================================================================
+Una versión es contenido, contexto y ascendencia.
+
+Un punto coherente
+Imaginá fotografiar toda la guía después de corregir los horarios. Un commit registra una instantánea del proyecto seguido, un mensaje y metadatos, con enlaces a commits padres. Internamente se puede reutilizar contenido sin cambios; no es una copia completa nueva del disco cada vez.
+→ Pensá primero en instantáneas; un diff compara instantáneas.
+
+El grafo explica la historia
+Una flecha de un commit a su padre indica a qué estado registrado sigue. El inicial no tiene padre. Uno habitual tiene uno; un merge commit puede tener más. Los identificadores nombran objetos, no una secuencia de números de revisión.
+→ Leé ascendencia, no solo fechas.
+
+El motivo ayuda a quien viene después
+«Corregir horarios por el cambio de invierno» ayuda a entender por qué cambió una línea. «Actualizar archivo» no. Agrupá cambios por propósito para que otra persona pueda explicar, revisar o revertir una decisión sin desenredar ediciones ajenas.
+→ Una decisión entendible es una unidad útil de historia.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Después de cambiar los horarios, ¿el commit anterior va a mostrar los viejos o los nuevos?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs snapshots
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Compará la guía anterior y la actual que imprime Git. Después leé el diff y el identificador del padre.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá por qué un diff y una instantánea responden preguntas distintas.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. ¿Qué es un diff?
+A. El nombre de una rama
+B. Una comparación entre estados
+C. Una copia de todos los datos de GitHub
+Respuesta: B. El cambio mostrado depende de qué dos estados compares.
+
+2. Dos instantáneas tienen archivos idénticos y padres distintos. ¿Deben ser el mismo commit?
+A. No, la ascendencia forma parte del commit
+B. Sí, solo importan los archivos
+C. Sí, si coinciden las ramas
+Respuesta: A. Un commit identifica contenido y metadatos, incluidas las relaciones con padres.
+
+3. ¿Por qué separar una corrección de horarios de un rediseño del logo?
+A. Git no puede guardar ambos
+B. Cada archivo necesita un repositorio
+C. Son decisiones distintas para revisar o deshacer
+Respuesta: C. Es una elección de colaboración, no un límite de archivos de Git.
+
+Git · git-commit: https://git-scm.com/docs/git-commit
+Pro Git · What is Git?: https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F
+
+03. Tres lugares para un cambio
+=================================================================
+Editar, preparar y registrar son decisiones separadas.
+
+Tu mesa de trabajo
+El working tree es el conjunto de archivos que editás ahora. Ana corrige los horarios y empieza una nota incompleta. Ambos cambios están en su mesa. Quiere registrar solo la corrección terminada.
+→ Lo editado puede ser más que lo que conviene registrar.
+
+La próxima instantánea
+El staging area, también llamado index, contiene lo elegido para el próximo commit. Es una versión preparada, no solo una lista de nombres de archivo. Si preparás 10:00 y después editás el archivo a 11:00, lo preparado sigue siendo 10:00 hasta que lo prepares de nuevo.
+→ Preparar captura contenido de ese momento.
+
+Leé ambas comparaciones
+El diff común compara tus archivos de trabajo con el index. El diff preparado compara el index con el commit actual. En el ejemplo, uno muestra 10:00 a 11:00; el otro, 09:00 a 10:00. Un commit normal registra el index.
+→ Preguntá qué dos estados usa la comparación.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+El experimento prepara 10:00 y después guarda 11:00. Predecí los horarios registrados.
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs staging
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Leé archivo de trabajo = 11:00, index = 10:00, registrado = 10:00. Compará ambos diffs.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá el resultado sin usar add ni commit como verbos.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Preparás 10:00 y después guardás 11:00. ¿Qué registra un commit normal?
+A. 11:00
+B. Ambas versiones en un archivo
+C. 10:00
+Respuesta: C. El index todavía contiene 10:00. La edición posterior queda en el working tree.
+
+2. ¿Un archivo puede tener cambios preparados y sin preparar?
+A. Sí, las versiones guardadas pueden diferir
+B. No, tiene exactamente un estado
+C. Solo después de publicar
+Respuesta: A. El index y el working tree pueden tener contenido diferente para la misma ruta.
+
+3. ¿Qué comparación anticipa un commit normal?
+A. Tus archivos contra GitHub
+B. Index contra commit actual
+C. Dos nombres de rama alfabéticamente
+Respuesta: B. Esa comparación aísla el cambio preparado.
+
+Git · git-add and the index: https://git-scm.com/docs/git-add
+
+04. Las ramas son nombres que se mueven
+=================================================================
+Una línea de trabajo paralela empieza con un puntero.
+
+Dos nombres, un punto de partida
+main nombra nuestra historia aceptada. Crear hours desde main le da otro nombre al mismo commit. Crear esa rama no requiere una versión histórica nueva. Los nombres pueden moverse de forma independiente al seguir trabajando.
+→ Una rama apunta a un commit; no es una copia de carpeta.
+
+¿Adónde va el próximo commit?
+HEAD suele identificar la rama actual. Con hours seleccionada, un commit nuevo adelanta hours y deja main donde estaba. Cambiar de rama selecciona otra historia y actualiza archivos cuando hace falta; Git puede negarse si sobrescribiría ediciones locales.
+→ Conocé tu rama actual antes de registrar trabajo.
+
+Los nombres son acuerdos
+main es una convención, no una garantía incorporada de calidad. Una rama llamada production puede contener trabajo roto. El equipo decide qué significa cada rama y qué evidencia necesita para avanzar. Una rama no aísla permisos de acceso.
+→ El nombre comunica intención; una política la hace cumplir.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+¿Se va a mover main cuando el asistente registre un cambio de horarios en otra rama?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs branches
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Encontrá main en el commit inicial y hours en su hijo. Volver a main recupera los horarios anteriores.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Dibujá los dos punteros y HEAD. Explicá qué quitaría borrar una rama.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. ¿Qué agrega crear una rama en el commit actual?
+A. Un nombre nuevo que apunta a ese commit
+B. Una instantánea nueva automáticamente
+C. Un repositorio de GitHub
+Respuesta: A. Nombres e instantáneas son objetos diferentes en el modelo mental.
+
+2. ¿Qué rama mueve un commit nuevo en hours?
+A. Todas las ramas
+B. hours
+C. Solo main
+Respuesta: B. Avanza la rama actual; las puntas de las otras quedan donde estaban.
+
+3. ¿main garantiza código que funciona?
+A. Sí, Git lo prueba
+B. Sí, cuando es la predeterminada
+C. No, la calidad necesita evidencia y políticas
+Respuesta: C. Los nombres de rama no ejecutan pruebas ni revisiones.
+
+Pro Git · Branches in a Nutshell: https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell
+
+05. Merge: unir historias
+=================================================================
+Combiná trabajo usando su punto de partida común.
+
+Un camino ya está dentro del otro
+Si main no avanzó desde que se creó hours, main puede avanzar hasta la punta de hours. Este fast-forward no necesita un merge commit nuevo. Los commits existentes ya describen un camino continuo.
+→ Fast-forward mueve un nombre por historia existente.
+
+Avanzaron dos caminos
+Ana cambia los horarios mientras Bruno agrega un archivo de contacto. Las ramas divergen. Git usa un ancestro compartido y ambas puntas para combinar cambios. Un merge commit habitual registra el resultado con ambas puntas como padres.
+→ Un merge conserva ambas líneas de ascendencia.
+
+El texto encaja; el comportamiento quizá no
+Ana cambia la apertura a las 10:00. Bruno anuncia un taller a las 09:30 en otro archivo. Git puede combinar esas ediciones sin conflicto textual. La guía resultante igual se contradice. Probá el significado después de combinar el texto.
+→ Sin conflicto textual no significa sin problema.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Una rama edita horarios y otra agrega contact.txt. Predecí el resultado y la cantidad de padres.
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs merge
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Buscá ambos archivos en la instantánea del merge y dos identificadores de padres. El asistente también muestra un fast-forward por separado.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Inventá una contradicción de la que Git podría hacer merge sin conflicto.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. main es ancestro de hours. ¿Qué puede hacer un fast-forward?
+A. Copiar solo el último archivo
+B. Adelantar main hasta hours
+C. Borrar la historia de hours
+Respuesta: B. Mueve la referencia porque el camino ya existe.
+
+2. ¿Cuántos padres tiene un merge normal de dos ramas divergentes?
+A. Cero
+B. Uno
+C. Dos
+Respuesta: C. Los padres conservan las dos historias combinadas.
+
+3. Git hizo merge de dos archivos sin conflictos. ¿Qué falta verificar?
+A. Que su significado combinado funcione
+B. Si Git creó alguna historia
+C. Nada
+Respuesta: A. La compatibilidad textual es más débil que la corrección del comportamiento.
+
+Pro Git · Basic Branching and Merging: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+
+06. Los conflictos son preguntas sin responder
+=================================================================
+La herramienta encuentra ambigüedad; las personas deciden el significado.
+
+Una línea, dos intenciones
+Desde el mismo inicio a las 09:00, Ana escribe 10:00 y Bruno 11:00. Ambos cambian la misma línea. Git no puede decidir el horario de la biblioteca. Un conflicto señala una elección que la integración automática de texto no puede hacer con seguridad.
+→ Un conflicto es información, no prueba de que se perdió historia.
+
+Importan tres versiones
+Leé la base compartida, el lado actual y el entrante. «Ours» y «theirs» dependen de la operación, no de quién tiene razón. Preguntá qué pretendía cada autor antes de editar el resultado combinado.
+→ Compará intenciones contra la base común.
+
+Resolvé y después verificá
+Después de acordar 10:30, reemplazá las marcas del conflicto por el texto decidido, prepará el resultado y terminá el merge. Quitar marcas no alcanza: confirmá que la guía sea coherente. Abortar un merge pendiente es otra opción si necesitás reconsiderar.
+→ La resolución es una decisión nueva con evidencia propia.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Ambas ramas reemplazan la misma línea de horarios. Predecí dónde se detendrá la integración automática.
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs conflict
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Leé las marcas impresas antes de que el asistente resuelva a 10:30. Buscá el commit final con dos padres y el working tree limpio.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+El asistente aporta una respuesta acordada para la demostración. Explicá cómo obtendría ese acuerdo tu equipo real.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. ¿Por qué Git se detiene ante una línea de horarios en conflicto?
+A. Necesita una decisión humana entre ediciones incompatibles
+B. El repositorio se borró
+C. Se cortó internet
+Respuesta: A. Ambas historias siguen disponibles; su combinación pretendida está sin resolver.
+
+2. ¿Alcanza con borrar todas las marcas del conflicto?
+A. Sí, las marcas son todo el problema
+B. No, verificá el contenido elegido y terminá el merge
+C. Solo si el archivo es corto
+Respuesta: B. Un resultado limpio de marcas igual puede estar mal.
+
+3. ¿La resolución tiene que coincidir exactamente con un lado?
+A. Siempre
+B. Solo con dos autores
+C. No, puede expresar un resultado nuevo acordado
+Respuesta: C. El resultado puede incorporar una decisión que ninguno de los lados contenía.
+
+Pro Git · Basic Branching and Merging: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+
+07. Remotos y copias independientes
+=================================================================
+Un remoto es una dirección con un apodo local.
+
+Clonar crea otro repositorio
+Un clon habitual copia historia del repositorio y prepara una versión de trabajo. No es una carpeta compartida en vivo. Editar el clon no edita el origen. Clones especiales superficiales o parciales pueden copiar menos; nuestros experimentos usan clones completos habituales.
+→ Un clon es un lugar independiente para trabajar.
+
+origin es un apodo
+La configuración de un remoto asocia un nombre como origin con una dirección. Puede estar en GitHub, otro servidor o incluso un disco local. Llamarlo origin no lo convierte en el proyecto oficial ni da permiso para escribir.
+→ Ubicación, autoridad y permiso son hechos separados.
+
+Tu última observación
+origin/main normalmente es una referencia local de seguimiento: tu última vista registrada de main en origin. Puede estar desactualizada mientras otra persona publica trabajo. Tu main local, origin/main y main en el servidor son tres referencias distintas.
+→ Una referencia de seguimiento es conocimiento, no una ventana en vivo.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Dos clones comparten un remoto local. ¿Bruno verá el cambio publicado de Ana antes de hacer fetch (traer novedades)?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs remotes
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Buscá tres rutas de repositorio. Compará la punta remota con el origin/main viejo de Bruno.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá qué simula el repositorio bare local y qué no prueba sobre permisos de GitHub.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. ¿Editar un clon cambia el repositorio de origen de inmediato?
+A. Sí, es almacenamiento compartido
+B. No, es otro repositorio
+C. Solo en la misma computadora
+Respuesta: B. Transferir e integrar son operaciones explícitas.
+
+2. ¿Qué garantiza el nombre origin?
+A. Una dirección configurada localmente, si existe
+B. Permiso de escritura
+C. Que sea GitHub
+Respuesta: A. El nombre es convencional y se puede cambiar.
+
+3. Una compañera publicó cambios. ¿Tu origin/main está necesariamente al día?
+A. Sí, se actualiza en tiempo real
+B. Sí, mientras el editor esté abierto
+C. No, quizá necesites hacer fetch
+Respuesta: C. Tu observación local no consulta el remoto continuamente.
+
+Pro Git · Working with Remotes: https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes
+
+08. Fetch, integrar, publicar
+=================================================================
+No hay una única operación mágica de «sincronizar».
+
+Enterate de qué cambió
+Fetch obtiene objetos y actualiza referencias de seguimiento configuradas. En el flujo habitual no los integra en tu rama actual ni edita tus archivos de trabajo. Podés inspeccionar la historia nueva antes de elegir cómo integrarla.
+→ Obtener información y adoptarla son cosas separadas.
+
+Elegí la integración
+Pull combina fetch con un paso de integración cuya política puede ser fast-forward, merge o rebase según opciones y configuración. Primero preguntá si las historias divergieron. Una política de solo fast-forward se detiene ante la divergencia.
+→ Entendé la política detrás de un botón conveniente.
+
+Publicá sin descartar a otros
+Un push normal propone actualizar una referencia remota con tu historia. Si el remoto tiene commits ausentes de tu camino propuesto, el rechazo por non-fast-forward protege ese trabajo. Hacé fetch, inspeccioná e integrá; forzar no es la solución predeterminada.
+→ Un rechazo puede preservar el trabajo de otra persona.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Predecí el archivo de Bruno después de fetch y después de integrar. Después predecí un push desactualizado.
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs sync
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+El asistente comprueba que fetch deja el archivo intacto, integrar lo actualiza y un push divergente es rechazado.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá por qué «descargué los commits» no necesariamente significa «los estoy usando».
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Un fetch habitual actualiza origin/main. ¿Tu main se mueve necesariamente?
+A. Sí
+B. Solo si GitHub es público
+C. No
+Respuesta: C. La observación remota y la rama actual son referencias distintas.
+
+2. Un push se rechaza porque el remoto avanzó. ¿Qué deberías entender primero?
+A. Cómo difieren las dos historias
+B. Cómo saltear todos los controles
+C. Cómo borrar el remoto
+Respuesta: A. Inspeccionar ascendencia revela qué trabajo conservaría o descartaría una actualización.
+
+3. ¿Por qué dos botones de pull pueden comportarse distinto?
+A. Los nombres de rama determinan todo
+B. Pueden usar políticas de integración distintas
+C. Git ignora la configuración
+Respuesta: B. Preguntá qué operaciones y políticas invoca la interfaz.
+
+Git · git-fetch: https://git-scm.com/docs/git-fetch
+Git · git-pull: https://git-scm.com/docs/git-pull
+
+09. Fork, clon y rama
+=================================================================
+Tres formas de separación responden a necesidades distintas.
+
+Una rama queda en un repositorio
+Una rama le da nombre a una línea de trabajo dentro de un repositorio. Integrantes con acceso adecuado pueden publicar ramas en el mismo repositorio de GitHub. Sirve cuando el equipo comparte la administración del repositorio.
+→ Una rama nueva no es un dueño nuevo.
+
+Un fork crea otro lugar alojado
+Un fork de GitHub es otro repositorio vinculado al original en una red de forks. Podés proponer un cambio desde una rama de tu fork sin permiso de escritura en el original. La disponibilidad y los permisos dependen de la visibilidad y las políticas de la organización.
+→ Poder proponer no implica poder integrar.
+
+Un clon te da un lugar local
+Podés clonar tu fork y configurar origin hacia él y upstream hacia el original. Esos nombres son convenciones. Actualizar tu fork o clon no actualiza automáticamente el proyecto original.
+→ Dibujá los repositorios antes de dibujar las ramas adentro.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+El asistente modela un original, otro repositorio semejante a un fork y un clon. ¿Qué punta cambia al publicar en el segundo repositorio?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs forks
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+El repositorio semejante al fork avanza mientras el original queda quieto. Este modelo local no crea una red de forks de GitHub.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Dibujá adónde apuntan origin y upstream. Indicá qué funciones de GitHub no puede verificar el experimento local.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Querés proponer un cambio sin escritura en el original. ¿Qué puede servir?
+A. Renombrar main
+B. Un fork, donde esté permitido
+C. Borrar tu clon
+Respuesta: B. Un fork te da un lugar alojado donde publicar tu propuesta.
+
+2. ¿Publicar en tu fork cambia main en el original?
+A. Sí, ambos son el mismo repositorio
+B. Sí, si coinciden los nombres
+C. No
+Respuesta: C. Son repositorios separados con decisiones de integración separadas.
+
+3. ¿Qué es upstream?
+A. Un nombre convencional de remoto que suele señalar el original
+B. Una rama obligatoria de GitHub
+C. Una concesión automática de permiso
+Respuesta: A. Leé la dirección configurada; no deduzcas autoridad del apodo. En Git, upstream también nombra la rama remota que sigue tu rama local.
+
+GitHub Docs · Forks: https://docs.github.com/en/pull-requests/reference/forks
+
+10. Issues: acordar el problema
+=================================================================
+Describí una necesidad observable antes de proponer una implementación.
+
+Un planteo útil
+Una visitante llegó a las 09:00 y encontró la biblioteca cerrada. Un issue puede registrar observación, resultado esperado y contexto para reproducirlo. «Arreglar todo» es difícil de evaluar; «la guía debe mostrar el horario de invierno» da al equipo una pregunta concreta.
+→ Hacé observable el éxito.
+
+Problema y solución evolucionan por separado
+El issue describe una necesidad. Un pull request puede proponer una solución. La conversación puede revelar que hay que actualizar la guía y el aviso de un taller. Un issue puede motivar varios cambios; escribirlo no modifica archivos.
+→ Una intención registrada no es un cambio implementado.
+
+Contexto que sobrevive a la conversación
+Registrá la guía afectada, horarios esperados, criterios de aceptación y quién puede confirmar el horario real. Etiquetas y asignación ayudan a organizar, pero su significado viene de la práctica del equipo. Cerrar un issue es un evento de trabajo, no prueba de corrección.
+→ Registrá la decisión y la evidencia que la sostiene.
+
+ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+1. Prepará un repositorio de práctica
+En línea: creá un repositorio propio llamado faro-practice con README y elegí su visibilidad conscientemente. La visibilidad importa después: con GitHub Free, los rulesets existen solo en repositorios públicos. Usá solo datos inventados. En main, editá el README para que diga Open at 09:00, como la guía de los experimentos locales. Caso sin cuenta: dibujá ese repositorio en papel e identificá todos los pasos posteriores como caso de estudio.
+
+
+
+Observá: Un repositorio de práctica real cuyo main muestra Open at 09:00, o un caso en papel identificado.
+
+2. Escribí la necesidad
+Creá un issue: «Los horarios de invierno no coinciden». Incluí 09:00 actual, 10:00 esperado, README afectado y el motivo. En el caso en papel, escribí el mismo issue.
+
+
+
+Observá: Otra persona podría determinar si el issue se resolvió.
+
+3. Definí la evidencia
+Agregá dos criterios: la guía dice 10:00 y ningún aviso restante dice 09:00. Explicá quién puede confirmar el horario pretendido. Anotá el número del issue si estás en línea.
+
+
+
+Observá: Los criterios describen comportamiento y contenido, no pulsaciones de botones.
+
+4. Cuestioná el alcance
+¿Rediseñar el logo pertenecería a este issue? Escribí por qué. Dejá el issue abierto para la próxima lección; no cuentes el ejercicio en papel como verificación en línea.
+
+
+
+Observá: Una necesidad enfocada que una propuesta posterior pueda resolver.
+
+CONTROL
+1. ¿Qué issue da un resultado comprobable?
+A. Mejorar el proyecto
+B. Hacer trabajo en GitHub
+C. Mostrar 10:00 en la guía y el aviso del taller
+Respuesta: C. Los criterios observables específicos facilitan resolver desacuerdos.
+
+2. ¿Abrir un issue cambia los archivos del repositorio?
+A. No
+B. Sí, después de asignarlo
+C. Sí, con una etiqueta de error
+Respuesta: A. Los registros de planificación y la historia de archivos son independientes.
+
+3. Un issue está cerrado. ¿Qué todavía necesitás evaluar?
+A. Si su título tiene un número
+B. Si se demostró el resultado acordado
+C. Si tiene suficientes etiquetas
+Respuesta: B. El estado es una señal; la evidencia sostiene la afirmación real.
+
+GitHub Docs · About issues: https://docs.github.com/en/issues/tracking-your-work-with-issues/learning-about-issues/about-issues
+
+11. Pull requests: proponer una diferencia
+=================================================================
+Una propuesta conecta una rama de origen, un destino y una conversación.
+
+Base y head
+La base es la rama de destino; head es el origen del trabajo propuesto. En Faro, base main y head winter-hours significa «incorporar estos horarios a main». Invertir la comparación hace otra pregunta.
+→ Nombrá origen y destino antes de revisar.
+
+Una propuesta puede seguir cambiando
+Abrir un pull request no hace el merge. Commits nuevos en su rama de origen pueden actualizar la propuesta. La conversación de revisión se refiere entonces a evidencia que evoluciona. Un borrador comunica que la propuesta todavía está en preparación.
+→ Un pull request es una conversación alrededor de un cambio.
+
+Hacé revisable la diferencia
+Contá el problema, qué cambia, cómo lo comprobaste y qué issue lo motivó. Leé los archivos cambiados antes de pedir revisión. Una propuesta chica sobre horarios es más fácil de razonar que otra mezclada con formato ajeno al problema.
+→ Que el cambio sea revisable forma parte del trabajo.
+
+ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+1. Partí del problema
+Usá faro-practice de la lección 10. En GitHub creá winter-hours desde main. Caso en papel: dibujá ambos nombres en el mismo commit.
+
+
+
+Observá: Dos nombres de rama; la guía aceptada no cambió.
+
+2. Registrá un cambio enfocado
+Editá README en winter-hours para que diga 10:00 y registrá el cambio en esa rama. Antes de guardar, predecí qué rama queda intacta. En el caso, agregá una instantánea nueva solo a winter-hours.
+
+
+
+Observá: winter-hours muestra 10:00; main todavía tiene la guía anterior.
+
+3. Abrí la propuesta
+Abrí un pull request en borrador con base main y head winter-hours. Describí problema, cambio y evidencia y enlazá el issue. En el caso, escribí esos mismos campos.
+
+
+
+Observá: El diff contiene solo el cambio pretendido de horarios.
+
+4. Inspeccioná sin integrar
+Compará main y la propuesta. Leé los archivos cambiados y dejala abierta para revisar. Explicá por qué un pull request no es la misma operación que Git pull.
+
+
+
+Observá: Existe una propuesta mientras el destino sigue intacto.
+
+CONTROL
+1. Para incorporar winter-hours a main, ¿cuál es la base?
+A. main
+B. winter-hours
+C. El nombre de quien lo escribió
+Respuesta: A. La base recibe la integración propuesta.
+
+2. ¿Abrir un pull request actualiza main?
+A. Siempre
+B. No
+C. Solo si el diff es chico
+Respuesta: B. Abrir y hacer merge son eventos distintos.
+
+3. Agregás un commit a la rama propuesta. ¿Qué debería considerar quien revisa?
+A. La propuesta no puede cambiar
+B. La aprobación anterior prueba todo cambio futuro
+C. Cambió la evidencia que se revisa
+Respuesta: C. Revisá la propuesta actual, incluidos cambios posteriores a comentarios previos.
+
+GitHub Docs · Pull requests: https://docs.github.com/en/pull-requests/reference/pull-requests
+
+12. Revisión: evidencia y acuerdo
+=================================================================
+Una señal verde responde una pregunta específica, no todas.
+
+Leé como quien mantendrá el proyecto
+Revisá propósito, contenido cambiado y evidencia. Preguntá si los horarios son correctos y si otro aviso los contradice. Un comentario útil nombra una preocupación concreta y su consecuencia, en vez de expresar solamente gusto.
+→ Revisá la decisión, además de la ortografía.
+
+Controles humanos y automáticos
+Una revisión puede comentar, aprobar o pedir cambios. Una prueba automática verifica afirmaciones elegidas por su autor. Ninguna demuestra por sí sola todos los requisitos. En Faro, un script puede encontrar «10:00», pero una persona debe confirmar que sea la hora pretendida.
+→ Preguntá qué cubre realmente cada evidencia.
+
+La propuesta avanzó
+Un commit posterior puede cambiar lo revisado. Que una aprobación siga habilitando el merge depende de las reglas del repositorio. El autor no puede aprobar su propio pull request. Practicar solo permite revisar tu diff, pero no una aprobación independiente.
+→ Una aprobación tiene contexto, incluida la versión revisada.
+
+ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+1. Prepará la revisión
+Usá la propuesta abierta de la lección 11. Escribí dos preguntas: ¿Hay respaldo para el horario y los demás avisos son coherentes? Caso en papel: revisá el mismo diff hipotético.
+
+
+
+Observá: Una lista de significado, no de sintaxis.
+
+2. Inspeccioná la evidencia
+Leé el diff. Si tenés una persona dispuesta a colaborar, pedile que revise tu PR de práctica. Si estás solo, registrá una revisión propia sin afirmar aprobación independiente.
+
+
+
+Observá: Las preocupaciones se refieren a líneas concretas y criterios de aceptación.
+
+3. Respondé con razonamiento
+Redactá una respuesta a «el taller todavía empieza a las 09:30». Decidí si ajustar el aviso o explicar una excepción. Registrá un cambio posterior enfocado si hace falta.
+
+
+
+Observá: La respuesta resuelve la preocupación real con evidencia.
+
+4. Revisá el estado nuevo
+Compará el diff final con los criterios originales. Si estás en línea, inspeccioná el estado de revisión después del commit nuevo. Dejá el PR abierto; las reglas pueden variar entre repositorios.
+
+
+
+Observá: Podés explicar qué se revisó y qué cambió después.
+
+CONTROL
+1. La prueba encuentra 10:00. ¿Qué demuestra?
+A. Que la biblioteca realmente abre a esa hora
+B. Que el texto comprobado contiene 10:00
+C. Que todo el proyecto es correcto
+Respuesta: B. La afirmación de la prueba define su alcance.
+
+2. ¿Puede el autor dar la aprobación independiente de su propio PR?
+A. Sí, después de un control verde
+B. Sí, en un cambio chico
+C. No
+Respuesta: C. La revisión propia sirve, pero GitHub no permite que el autor apruebe su propio pull request.
+
+3. ¿Qué hace accionable un comentario de revisión?
+A. Una preocupación concreta, su consecuencia y una orientación
+B. Decir solamente «mal»
+C. Contar líneas cambiadas
+Respuesta: A. El autor necesita contexto suficiente para evaluar y resolver la preocupación.
+
+GitHub Docs · Pull request reviews: https://docs.github.com/en/pull-requests/reference/pull-request-reviews
+GitHub Docs · Required reviews and self-approval: https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews
+
+13. Mismos archivos, historias distintas
+=================================================================
+Merge, squash y rebase conservan distintos tipos de contexto.
+
+Conservá el punto de encuentro
+Un merge commit une historias con varios padres. Podés ver dónde la línea de trabajo se encontró con main y conservar sus commits individuales. Sirve cuando la secuencia de decisiones de esa línea importa a futuros lectores.
+→ Merge conserva la forma de la colaboración.
+
+Conservá la decisión resultante
+Squash registra el cambio combinado de la propuesta como un commit nuevo en el destino. Los commits originales de la rama no quedan como ancestros por esa integración. Puede facilitar la lectura de main cuando una propuesta tiene muchas correcciones temporales.
+→ Squash intercambia historia intermedia por un resultado coherente.
+
+Reaplicá sobre otra base
+Rebase reaplica cambios sobre otra base y produce commits nuevos cuando cambia la ascendencia. Coordiná antes de reescribir trabajo que otros usan. Rebase-and-merge en GitHub crea SHAs nuevos; su comportamiento no es idéntico a todo rebase local. Elegí según la historia que querés mantener.
+→ Archivos finales iguales no implican ascendencia igual.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+La misma propuesta se integra de tres maneras en repositorios separados. Predecí si coincidirán archivos finales y cantidad de padres.
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs strategies
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Compará identificadores de árbol iguales, dos padres del merge, un commit combinado del squash e identidades de commits reaplicados.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Elegí una estrategia para Faro y defendé qué historia conservás y perdés. La prueba local no ejecuta los botones de GitHub.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. ¿Qué estrategia normalmente crea un encuentro con dos padres?
+A. Squash
+B. Rebase
+C. Merge commit
+Respuesta: C. Los enlaces a padres conservan los caminos unidos.
+
+2. ¿Squash y merge pueden producir archivos finales idénticos?
+A. Sí, conservando historias distintas
+B. No, los archivos deben diferir
+C. Solo sin cambios
+Respuesta: A. La igualdad de contenido y de grafo son comprobaciones distintas.
+
+3. ¿Por qué coordinar antes de hacer rebase de trabajo compartido?
+A. Deshabilita GitHub para siempre
+B. Otros pueden depender de las identidades anteriores
+C. Siempre borra todos los archivos
+Respuesta: B. La ascendencia reescrita puede dejar a colaboradores con versiones distintas del mismo trabajo lógico.
+
+GitHub Docs · Pull request merges: https://docs.github.com/en/pull-requests/reference/pull-request-merges
+Git · git-rebase: https://git-scm.com/docs/git-rebase
+
+14. Deshacer sin perder la historia
+=================================================================
+Primero identificá si el error está editado, registrado o compartido.
+
+¿Deshacer qué estado?
+Una edición pendiente, un cambio preparado y un commit compartido son problemas distintos. Restaurar un archivo de trabajo puede descartar trabajo sin registrar. Quitar un cambio de preparación puede dejar la edición intacta. Indicá el resultado deseado antes de elegir una operación.
+→ «Deshacer» es un objetivo, no una operación universal.
+
+Agregá una decisión correctiva
+Revert registra un commit nuevo que invierte el efecto de uno anterior. El original queda en la historia y explica lo ocurrido. Revertir puede generar conflictos si trabajo posterior depende del contenido. Sirve para trabajo publicado porque no exige mover la rama compartida hacia atrás.
+→ Corregir la historia y borrar historia son intenciones distintas.
+
+Mover una referencia
+Reset puede mover la rama actual y, según el modo, cambiar el index y los archivos. Un hard reset puede descartar ediciones. Los reflogs registran movimientos locales de referencias por un tiempo limitado; no son respaldo permanente. El lab usa solo un soft reset aislado para comparar mecanismos.
+→ Protegé trabajo sin registrar antes de cambiar referencias o archivos.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Después de revertir el cambio de horarios, ¿se restaurarán exactamente el contenido y la historia anteriores?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs undo
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+El contenido anterior vuelve mediante un commit nuevo. En otra rama, soft reset mueve el puntero y conserva el cambio preparado.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá por qué estas operaciones pueden dejar archivos similares y explicaciones distintas para el equipo.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Un commit malo ya se compartió. ¿Qué operación agrega una corrección rastreable?
+A. Borrar el repositorio
+B. Revert
+C. Renombrar la rama
+Respuesta: B. Revert agrega historia que expresa la inversión.
+
+2. ¿Revertir quita el commit original de la historia?
+A. No
+B. Siempre
+C. Solo si los archivos son chicos
+Respuesta: A. Quedan la decisión original y su corrección.
+
+3. ¿Por qué un reflog local no es respaldo permanente?
+A. Solo guarda capturas
+B. Requiere un pull request
+C. Las entradas pueden vencer y pertenece a ese repositorio local
+Respuesta: C. Las herramientas de recuperación tienen alcance y límites de retención.
+
+Git · git-revert: https://git-scm.com/docs/git-revert
+Git · git-reset: https://git-scm.com/docs/git-reset
+Git · git-reflog: https://git-scm.com/docs/git-reflog
+
+15. Actions: evidencia automática
+=================================================================
+Un evento inicia trabajo cuyo resultado tiene alcance definido.
+
+Evento, workflow, job, step
+Un workflow describe automatización. Un evento como actualizar un pull request puede dispararlo. Los jobs corren en runners, las máquinas que ejecutan el trabajo. Los steps de un job van en secuencia; los jobs pueden ser independientes o tener dependencias. Los nombres describen un flujo de trabajo.
+→ Seguí por qué empezó la ejecución y qué ejecutó realmente.
+
+Un ejemplo que falla con sentido
+El ejemplo verifica que README contenga 10:00. Primero probá 09:00 y observá la falla; después corregí el texto. Una ejecución verde indica que esa afirmación pasó para la revisión de esa ejecución. No establece el horario del mundo real ni despliega la guía.
+→ Un control útil puede demostrar falla y éxito.
+
+La automatización tiene autoridad
+Un workflow ejecuta código con permisos y posiblemente secretos. Limitá permisos y revisá cambios a workflows como cualquier código. Una contribución no confiable no debe obtener secretos privilegiados por abrir una propuesta. El curso usa un workflow chico con permiso de solo lectura del contenido.
+→ La automatización es código y autoridad, además de una señal verde.
+
+ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+1. Leé el ejemplo incluido
+Abrí labs/examples/hours.yml y hours.test.mjs del kit. Predecí el resultado para README con 09:00. La práctica en línea necesita Actions habilitado y uso disponible en tu cuenta; inspeccionalo antes de ejecutar.
+
+
+
+Observá: Un disparador de pull requests, un job, una prueba y permisos limitados.
+
+2. Prepará el control
+En faro-practice agregá hours.yml en .github/workflows/hours.yml y hours.test.mjs en tests/hours.test.mjs en main. Después creá una rama de práctica con README que diga 09:00 y abrí un PR. Caso de estudio: dibujá evento y job sin ejecutar GitHub.
+
+
+
+Observá: El caso que falla es explícito y separado del PR anterior.
+
+3. Observá falla y después éxito
+Leé el log de la ejecución fallida, cambiá README a 10:00 en la rama propuesta e inspeccioná la ejecución nueva. Caso de estudio: explicá ambos resultados esperados usando la prueba.
+
+
+
+Observá: Revisiones distintas producen resultados distintos. Registrá enlaces a ejecuciones solo si ocurrieron.
+
+4. Nombrá la garantía faltante
+Explicá por qué la prueba podría pasar con un horario real incorrecto. No cuentes la predicción en papel como ejecución de Actions. Dejá el PR verde abierto para la lección de reglas.
+
+
+
+Observá: Una afirmación acotada de qué demuestra la evidencia automática.
+
+CONTROL
+1. ¿Qué demuestra una ejecución verde del control de horarios?
+A. La afirmación elegida pasó para esa revisión
+B. Todos los commits futuros pasarán
+C. La guía fue desplegada
+Respuesta: A. La evidencia pertenece a un control y una revisión específicos.
+
+2. ¿Dónde se ejecutan los jobs del workflow?
+A. Dentro de un nombre de rama
+B. En runners
+C. Dentro del título del issue
+Respuesta: B. El runner provee el entorno de ejecución.
+
+3. ¿Por qué revisar cuidadosamente un cambio de workflow?
+A. YAML siempre da acceso administrador
+B. No puede afectar nada
+C. Cambia código ejecutable y posiblemente su autoridad
+Respuesta: C. Qué se ejecuta y a qué puede acceder forman parte de la revisión.
+
+GitHub Docs · Understanding GitHub Actions: https://docs.github.com/en/actions/get-started/understand-github-actions
+GitHub Docs · Secure use: https://docs.github.com/en/actions/reference/security/secure-use
+
+16. Reglas: convertir acuerdos en condiciones
+=================================================================
+Acceso, revisión y controles responden preguntas distintas.
+
+¿Quién puede hacer qué?
+Los permisos del repositorio controlan capacidades. La autenticación establece quién sos; la autorización determina qué podés hacer. Poder leer un repositorio público no implica poder publicar en él. Una aprobación de revisión no es un permiso nuevo del repositorio.
+→ Identidad y permiso son preguntas distintas.
+
+Exigí evidencia en el destino
+Las reglas pueden exigir pull requests, aprobaciones o controles antes de actualizar una rama destino. Definí qué rama alcanza la regla y qué control exige. La disponibilidad depende del plan y tipo de repositorio; inspeccioná el tuyo en vez de suponer que existe toda opción.
+→ Un control aprobado y un control obligatorio aplicado son cosas distintas.
+
+La excepción forma parte de la regla
+Los permisos de bypass, activación de reglas y patrones de rama afectan el cumplimiento de la regla. Una configuración que alcanza otra rama no protege main. Revisá quién puede omitir un requisito y por qué; describí el límite real en lugar de decir solamente «protegido».
+→ Indicá destino, requisito y excepciones juntos.
+
+ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+1. Describí la política pretendida
+Para faro-practice escribí: main necesita un PR y el control hours exitoso. Agregá aprobación independiente solo si tenés otra persona colaborando. Caso de estudio: usá la misma política en papel.
+
+
+
+Observá: Un destino y requisitos explícitos.
+
+2. Inspeccioná controles disponibles
+En la configuración del repositorio inspeccioná rulesets o protección de ramas disponibles para esta práctica. Si tu plan no los ofrece, seguí con el caso de estudio identificado; no cambies de plan solo por esta lección.
+
+
+
+Observá: Registrá la disponibilidad real; una opción ausente no indica falta de comprensión.
+
+3. Aplicá y cuestioná la política
+Solo en el repositorio de práctica, configurá una regla activa para main con el control hours existente de la lección 15. Registrá quién está en la lista de bypass. Volvé a poner 09:00 para ver el bloqueo y después 10:00 para ver que se habilita; no hace falta integrar.
+
+
+
+Observá: El PR queda bloqueado con 09:00 y habilitado con 10:00, o una predicción identificada si no configuraste la regla en línea.
+
+4. Explicá el límite
+Escribí quién todavía podría actualizar la rama y con qué excepción. Explicá por qué una regla no puede demostrar el horario real.
+
+
+
+Observá: Destino, requisitos, excepciones y límites de evidencia aparecen juntos.
+
+CONTROL
+1. Podés leer un repositorio público. ¿Necesariamente podés publicar en él?
+A. Sí
+B. Solo después de clonar
+C. No
+Respuesta: C. Lectura y escritura son permisos distintos.
+
+2. Un control está verde pero es opcional. ¿Qué falta para exigirlo?
+A. Un requisito activo aplicable
+B. Un nombre de rama más largo
+C. Otro README
+Respuesta: A. La evidencia no obliga por sí misma a ser usada.
+
+3. Un ruleset alcanza solo release/*. ¿Eso por sí solo protege main?
+A. Sí, las reglas se aplican en todos lados
+B. No, el destino no coincide con main
+C. Solo después de clonar
+Respuesta: B. El alcance forma parte de la garantía.
+
+GitHub Docs · About rulesets: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets
+
+17. Tags, releases y despliegues
+=================================================================
+Nombrar una versión, explicarla y ejecutarla son eventos distintos.
+
+Un nombre para un punto elegido
+Un tag como v1.0 nombra un punto elegido de la historia. A diferencia de una rama, no avanza automáticamente con commits nuevos. Los equipos suelen tratar los tags publicados como acuerdos estables, aunque Git tenga operaciones para moverlos o borrarlos. Un tag anotado es un objeto con autor, fecha y mensaje; un tag ligero es solo un nombre.
+→ La estabilidad es una política de publicación, no una imposibilidad de cambio.
+
+Explicá la versión entregada
+Una release de GitHub se basa en un tag y puede agregar notas y archivos descargables. Explicá cambios visibles, límites conocidos y consideraciones para actualizar. El tag nombra el punto de código; la release agrega contexto de entrega.
+→ Un número de versión sirve menos sin su significado.
+
+Ejecutar es otro paso
+Un despliegue coloca un artefacto elegido en un entorno. Publicar una release no prueba por sí solo que se desplegó algo; una automatización configurada aparte puede conectarlos. Registrá revisión desplegada y entorno para poder responder qué se está ejecutando.
+→ Versión de código, artefacto descargable y sistema en ejecución son distintos.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Creá v1.0 y después otro commit en main. Predecí si ambos nombres siguen identificando el mismo punto.
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs tags
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Compará el destino del tag con main después de avanzar. Leé la guía en cada referencia.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Escribí dos frases de notas de release para Faro. Indicá por qué este experimento no publicó una release en GitHub ni desplegó nada.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Agregás un commit a main después de crear v1.0. ¿Adónde apunta v1.0?
+A. Automáticamente al commit más nuevo
+B. Al punto elegido antes, salvo cambio explícito
+C. A todas las ramas
+Respuesta: B. Los tags no avanzan como las ramas.
+
+2. Se publicó una release de GitHub. ¿Qué podés concluir sobre el despliegue?
+A. Producción se actualizó
+B. Todos los usuarios actualizaron
+C. Nada sin evidencia de un proceso de despliegue
+Respuesta: C. Un proceso separado debe conectar la publicación con un entorno.
+
+3. ¿Qué deberían explicar las notas de release?
+A. Cambios relevantes para usuarios y límites conocidos
+B. Solo la historia de comandos del autor
+C. Solo cómo se escribe el tag
+Respuesta: A. Quienes leen necesitan entender qué implica adoptar la versión.
+
+GitHub Docs · About releases: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
+Git · git-tag: https://git-scm.com/docs/git-tag
+
+18. La historia recuerda lo que quitás
+=================================================================
+Ignorar un archivo y eliminar una exposición son problemas distintos.
+
+Elegí qué pertenece a la historia
+Archivos generados, configuración local y credenciales normalmente no pertenecen a una historia de código compartida. Una regla .gitignore indica qué archivos sin seguimiento suele ignorar Git. No deja de seguir automáticamente un archivo ya registrado.
+→ Las reglas de ignorar actúan sobre la selección, no sobre el pasado.
+
+Borrar es una instantánea nueva
+Borrar un archivo y registrar la eliminación lo quita de la instantánea nueva. Commits anteriores todavía pueden contenerlo. Un repositorio privado también tiene lectores y posibles copias; la privacidad no reemplaza mantener credenciales fuera de la historia.
+→ Ausente ahora no significa ausente de la historia.
+
+Atendé primero la credencial
+Si se expone una credencial real, revocala o rotala primero. Después seguí el proceso documentado del proveedor y coordiná clones y forks afectados. Reescribir un repositorio no garantiza quitarla de toda copia. El lab usa solo un marcador inequívocamente ficticio.
+→ Detené la autoridad del secreto antes de limpiar sus rastros.
+
+ACTIVIDAD / EVIDENCIA: Git local
+1. Predecí antes de mirar
+Se registra, ignora y después borra un marcador ficticio. ¿Un commit anterior todavía lo mostrará?
+
+
+
+Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
+
+2. Ejecutá el experimento
+Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
+
+node lab.mjs secrets
+
+Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
+
+3. Compará con tu predicción
+Observá que .gitignore no deja de seguir el archivo y después que borrarlo deja legible la instantánea vieja. No se usan credenciales reales.
+
+
+
+Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
+
+4. Explicá el límite
+Explicá por qué revocar y limpiar el repositorio resuelven partes distintas de una exposición.
+
+
+
+Observá: Registrá cuatro líneas: predicción, observación, explicación y límite. Volvé mañana sin mirar la respuesta.
+
+CONTROL
+1. Un archivo seguido se agrega a .gitignore. ¿Se quita su contenido pasado?
+A. No
+B. Sí, después de actualizar
+C. Solo en GitHub
+Respuesta: A. Las reglas de ignorar no reescriben la historia registrada.
+
+2. ¿Cuál es la primera respuesta ante una credencial real filtrada?
+A. Solo borrar el archivo actual
+B. Revocar o rotar la credencial
+C. Renombrar el repositorio
+Respuesta: B. Quitar texto no invalida autoridad ya copiada en otro lugar.
+
+3. ¿Limpiar un repositorio prueba que todas las copias estén limpias?
+A. Sí, las copias comparten almacenamiento
+B. Sí, si main está limpio
+C. No
+Respuesta: C. Clones, forks y otras copias retenidas tienen su propio estado.
+
+GitHub Docs · Removing sensitive data: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository
+Git · gitignore: https://git-scm.com/docs/gitignore
+
+19. Un cambio que podés defender
+=================================================================
+Llevá la guía de la biblioteca del problema reportado a una entrega explicada.
+
+Empezá con un mapa de estados
+La biblioteca vuelve a cambiar el horario de invierno. Otra persona edita el aviso del taller mientras vos actualizás la guía. Dibujá copias locales, referencias remotas y ramas propuestas. Identificá criterios de aceptación antes de elegir operaciones.
+→ Un buen plan dice qué sabe y qué pretende cada persona.
+
+Introducí un desacuerdo a propósito
+Hacé que la guía diga 10:00 y el taller 09:30. El texto puede pasar por un merge sin conflicto e incumplir los criterios. Explicá si el taller es una excepción o necesita otro horario, y registrá decisión y evidencia en la propuesta.
+→ Detectá un conflicto de significado aunque Git no encuentre uno textual.
+
+Entregá una decisión rastreable
+Elegí una estrategia de integración, verificá la guía resultante y nombrá una versión si sirve. Explicá cómo revertirías un cambio publicado incorrecto. Entregale a otra persona issue, propuesta, evidencia y notas de release; debería poder reconstruir la decisión.
+→ Terminar significa un resultado explicable, no una secuencia de clics.
+
+ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+1. Definí el cambio
+En faro-practice abrí otro issue para apertura a las 10:00 con un aviso de taller coherente. Creá una rama propuesta y registrá guía y aviso en commits con propósito. Cerrá los PR de práctica anteriores con una nota, o integrá el de 10:00 como parte de esta entrega. Sin cuenta, dibujá las mismas historias y escribí una propuesta de caso de estudio.
+
+
+
+Observá: Una necesidad, una rama destino e instantáneas inspeccionables.
+
+2. Cuestioná el resultado
+Introducí la contradicción del taller a las 09:30, después explicala y corregila. Usá el control hours si está configurado e inspeccioná sus límites. Obtené revisión de otra persona si está disponible; de lo contrario identificá la revisión propia honestamente.
+
+
+
+Observá: Se consideran coherencia textual y del dominio.
+
+3. Integrá con un motivo
+Elegí merge, squash o rebase y escribí por qué. En tu repositorio de práctica integrá cuando se cumplan sus requisitos reales; inspeccioná main después. Caso de estudio: dibujá grafo y contenido resultantes.
+
+
+
+Observá: El contenido final cumple los criterios del issue con la ascendencia elegida.
+
+4. Explicá la decisión a otra persona
+Escribí una nota de entrega con versión, cambio, evidencia, límites sin probar y cómo revertirlo. Evaluá tu trabajo con la rúbrica de labs/CAPSTONE.md. Marcá cada evidencia como observada, ejecutada o simulada.
+
+
+
+Observá: Otra persona puede reconstruir tu razonamiento sin una transcripción de comandos.
+
+CONTROL
+1. Todos los controles pasan pero el taller empieza antes de abrir. ¿Qué hacés?
+A. Hacer merge porque el verde alcanza
+B. Resolver y verificar el desacuerdo del dominio
+C. Borrar el issue
+Respuesta: B. Los controles automáticos no reemplazan criterios que nunca probaron.
+
+2. ¿Qué entrega conserva mejor la comprensión?
+A. Solo la lista de comandos
+B. Solo una captura verde
+C. Problema, cambio, evidencia, límites y recuperación
+Respuesta: C. Quien mantenga el proyecto necesita la decisión y sus límites.
+
+3. Hoy no podés acceder a GitHub. ¿Qué podés completar honestamente?
+A. Un caso de estudio identificado y evidencia local de Git
+B. Una aprobación en línea verificada
+C. Un despliegue verificado
+Respuesta: A. Podés seguir aprendiendo y mantener la evidencia correctamente identificada.
+
+GitHub Docs · GitHub flow: https://docs.github.com/en/get-started/using-github/github-flow
+

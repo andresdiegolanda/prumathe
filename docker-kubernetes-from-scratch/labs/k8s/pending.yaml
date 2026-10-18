@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: no-room
+  namespace: dk-lab
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - name: app
+      image: prumathe-signal:1.0.0
+      imagePullPolicy: Never
+      resources:
+        requests:
+          cpu: "1000"
+          memory: 32Mi

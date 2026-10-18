@@ -1,0 +1,16 @@
+{
+  "name": "docker-kubernetes-from-scratch",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Docker and Kubernetes through visual models and real labs, EN / ES",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "preview": "node scripts/serve.mjs",
+    "test:labs": "node scripts/test-labs.mjs",
+    "release": "npm run build && npm run check && node scripts/package.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

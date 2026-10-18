@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe
+  namespace: dk-lab
+  labels:
+    app: probe
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - name: app
+      image: prumathe-signal:1.0.0
+      imagePullPolicy: Never
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: 8080
+        periodSeconds: 2
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        periodSeconds: 3
+      startupProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        periodSeconds: 2
+        failureThreshold: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: probe-entry
+  namespace: dk-lab
+spec:
+  selector:
+    app: probe
+  ports:
+    - port: 80
+      targetPort: 8080

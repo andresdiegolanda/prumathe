@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: signal-settings
+  namespace: dk-lab
+data:
+  MESSAGE: hello-kubernetes
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: demo-token
+  namespace: dk-lab
+type: Opaque
+stringData:
+  token: practice-only-not-a-real-secret

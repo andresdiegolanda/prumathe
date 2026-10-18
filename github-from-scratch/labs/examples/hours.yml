@@ -1,0 +1,17 @@
+# Copy to .github/workflows/hours.yml in your own practice repository.
+# Copiá a .github/workflows/hours.yml en tu repositorio de práctica.
+name: Guide hours
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  hours:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: node --test tests/hours.test.mjs

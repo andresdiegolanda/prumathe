@@ -1,0 +1,47 @@
+GitHub from scratch 1.0.0
+Fecha / Date: 2026-10-18
+Windows; Git 2.51.0.windows.1; Node v24.11.0
+Command: node labs/lab.mjs all
+
+PASS: One real local commit / Un commit local real
+PASS: No remote configured / Ningún remoto configurado
+PASS: Two local commits / Dos commits locales
+PASS: Recording needed no remote / Registrar no necesitó remoto
+PASS: Both snapshots retain their own content / Cada instantánea conserva su contenido
+PASS: New commit links to its parent / El commit nuevo enlaza a su padre
+PASS: Prepared 10:00 was recorded / Se registró el 10:00 preparado
+PASS: Working file still says 11:00 / El archivo de trabajo sigue en 11:00
+PASS: Later edit remains uncommitted / La edición posterior sigue sin registrar
+PASS: New branch starts at the same commit / La rama nueva parte del mismo commit
+PASS: Only hours advanced / Solo avanzó hours
+PASS: Switching restores the selected snapshot / Cambiar recupera la instantánea seleccionada
+PASS: Fast-forward reuses the existing tip / Fast-forward reutiliza la punta existente
+PASS: Merge has two parents / La integración tiene dos padres
+PASS: Both changes are present / Ambos cambios están presentes
+PASS: Conflicting intentions are marked / Las intenciones incompatibles están marcadas
+PASS: Resolution records the chosen agreement / La resolución registra el acuerdo elegido
+PASS: No unfinished conflict remains / No queda conflicto pendiente
+PASS: Resolution retains both parents / La resolución conserva ambos padres
+PASS: Remote-tracking knowledge can be stale / El conocimiento de seguimiento puede estar desactualizado
+PASS: Bruno has an independent working copy / Bruno tiene una copia de trabajo independiente
+PASS: Fetch did not integrate or edit files / Fetch no integró ni editó archivos
+PASS: Fetch updated remote knowledge / Fetch actualizó el conocimiento remoto
+PASS: Integration updates the working version / Integrar actualiza la versión de trabajo
+PASS: Divergent push rejected without changing remote / Push divergente rechazado sin cambiar el remoto
+PASS: Integration preserves both authors before publishing / Integrar conserva a ambos autores antes de publicar
+PASS: Original repository stays unchanged / El repositorio original queda intacto
+PASS: Only the fork-like repository receives the publication / Solo el repositorio semejante al fork recibe la publicación
+PASS: All strategies yield identical final trees / Todas las estrategias producen árboles finales idénticos
+PASS: Parent counts reflect different topology / Las cantidades de padres reflejan distinta topología
+PASS: Squash combines while rebase retains two replayed decisions / Squash combina y rebase conserva dos decisiones reaplicadas
+PASS: Replay onto a new base changes identity / Reaplicar sobre otra base cambia la identidad
+PASS: Revert restores content with a new commit / Revert recupera contenido con un commit nuevo
+PASS: The original mistake remains an ancestor / El error original sigue siendo ancestro
+PASS: Soft reset moves the branch while keeping files / Soft reset mueve la rama y conserva archivos
+PASS: The changed content remains prepared / El contenido cambiado sigue preparado
+PASS: Tag stays while main advances / El tag queda mientras main avanza
+PASS: Each reference selects its own version / Cada referencia selecciona su versión
+PASS: Ignore rule does not untrack an existing file / La regla de ignorar no deja de seguir un archivo existente
+PASS: Current working file is removed / El archivo actual fue quitado
+PASS: Old snapshot still contains the fake marker / La instantánea vieja todavía contiene el marcador ficticio
+PASS: 41 assertions / comprobaciones

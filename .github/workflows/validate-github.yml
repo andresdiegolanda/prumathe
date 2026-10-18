@@ -1,0 +1,28 @@
+name: Validar github-from-scratch
+on:
+  push:
+    paths:
+      - 'github-from-scratch/**'
+      - '.github/workflows/validate-github.yml'
+  pull_request:
+    paths:
+      - 'github-from-scratch/**'
+      - '.github/workflows/validate-github.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: github-from-scratch
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm run build
+      - run: npm run check
+      - run: npm run test:labs

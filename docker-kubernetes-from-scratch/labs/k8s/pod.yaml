@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: solo
+  namespace: dk-lab
+spec:
+  automountServiceAccountToken: false
+  containers:
+    - name: app
+      image: prumathe-signal:1.0.0
+      imagePullPolicy: Never

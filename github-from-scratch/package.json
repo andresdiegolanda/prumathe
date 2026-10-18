@@ -1,0 +1,14 @@
+{
+  "name": "github-from-scratch",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Understand Git and GitHub through visual models, experiments and decisions",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test:labs": "node labs/lab.mjs all",
+    "preview": "node scripts/serve.mjs",
+    "release": "npm run build && npm run check && npm run test:labs"
+  },
+  "engines": { "node": ">=22" }
+}

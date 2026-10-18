@@ -1,0 +1,8 @@
+dist/
+release/
+node_modules/
+.qa/
+labs/kubeconfig
+__pycache__/
+*.log
+.env

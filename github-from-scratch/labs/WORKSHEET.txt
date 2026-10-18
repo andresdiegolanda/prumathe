@@ -1,0 +1,25 @@
+FARO / CUADERNO DE EXPERIMENTOS / EXPERIMENT NOTEBOOK
+
+Lección / Lesson:
+Fecha / Date:
+Evidencia / Evidence: Git local / GitHub observado / caso simulado
+
+1. Predicción / Prediction
+¿Qué va a cambiar, en qué copia y para quién?
+What will change, in which copy and for whom?
+
+2. Observación / Observation
+¿Qué contenido, referencia, salida o enlace respalda lo observado?
+Which content, reference, output or link supports your observation?
+
+3. Explicación / Explanation
+Explicá por qué pasó, sin usar un comando como explicación.
+Explain why it happened without using a command as the explanation.
+
+4. Límite / Limit
+¿Qué no probó este experimento? ¿Qué evidencia faltaría?
+What did this experiment not prove? What evidence is missing?
+
+5. Recuperación diferida / Delayed recall
+Mañana: dibujá el antes y el después sin releer la lección.
+Tomorrow: draw before and after without rereading the lesson.

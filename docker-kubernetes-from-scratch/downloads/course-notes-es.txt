@@ -1,0 +1,1695 @@
+DOCKER Y KUBERNETES DESDE CERO. APUNTES DEL CURSO
+Kubernetes 1.37.0 | 2026-10-18 | v1.1.0
+
+00. Antes de empezar
+=================================================================
+Mirá el modelo, predecí un resultado y ejecutá el experimento.
+
+Dos espacios
+El navegador simula mecanismos. Tu terminal ejecuta contenedores reales. Cada lección tiene tres escenas, un lab y tres preguntas; un diagrama no puede verificar tu máquina.
+→ Un modelo explica; un lab produce evidencia.
+
+Una aplicación, dos entornos
+Signal es un servicio HTTP pequeño. Primero lo construís y ejecutás con Docker; después declarás su estado deseado en Kubernetes. La primera vez, seguí las lecciones 00 a 24 en orden. El sitio funciona sin conexión; las primeras descargas de imágenes necesitan internet.
+→ Mantené la aplicación pequeña para que la plataforma siga visible.
+
+Prepará las herramientas
+Usá Docker con contenedores Linux y Compose v2. La lección 13 agrega kind 0.33.0 y kubectl 1.37.x para Kubernetes 1.37.0. Los nodos de kind son contenedores en una máquina, no dominios de falla independientes. El avance queda en este navegador y vos declarás los labs completados.
+→ Que funcione localmente no prueba resistencia en producción.
+
+LABORATORIO
+1. Verificá el entorno
+Arrancá Docker con contenedores Linux. Usá Compose v2 con up --wait; las versiones verificadas están en labs/README.md.
+
+docker version
+docker compose version
+
+Observá: Un Server accesible y Compose v2. Si falta Server, primero arrancá Docker.
+
+2. Abrí el kit
+Descargá labs, descomprimí el ZIP y abrí una terminal en el directorio descomprimido. Este comando entra donde está compose.yaml.
+
+cd labs
+
+Observá: Tu directorio contiene app, k8s y compose.yaml.
+
+3. Construí la imagen común
+El primer build descarga la imagen Python fijada. No necesitás Python en tu máquina. Esperá éxito antes de seguir.
+
+docker compose build app
+
+Observá: Se construye prumathe-signal:1.0.0; no hay dependencias de aplicación que instalar.
+
+4. Ejecutá y comprobá la respuesta
+La sonda comprueba estado HTTP y texto esperado. Visitá también http://127.0.0.1:18080 en el navegador.
+
+docker compose up -d --wait app
+docker compose run --rm --no-deps toolbox
+
+Observá: Una aplicación healthy y JSON con hello-compose seguido de PASS.
+
+CONTROL
+1. ¿Qué prueba el modelo?
+A. Una recuperación real del clúster
+B. Tu razonamiento dentro de sus supuestos
+C. Tu instalación de Docker
+Respuesta: B. Solo los comandos de terminal contactan el entorno real.
+
+2. ¿Por qué mantener una aplicación?
+A. Para aislar los cambios de plataforma
+B. Porque Kubernetes solo ejecuta Python
+C. Para evitar construir imágenes
+Respuesta: A. El mismo servicio te permite comparar empaquetado, red y recuperación.
+
+3. ¿Qué pueden sobrevivir dos nodos de kind en una laptop?
+A. Cualquier falla de hardware
+B. Un clúster borrado y todos sus datos
+C. Algunas fallas de proceso, no la pérdida de la laptop
+Respuesta: C. Todos los nodos dependen del mismo host.
+
+
+01. Un proceso con límites
+=================================================================
+Un contenedor empieza con un proceso, no con una computadora pequeña.
+
+El proceso principal
+Un contenedor ejecuta un comando con una vista aislada de procesos, red y archivos. En Linux comparte el kernel del host. Docker Desktop ejecuta los contenedores Linux dentro de su entorno Linux.
+→ El aislamiento no crea un kernel separado.
+
+Una imagen se vuelve contenedor
+La imagen aporta archivos y valores por defecto. Docker agrega configuración de ejecución y una capa escribible por contenedor. Dos contenedores de una imagen pueden tener nombres y archivos distintos.
+→ La misma imagen no implica compartir estado escribible.
+
+Un experimento acotado
+Ejecutá id e inspeccioná los procesos dentro de la imagen. Nuestra aplicación usa UID 10001, no root. Eso reduce privilegios, pero no vuelve inofensivo al código no confiable ni reemplaza la seguridad del host.
+→ Nombrá el límite que observaste.
+
+LABORATORIO
+1. Inspeccioná el usuario
+Ejecutá un comando corto en vez del servidor por defecto. --rm borra este contenedor temporal cuando termina.
+
+docker run --rm prumathe-signal:1.0.0 id
+
+Observá: UID 10001, no root.
+
+2. Mirá procesos aislados
+Ejecutá ps en otro contenedor. La lista es su vista, no la de todas las aplicaciones del host.
+
+docker run --rm prumathe-signal:1.0.0 ps
+
+Observá: Una lista pequeña con ps; no aparecen aplicaciones del host.
+
+3. Escribí en una capa temporal
+Creá una marca dentro de este contenedor. El shell y la marca desaparecen cuando termina.
+
+docker run --rm prumathe-signal:1.0.0 sh -c 'echo isolated > /tmp/marker; cat /tmp/marker'
+
+Observá: Se imprime isolated.
+
+4. Partí de la imagen otra vez
+Revisá la misma ruta en otro contenedor nuevo. test comprueba ausencia e imprime PASS solo si se cumple.
+
+docker run --rm prumathe-signal:1.0.0 sh -c 'test ! -f /tmp/marker && echo PASS'
+
+Observá: PASS: el contenedor anterior no editó la imagen.
+
+CONTROL
+1. ¿Qué comparten los contenedores Linux en un host Linux?
+A. El kernel
+B. Todos los archivos escribibles
+C. El mismo espacio de PID por defecto
+Respuesta: A. Los namespaces aíslan vistas; no arrancan otro kernel.
+
+2. Otro contenedor cambia /tmp. ¿Qué pasa con el primero?
+A. Su /tmp siempre cambia también
+B. Se reconstruye la imagen
+C. Su capa escribible sigue separada
+Respuesta: C. Solo un montaje compartido explícito cambia ese límite.
+
+3. ¿Ejecutar sin root elimina todo riesgo?
+A. Sí; la red está deshabilitada
+B. No; limita un conjunto de privilegios
+C. Sí; el kernel está separado
+Respuesta: B. La aplicación todavía puede acceder a sus archivos y su red permitidos.
+
+
+02. Arrancar, parar, borrar
+=================================================================
+Un contenedor detenido y uno borrado son estados distintos.
+
+Run crea y arranca
+docker run crea un contenedor y arranca su comando. docker start arranca uno existente que está detenido. Un proceso en primer plano mantiene vivo al contenedor; al terminar el comando principal, se detiene.
+→ El contenedor vive mientras corre su proceso principal.
+
+Parar cambia el ciclo de vida
+docker stop solicita una terminación ordenada y fuerza la finalización si vence el plazo. El manejo de señales de la aplicación determina si termina bien el trabajo. Nuestro servidor didáctico atiende SIGTERM y termina enseguida; no drena los pedidos en curso.
+→ Recibir una señal no equivale a terminar el trabajo.
+
+Borrar termina esta capa escribible
+Detener conserva la capa escribible. Borrar el contenedor elimina esa capa; los volúmenes tienen otro ciclo de vida. Inspeccioná el estado antes de borrar el contenedor de práctica.
+→ Stop conserva; remove descarta la capa del contenedor.
+
+LABORATORIO
+1. Creá el proceso con nombre
+Usá el nombre propio dk-life. Si repetís después de interrumpir, borrá solo dk-life con docker rm -f dk-life antes de este paso.
+
+docker run -d --name dk-life prumathe-signal:1.0.0
+
+Observá: Un ID de contenedor. El servidor queda en primer plano dentro.
+
+2. Escribí y detené
+Escribí una marca y detené el proceso. Inspeccioná el estado resultante.
+
+docker exec dk-life sh -c 'echo retained > /tmp/life'
+docker stop dk-life
+docker inspect --format '{{.State.Status}} {{.State.ExitCode}}' dk-life
+
+Observá: exited 0: el proceso atendió SIGTERM; 137 significaría que hubo que matarlo. El contenedor todavía existe.
+
+3. Reiniciá el mismo contenedor
+start reutiliza el contenedor y su capa. Leé la marca después.
+
+docker start dk-life
+docker exec dk-life cat /tmp/life
+
+Observá: retained: detener no borró la capa.
+
+4. Borrá esta instancia
+Detené y borrá solo el contenedor de práctica. Uno temporal nuevo no ve su marca.
+
+docker stop dk-life
+docker rm dk-life
+docker run --rm prumathe-signal:1.0.0 sh -c 'test ! -f /tmp/life && echo PASS'
+
+Observá: PASS. La imagen sigue disponible.
+
+CONTROL
+1. ¿Cómo retomás un contenedor detenido?
+A. docker run crea la misma identidad
+B. docker build
+C. docker start
+Respuesta: C. start reutiliza el contenedor existente; run crea otro.
+
+2. ¿Cuándo se detiene normalmente?
+A. Cuando cambia el tag de la imagen
+B. Cuando termina su comando principal
+C. Cuando se leyeron todos los logs
+Respuesta: B. El entorno sigue al proceso principal.
+
+3. ¿Qué sobrevive a stop pero no al borrado sin montaje?
+A. Archivos de la capa escribible
+B. El proceso en ejecución
+C. Una conexión TCP abierta
+Respuesta: A. Los contenedores detenidos conservan archivos hasta que los borrás.
+
+
+03. Imágenes y capas
+=================================================================
+Bloques de solo lectura, una capa escribible por contenedor.
+
+Una imagen es el resultado de una receta
+Una imagen contiene capas del sistema de archivos y configuración, como el comando y usuario por defecto. No es un proceso en ejecución. Un tag es una referencia legible, no una garantía de inmutabilidad.
+→ Archivos más metadatos, antes de ejecutar.
+
+Los cambios son del contenedor
+Escribir un archivo durante la ejecución no edita la imagen. Otro contenedor nuevo parte de la imagen otra vez. Borrar un archivo en una capa posterior puede ocultarlo sin quitar sus bytes de las capas anteriores.
+→ Nunca metas secretos en una capa.
+
+Inspeccioná lo que distribuís
+docker image history muestra la historia de construcción; image inspect muestra configuración e identificadores. El ID local describe configuración; un digest de registro identifica un objeto del registro. No supongas que son el mismo hash.
+→ Inspeccioná contenido e identidad aparte del nombre.
+
+LABORATORIO
+1. Leé los valores por defecto
+Inspeccioná usuario y comando sin arrancar un proceso.
+
+docker image inspect --format '{{.Config.User}} {{json .Config.Cmd}}' prumathe-signal:1.0.0
+
+Observá: 10001:10001 y el comando del servidor Python.
+
+2. Inspeccioná la historia
+Leé los pasos de imagen. Las instrucciones solo de metadatos no necesitan agregar archivos.
+
+docker image history prumathe-signal:1.0.0
+
+Observá: Instrucciones de build, tamaños y metadatos.
+
+3. Cambiá una capa de ejecución
+Escribí un archivo temporal y comprobá que existe ahí.
+
+docker run --rm prumathe-signal:1.0.0 sh -c 'echo runtime > /tmp/image-test; test -f /tmp/image-test && echo PASS'
+
+Observá: PASS.
+
+4. Comprobá el artefacto original
+Un contenedor nuevo arranca sin ese archivo de ejecución.
+
+docker run --rm prumathe-signal:1.0.0 sh -c 'test ! -f /tmp/image-test && echo PASS'
+
+Observá: PASS: no se modificó la imagen.
+
+CONTROL
+1. ¿Escribir dentro de un contenedor actualiza su imagen?
+A. No, cambia su capa escribible
+B. Sí, para todos los contenedores nuevos
+C. Solo al usar exec
+Respuesta: A. La imagen sigue siendo el punto de partida.
+
+2. Copiás un secreto y lo borrás en otra capa. ¿Está protegido?
+A. Sí; history cifra los archivos
+B. No; una capa anterior puede conservarlo
+C. Sí; borrar reescribe todas las capas
+Respuesta: B. Usá montajes de secretos de build si necesitás credenciales.
+
+3. ¿Un tag puede apuntar a otra imagen después?
+A. No, los tags son hashes
+B. Solo si paran todos los contenedores
+C. Sí
+Respuesta: C. Usá un digest para identificar contenido inmutable del registro.
+
+
+04. Construí una imagen
+=================================================================
+Convertí archivos fuente en un paquete explícito y repetible.
+
+El contexto de build
+docker build usa un directorio como contexto. COPY lee archivos de ese contexto; .dockerignore excluye archivos innecesarios o sensibles. Nuestro Dockerfile copia solo server.py y probe.py y no instala paquetes de Python.
+→ Controlá lo que entra al build.
+
+La caché sigue a los insumos
+Una instrucción sin cambios y con los mismos insumos puede reutilizar resultados. Cambiar el código copiado invalida ese paso y los dependientes posteriores. Dejá la preparación estable antes del código que cambia seguido.
+→ Ordená las capas según cuánto cambian.
+
+Los valores por defecto son parte del artefacto
+USER elige el usuario de ejecución. CMD aporta el comando por defecto; la forma exec evita un shell extra. EXPOSE documenta un puerto pero no lo publica. Fijamos el digest base y APP_VERSION es un argumento de build sin secretos.
+→ La configuración del build no es la de ejecución.
+
+LABORATORIO
+1. Construí desde un contexto explícito
+El argumento final app elige el contexto. Leé app/Dockerfile y app/.dockerignore antes.
+
+docker build -t prumathe-signal:1.0.0 app
+
+Observá: Un build exitoso.
+
+2. Repetí los mismos insumos
+Repetí el build. Buscá pasos en caché; el tiempo solo no prueba reutilización.
+
+docker build --progress=plain -t prumathe-signal:1.0.0 app
+
+Observá: Los pasos sin cambios elegibles informan CACHED.
+
+3. Cambiá un argumento sin secretos
+Construí otro artefacto con distinto valor de versión. El tag 1.0.0 sigue disponible.
+
+docker build --build-arg APP_VERSION=1.1.0 -t prumathe-signal:1.1.0 app
+
+Observá: Otra imagen con el tag 1.1.0.
+
+4. Inspeccioná el resultado
+Leé el entorno de cada artefacto. Son valores por defecto antes de reemplazos de ejecución.
+
+docker run --rm prumathe-signal:1.0.0 printenv APP_VERSION
+docker run --rm prumathe-signal:1.1.0 printenv APP_VERSION
+
+Observá: 1.0.0 y después 1.1.0.
+
+CONTROL
+1. ¿Qué puede leer COPY acá?
+A. Cualquier archivo de cualquier host
+B. Solo archivos de contenedores activos
+C. Archivos del contexto que no fueron excluidos
+Respuesta: C. El contexto define el límite de entrada.
+
+2. ¿Qué hace EXPOSE 8080?
+A. Documenta el puerto previsto
+B. Publica 8080 en el host
+C. Crea un Service de Kubernetes
+Respuesta: A. Publicar requiere configuración explícita de ejecución.
+
+3. ¿Por qué copiar código después de la preparación estable?
+A. Para ejecutar sin imagen
+B. Para reutilizar pasos anteriores de caché
+C. Para cifrar código
+Respuesta: B. Editar código no necesita repetir la preparación estable.
+
+
+05. Datos que sobreviven al contenedor
+=================================================================
+Separá la vida del proceso de la vida de sus datos.
+
+Tres lugares para escribir
+La capa escribible pertenece a un contenedor. Docker administra un volumen con nombre y permite volver a montarlo. Un bind mount expone una ruta del host; importan su organización y sus permisos.
+→ Elegí almacenamiento según su dueño y duración.
+
+Reemplazá el proceso
+Compose monta signal-data en /data. Escribí una marca, reemplazá el contenedor y leela. El reemplazo usa el mismo volumen. Montar almacenamiento no coordina automáticamente escrituras simultáneas.
+→ La persistencia es independiente de la identidad del proceso.
+
+Retener no es respaldar
+docker compose down conserva volúmenes con nombre por defecto; down -v elimina los del proyecto. Ni un volumen ni un bind mount son un respaldo. El lab nunca te pide purgar recursos de Docker ajenos.
+→ Conocé qué se borra antes de limpiar.
+
+LABORATORIO
+1. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+2. Escribí en el volumen
+La app corre como UID 10001 y es dueña de /data. Guardá una marca.
+
+docker compose exec -T app sh -c 'echo volume-survived > /data/marker'
+
+Observá: La escritura funciona sin root.
+
+3. Reemplazá el contenedor
+Recreá solo app conservando el volumen.
+
+docker compose up -d --wait --force-recreate app
+
+Observá: Una app reemplazada llega a healthy.
+
+4. Leé datos conservados
+Revisá la marca y el tipo de montaje. No uses down -v salvo que quieras borrar datos de práctica.
+
+docker compose exec -T app cat /data/marker
+docker inspect --format '{{json .Mounts}}' prumathe-dk-app-1
+
+Observá: volume-survived y un volumen montado en /data.
+
+CONTROL
+1. ¿Qué sobrevive al reemplazo de este contenedor?
+A. Su ID de proceso
+B. El volumen con nombre
+C. Todos los archivos de su capa escribible
+Respuesta: B. El reemplazo monta el mismo volumen.
+
+2. ¿Qué hace que un bind mount dependa del host?
+A. El tag de la imagen
+B. Su estado HTTP
+C. Su ruta de origen y sus permisos
+Respuesta: C. El host aporta los archivos montados.
+
+3. ¿Persistir prueba recuperación tras perder el disco?
+A. No; necesitás una estrategia de respaldo probada
+B. Sí, Docker replica todo volumen
+C. Sí, down siempre respalda
+Respuesta: A. Este experimento reemplaza el contenedor, no el dispositivo de almacenamiento.
+
+
+06. Nombres en una red
+=================================================================
+Encontrá un servicio sin memorizar la dirección del contenedor.
+
+Una red tiene un alcance
+Compose crea una red para el proyecto. Los contenedores conectados encuentran servicios por nombre. app se resuelve dentro de esa red; no se vuelve automáticamente un nombre de tu laptop.
+→ Los nombres DNS pertenecen a un ámbito de red.
+
+Localhost significa acá
+Dentro del contenedor toolbox, localhost apunta al propio toolbox. Usá app:8080 para llegar a la aplicación. Reemplazarla puede cambiar su dirección, mientras el nombre de servicio sigue siendo útil.
+→ Un servicio remoto no es tu dirección de loopback.
+
+Conectividad no es autorización
+Una red compartida permite comunicar; no autentica pedidos de la aplicación. El lab revisa DNS y HTTP por separado para no confundir una falla de resolución con un error de aplicación.
+→ Diagnosticá nombre, conexión y después respuesta.
+
+LABORATORIO
+1. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+2. Resolvé el nombre
+Usá un contenedor temporal de la red. Reemplazar entrypoint permite inspeccionar DNS con la misma imagen. Desde el host, el nombre app no resuelve: el nombre existe solo dentro de la red de Compose.
+
+docker compose run --rm --no-deps --entrypoint python toolbox -c "import socket; print(socket.gethostbyname('app'))"
+
+Observá: Una IP interna que no tenés que fijar.
+
+3. Consultá el endpoint interno
+La URL de toolbox es http://app:8080. No interviene el puerto del host.
+
+docker compose run --rm --no-deps toolbox
+
+Observá: hello-compose y PASS.
+
+4. Inspeccioná miembros de red
+Leé solo la red del curso. Las direcciones son detalles de ejecución, no configuración durable.
+
+docker network inspect prumathe-dk_default
+
+Observá: La app está conectada a la red del proyecto.
+
+CONTROL
+1. ¿Adónde apunta localhost dentro de toolbox?
+A. Al propio toolbox
+B. Al host Docker automáticamente
+C. Al servicio app
+Respuesta: A. Cada espacio de red tiene su loopback.
+
+2. ¿Qué dirección debería usar otro servicio acá?
+A. Una IP fija de contenedor
+B. localhost:18080
+C. app:8080
+Respuesta: C. El nombre se resuelve en la red de Compose.
+
+3. ¿Compartir red autentica un pedido?
+A. Sí, por ID de contenedor
+B. No
+C. Sí, por nombre de servicio
+Respuesta: B. Las aplicaciones necesitan sus controles de acceso cuando corresponda.
+
+
+07. Publicá un puerto a propósito
+=================================================================
+Distinguí escuchar, declarar y publicar.
+
+La aplicación escucha
+Signal escucha en 0.0.0.0:8080 dentro del contenedor. Escuchar solo en 127.0.0.1 interno impediría que otros contenedores lleguen a ese socket. El proceso tiene que escuchar aunque la imagen declare EXPOSE.
+→ Un puerto declarado no es un socket abierto.
+
+El host reenvía tráfico
+Compose publica 127.0.0.1:18080 hacia el puerto 8080 del contenedor. Tu navegador usa el puerto del host; otros contenedores usan el interno. Vincularlo a loopback limita ese punto publicado al host local.
+→ El puerto del host y el del contenedor son coordenadas distintas.
+
+Seguí el salto que falla
+Revisá el mapeo y consultá la URL publicada y la interna. Un puerto ocupado impide un nuevo enlace. No resuelvas una colisión exponiendo todas las interfaces sin entender el alcance.
+→ Seguí la ruta antes de cambiar el enlace.
+
+LABORATORIO
+1. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+2. Leé la dirección publicada
+Consultá a Compose qué dirección del host mapea al puerto interno.
+
+docker compose port app 8080
+
+Observá: 127.0.0.1:18080.
+
+3. Seguí el lado interno
+Este pedido sale desde la app. Abrí http://127.0.0.1:18080 aparte en tu navegador del host para comparar.
+
+docker compose exec -T app python /app/probe.py http://127.0.0.1:8080 hello-compose
+
+Observá: El mismo contenido y PASS. La URL del host devuelve ese servicio también.
+
+4. Inspeccioná el enlace explícito
+Revisá HostIp y HostPort en vez de suponer que EXPOSE publicó algo.
+
+docker inspect --format '{{json .HostConfig.PortBindings}}' prumathe-dk-app-1
+
+Observá: 8080/tcp mapea a 127.0.0.1 y 18080.
+
+CONTROL
+1. ¿Qué puerto usa el navegador del host?
+A. 8080 siempre
+B. El ID de proceso del contenedor
+C. 18080
+Respuesta: C. El mapeo lleva 18080 del host a 8080 del contenedor.
+
+2. ¿EXPOSE puede arrancar un listener?
+A. No
+B. Sí
+C. Solo en Linux
+Respuesta: A. El proceso abre el socket.
+
+3. ¿Qué limita 127.0.0.1 en este mapeo?
+A. El tamaño de imagen
+B. Las interfaces del host usadas por el puerto publicado
+C. La CPU de la aplicación
+Respuesta: B. Vincula el lado del host a loopback.
+
+
+08. Describí el sistema local
+=================================================================
+Servicios, redes y volúmenes en un archivo legible.
+
+De comandos a un modelo
+Compose nombra servicios y su configuración. La aplicación y toolbox opcional comparten red; solo app publica un puerto. El proyecto prumathe-dk delimita los recursos creados por el kit.
+→ Leé la configuración antes de arrancarla.
+
+Corriendo versus healthy
+up -d --wait espera estado running o healthy. El health check de la imagen consulta /health. No prueba toda operación de negocio, y el orden de arranque común no equivale a readiness de dependencias.
+→ Definí qué mide healthy.
+
+Un ciclo de vida local
+config muestra la configuración resuelta; ps muestra estado; logs muestra salida; down elimina contenedores y redes del proyecto. Compose en este host no aporta un plano de control distribuido de Kubernetes.
+→ Usá una herramienta dentro de su alcance.
+
+LABORATORIO
+1. Leé el modelo resuelto
+Compose valida y muestra configuración sin arrancar contenedores. Se usa solo un secreto falso.
+
+docker compose config
+
+Observá: app, el volumen signal-data, el secreto demo_token y el puerto 127.0.0.1:18080. toolbox no aparece: su perfil tools está inactivo.
+
+2. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+3. Observá estado y salida
+Generá un pedido e inspeccioná estado y logs recientes.
+
+docker compose run --rm --no-deps toolbox
+docker compose ps
+docker compose logs --tail 5 app
+
+Observá: App healthy y logs de pedidos HTTP.
+
+4. Probá un reinicio local
+Reiniciá el servicio y esperá su salud antes de comprobar otra respuesta.
+
+docker compose restart app
+docker compose up -d --wait app
+docker compose run --rm --no-deps toolbox
+
+Observá: PASS tras recuperarse. Reiniciar no reconstruye.
+
+CONTROL
+1. ¿Qué ayuda a verificar config?
+A. Que pasó toda operación de negocio
+B. El scheduler de Kubernetes
+C. El modelo resuelto de Compose
+Respuesta: C. Validar configuración y ejecutar pruebas responde preguntas distintas.
+
+2. ¿Running implica estar listo para tráfico?
+A. Solo si no hay logs
+B. No, definí y comprobá readiness
+C. Sí, un proceso siempre acepta tráfico
+Respuesta: B. Un proceso arrancado puede seguir inicializándose.
+
+3. ¿Qué conserva down común acá?
+A. Volúmenes con nombre
+B. Procesos activos de app
+C. Redes del proyecto
+Respuesta: A. Borrar volúmenes requiere una opción adicional explícita.
+
+
+09. Configuración y secretos
+=================================================================
+Mantené estable el artefacto mientras cambia la configuración.
+
+Entradas de ejecución
+MESSAGE es una variable de entorno leída al arrancar el proceso. Dos contenedores de una imagen pueden mostrar mensajes distintos. No hace falta reconstruir para cambiar ese valor de ejecución.
+→ Separá la versión de su entorno.
+
+Los secretos no son argumentos de build
+Los argumentos de build y las variables comunes son malos escondites para credenciales. Compose monta un token deliberadamente falso en /run/secrets/demo_token. Los secretos locales de Compose son montajes de archivos, no una bóveda cifrada automática.
+→ Un mecanismo de entrega de secretos también necesita protección.
+
+Cambiá y reiniciá a propósito
+Editar la fuente de una variable no reescribe el entorno de un proceso activo. Recreá el contenedor con la nueva configuración. No imprimas credenciales reales al inspeccionar un sistema.
+→ Conocé cuándo lee cada valor la aplicación.
+
+LABORATORIO
+1. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+2. Reemplazá un valor de ejecución
+Arrancá un contenedor temporal con otro MESSAGE. No reconstruye imagen.
+
+docker run --rm -e MESSAGE=runtime-value prumathe-signal:1.0.0 printenv MESSAGE
+
+Observá: runtime-value.
+
+3. Comprobá el secreto falso montado
+Comprobá que existe sin imprimirlo. El ejemplo no es una credencial real.
+
+docker compose exec -T app sh -c 'test -s /run/secrets/demo_token && echo PASS'
+
+Observá: PASS: se entregó un archivo legible y no vacío.
+
+4. Compará con el proceso Compose
+El reemplazo temporal no cambió la app que ya corría.
+
+docker compose exec -T app printenv MESSAGE
+
+Observá: hello-compose, sin cambios.
+
+CONTROL
+1. ¿Cambiar valores de ejecución siempre requiere imagen nueva?
+A. Sí
+B. Solo en Kubernetes
+C. No
+Respuesta: C. El mismo artefacto admite entradas distintas.
+
+2. ¿Un secreto de Compose cifra automáticamente su archivo del host?
+A. No
+B. Sí
+C. Solo con EXPOSE
+Respuesta: A. Protegé los archivos de origen y limitá su acceso.
+
+3. Un proceso necesita un nuevo valor de entorno. ¿Qué sigue?
+A. Volvé a leer logs
+B. Recrealo con la configuración nueva
+C. Renombrá solo su tag
+Respuesta: B. El entorno de un proceso existente no se actualiza solo.
+
+
+10. Salud y límites de recursos
+=================================================================
+Una señal de salud y un presupuesto de recursos resuelven problemas distintos.
+
+Sondeá una propiedad
+El health check envía HTTP a /health. El archivo /tmp/fail-live hace que devuelva 503 para practicar. Un contenedor unhealthy puede seguir con su proceso principal activo.
+→ Unhealthy no es sinónimo de detenido.
+
+Limitá el consumo
+Compose configura 0,5 CPU y 128 MiB para app. Limitar CPU restringe tiempo de ejecución; agotar memoria puede matar procesos. Un límite no vuelve eficiente la aplicación ni prueba capacidad suficiente.
+→ Un límite es una frontera, no un objetivo de rendimiento.
+
+Observá la recuperación
+Borrá el archivo de falla y esperá recuperación del health check. El estado de salud de Docker por sí solo no reinicia un contenedor unhealthy. Las políticas de reinicio se relacionan con la salida del proceso y necesitan configuración aparte.
+→ El detector y el mecanismo de recuperación son distintos.
+
+LABORATORIO
+1. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+2. Inspeccioná recursos configurados
+Leé los límites que aplicó Compose.
+
+docker inspect --format '{{.HostConfig.Memory}} {{.HostConfig.NanoCpus}}' prumathe-dk-app-1
+
+Observá: 134217728 bytes y 500000000 NanoCpus; 500000000 NanoCpus equivalen a 0,5 CPU.
+
+3. Hacé fallar el endpoint de salud
+Creá la marca didáctica. Repetí inspect hasta unhealthy, dando unos 15 segundos a los reintentos. El proceso sigue corriendo.
+
+docker compose exec -T app touch /tmp/fail-live
+docker inspect --format '{{.State.Health.Status}} {{.State.Running}}' prumathe-dk-app-1
+
+Observá: Eventualmente unhealthy true.
+
+4. Restaurá salud
+Borrá solo la marca y consultá el endpoint. Repetí inspect hasta healthy: el estado cambia con la próxima sonda. Compose up --wait puede fallar mientras queda el estado unhealthy anterior.
+
+docker compose exec -T app rm /tmp/fail-live
+docker compose exec -T app python /app/probe.py http://127.0.0.1:8080/health ok
+docker inspect --format '{{.State.Health.Status}} {{.State.Running}}' prumathe-dk-app-1
+
+Observá: PASS y eventualmente healthy true, sin reiniciar ni reconstruir.
+
+CONTROL
+1. ¿Unhealthy significa que terminó el proceso principal?
+A. No
+B. Sí
+C. Solo con sondas HTTP
+Respuesta: A. La sonda puede fallar mientras corre el servidor.
+
+2. ¿Este health check reinicia automáticamente app?
+A. Sí, cada falla
+B. Solo después de tres éxitos
+C. No
+Respuesta: C. El lab observa estado; no configura un reiniciador por salud.
+
+3. ¿Qué garantiza el límite de memoria?
+A. Swap ilimitado
+B. Un límite configurado, no capacidad suficiente
+C. Que nunca falle la aplicación
+Respuesta: B. Medí cargas reales para elegir presupuestos útiles.
+
+
+11. Tags, digests y distribución
+=================================================================
+Mové un artefacto sin confundir su nombre con su identidad.
+
+Los tags son referencias
+docker tag le da otro nombre a una imagen. No copia ni modifica sus capas. Un registro guarda contenido para pull y push; este curso usa imágenes locales y no publica en cuentas remotas.
+→ Un tag nuevo no es un build nuevo.
+
+Fijá contenido para reproducir
+Un digest identifica contenido del registro. La imagen base y la de nodos de kind incluyen digests. Un tag como 1.0.0 comunica intención, pero reproducir requiere conservar el artefacto y sus insumos.
+→ Los nombres son cómodos; la identidad del contenido es más fuerte.
+
+Local no es estar en cada nodo
+Una imagen en Docker de tu laptop no está automáticamente en el runtime del nodo Kubernetes. kind load docker-image copia el artefacto al clúster indicado. Usamos imagePullPolicy: Never para que se vea si falta importarlo.
+→ Distribuir es un paso explícito.
+
+LABORATORIO
+1. Dale otro nombre a la imagen
+Creá un alias local. No publica en un registro.
+
+docker tag prumathe-signal:1.0.0 prumathe-signal:practice
+
+Observá: Existe otra referencia local.
+
+2. Compará identidades
+Inspeccioná ambos IDs locales. Deben coincidir porque tag no reconstruyó.
+
+docker image inspect --format '{{.Id}}' prumathe-signal:1.0.0
+docker image inspect --format '{{.Id}}' prumathe-signal:practice
+
+Observá: Dos IDs locales iguales. No es una comparación de digests del registro.
+
+3. Leé la base fijada
+Descargá la imagen base por su digest y después inspeccioná sus RepoDigests. El Dockerfile usa esta misma referencia de contenido; un build puede dejar la base solo en su caché, así que el pull la pone en el almacén local de imágenes.
+
+docker pull python:3.14.8-alpine3.24@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+docker image inspect --format '{{json .RepoDigests}}' python:3.14.8-alpine3.24@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+
+Observá: El pull informa el digest y la inspección imprime una referencia sha256 de registro.
+
+4. Borrá solo el alias
+Borrá el tag de práctica y confirmá que arranca la original.
+
+docker image rm prumathe-signal:practice
+docker run --rm prumathe-signal:1.0.0 printenv APP_VERSION
+
+Observá: 1.0.0 sigue ejecutándose.
+
+CONTROL
+1. ¿docker tag crea capas nuevas?
+A. Solo para tags de versión
+B. No
+C. Sí
+Respuesta: B. Agrega una referencia a contenido existente.
+
+2. ¿Qué referencia identifica contenido inmutable del registro?
+A. latest
+B. Un nombre de contenedor
+C. Un digest
+Respuesta: C. Los digests dependen del contenido; los tags pueden moverse.
+
+3. ¿Por qué importar la imagen en kind?
+A. Los nodos tienen almacenes de imágenes separados
+B. Para exponer un puerto del host
+C. Para crear un volumen
+Respuesta: A. El runtime que arranca el Pod necesita la imagen.
+
+
+12. Seguí la evidencia
+=================================================================
+Estado, logs, conectividad y después configuración.
+
+Una pregunta por herramienta
+ps informa estado. logs muestra stdout y stderr. inspect revela configuración y estado. exec ejecuta un proceso nuevo en un contenedor existente; no es un registro de fallas anteriores.
+→ Elegí evidencia que responda la hipótesis.
+
+Separá las capas
+Si falla HTTP, revisá resolución de nombre, conexión, estado y contenido por separado. El script probe afirma estado y texto esperado. Una conexión TCP exitosa no prueba que la aplicación sea correcta.
+→ Un endpoint accesible puede devolver un resultado incorrecto.
+
+Corregí la fuente de verdad
+Un cambio de emergencia con exec desaparece al reemplazar el contenedor. Reproducí el problema, corregí código o configuración, reconstruí si hace falta y repetí la observación. Quedate con la explicación más pequeña que encaja con la evidencia.
+→ Un parche en vivo no es una versión durable.
+
+LABORATORIO
+1. Arrancá el servicio de práctica
+Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
+
+docker compose up -d --wait app
+
+Observá: La aplicación está healthy. No se reinicia otro proyecto.
+
+2. Probá semántica de aplicación
+La sonda comprueba estado 200 y mensaje esperado, no solo conexión.
+
+docker compose run --rm --no-deps toolbox http://app:8080 hello-compose
+
+Observá: PASS.
+
+3. Leé la evidencia
+Inspeccioná logs recientes y referencia de imagen.
+
+docker compose logs --tail 5 app
+docker inspect --format '{{.Config.Image}}' prumathe-dk-app-1
+
+Observá: Registros HTTP y prumathe-signal:1.0.0.
+
+4. Comprobá una respuesta de falla intencional
+Fallá readiness, comprobá HTTP 503 y borrá la marca. Docker sondea /health, así que esto no cambia ese endpoint.
+
+docker compose exec -T app touch /tmp/not-ready
+docker compose exec -T app python /app/probe.py http://127.0.0.1:8080/ready unavailable 503
+docker compose exec -T app rm /tmp/not-ready
+
+Observá: Se comprueba el contenido del 503 esperado y se imprime PASS.
+
+CONTROL
+1. ¿Qué herramienta lee stdout anterior?
+A. tag
+B. logs
+C. exec siempre
+Respuesta: B. exec arranca otro proceso; logs lee salida capturada.
+
+2. ¿HTTP 200 prueba el resultado esperado?
+A. No; inspeccioná contenido y semántica
+B. Sí
+C. Solo en localhost
+Respuesta: A. La sonda revisa contenido además de estado.
+
+3. ¿Dónde debe vivir una corrección durable?
+A. Solo en un contenedor activo
+B. Solo en la historia de terminal
+C. En código o configuración versionados
+Respuesta: C. Recrear tiene que reproducir la corrección.
+
+
+13. Conocé el clúster
+=================================================================
+Una API, controladores y nodos cooperan para ejecutar tu aplicación.
+
+El plano de control
+kubectl envía pedidos al API server. El plano de control registra el estado deseado y coordina trabajo. Un nodo es una máquina física o virtual cuyo kubelet y runtime ejecutan los Pods asignados.
+→ kubectl no arranca contenedores directamente.
+
+Un clúster dentro de contenedores
+kind ejecuta nodos Kubernetes como contenedores Docker. El kit crea un nodo de control y un worker. Sirve para aprender orquestación, pero ambos comparten tu host y sus fallas.
+→ Dos nodos locales no dan redundancia de host.
+
+Elegí el destino explícitamente
+Un kubeconfig contiene información de conexión y autenticación; un contexto elige clúster, usuario y un namespace opcional. Cada comando indica el kubeconfig del curso y el contexto kind-prumathe-dk. Instalá kind y kubectl con los enlaces oficiales de labs/README.md antes del lab.
+→ Revisá el destino antes de modificar.
+
+LABORATORIO
+1. Verificá herramientas
+Instalá kind 0.33.0 y kubectl 1.37.x con las instrucciones oficiales de labs/README.md. Tienen que estar en PATH.
+
+kind version
+kubectl version --client
+
+Observá: kind v0.33.0 y kubectl v1.37.x.
+
+2. Creá el clúster local con nombre
+Ejecutá una vez desde labs. Si prumathe-dk ya existe, conservalo y seguí. El kubeconfig explícito evita mezclar con tu configuración habitual. La descarga puede tardar varios minutos.
+
+kind create cluster --name prumathe-dk --config kind.yaml --kubeconfig kubeconfig --image kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5 --wait 180s
+
+Observá: Un nodo de control y un worker quedan listos.
+
+3. Importá la imagen del curso
+Construí si hace falta y copiá la imagen al clúster indicado. Reimportá si reconstruís un tag.
+
+docker compose build app
+kind load docker-image prumathe-signal:1.0.0 --name prumathe-dk
+
+Observá: Ambos nodos tienen la imagen.
+
+4. Inspeccioná el destino exacto
+Esperá nodos listos y creá solo el namespace de práctica.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk wait --for=condition=Ready nodes --all --timeout=90s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk get nodes
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk apply -f k8s/namespace.yaml
+
+Observá: Dos nodos Ready en v1.37.0 y namespace dk-lab.
+
+CONTROL
+1. ¿Quién recibe pedidos de kubectl?
+A. El modelo del navegador
+B. El API server
+C. El Dockerfile
+Respuesta: B. La API es la entrada de estas operaciones.
+
+2. ¿Qué aporta kind acá?
+A. Máquinas físicas independientes
+B. Un servicio cloud productivo administrado
+C. Un clúster local con nodos en contenedores
+Respuesta: C. El clúster es real, pero su infraestructura comparte un host.
+
+3. ¿Por qué indicar kubeconfig y contexto?
+A. Para elegir el destino de práctica previsto
+B. Para aumentar réplicas
+C. Para deshabilitar autenticación
+Respuesta: A. La selección explícita evita depender de tu contexto habitual.
+
+
+14. El límite del Pod
+=================================================================
+Kubernetes planifica Pods, que contienen contenedores.
+
+Una unidad de scheduling
+Un Pod agrupa uno o más contenedores que comparten espacio de red y pueden compartir volúmenes declarados. Corren juntos en un nodo. Nuestro primer Pod tiene un contenedor para ver la relación entre proceso y Pod.
+→ El Pod es la unidad desplegable mínima acá.
+
+La identidad es temporal
+Un Pod recibe nombre, UID y dirección de red. Reemplazarlo crea una identidad nueva aunque reutilices el nombre. No uses la IP de un Pod como dirección durable de clientes.
+→ Reemplazar no es resucitar.
+
+Los Pods sueltos no tienen controlador de reemplazo
+El kubelet puede reiniciar un contenedor según su política. Borrar este Pod suelto elimina el objeto; no existe un Deployment que lo recree. Después agregamos el controlador que mantiene réplicas.
+→ Reiniciar un contenedor y reemplazar un Pod son cosas distintas.
+
+LABORATORIO
+1. Creá un Pod suelto
+Completá antes la lección 13. Enviá el manifiesto del Pod suelto.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/pod.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab wait --for=condition=Ready pod/solo --timeout=90s
+
+Observá: solo llega a Ready.
+
+2. Inspeccioná identidad y ubicación
+Leé UID, nodo e IP del objeto vivo.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get pod solo -o wide
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get pod solo -o 'jsonpath={.metadata.uid}'
+
+Observá: Un UID único y nodo/IP asignados.
+
+3. Consultá desde el Pod
+La app y su loopback pertenecen a este Pod.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec solo -- python /app/probe.py http://127.0.0.1:8080 1.0.0
+
+Observá: 1.0.0 y PASS.
+
+4. Borrá el objeto suelto
+No hay controlador manteniendo este Pod. --ignore-not-found hace que la lectura final no devuelva objeto en vez de error. Kubernetes envía SIGTERM y espera hasta 30 segundos (el período de gracia) antes de SIGKILL; Signal termina enseguida.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab delete pod solo --wait=true
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get pod solo --ignore-not-found -o name
+
+Observá: No queda solo; no se recrea.
+
+CONTROL
+1. ¿Dos contenedores de un Pod pueden correr en nodos distintos?
+A. No
+B. Sí, por defecto
+C. Solo si usan HTTP
+Respuesta: A. El Pod se planifica como una unidad.
+
+2. ¿Qué dirección no deberías considerar permanente?
+A. El nombre declarado del Service
+B. El nombre de carpeta del curso
+C. La IP de un Pod
+Respuesta: C. Los Pods se reemplazan y las direcciones pueden cambiar.
+
+3. Borrás un Pod suelto. ¿Quién lo recrea?
+A. El registro de imágenes
+B. Ningún controlador de carga en este ejemplo
+C. El Service
+Respuesta: B. La política reinicia contenedores en un Pod existente, no Pods sueltos borrados.
+
+
+15. Estado deseado y observado
+=================================================================
+Describí un resultado y observá cómo se acerca el control.
+
+Declará el objeto
+Un manifiesto describe objetos con kind, metadatos y especificación. apply envía ese estado deseado. Que la API acepte el pedido no significa que todos los Pods estén listos.
+→ Aceptado y logrado son hitos distintos.
+
+La reconciliación se repite
+Los controladores comparan estado deseado y observado y actúan para reducir diferencias. El scheduling, la disponibilidad de imágenes y la salud pueden demorar la convergencia. El bucle sigue trabajando después de que termina kubectl.
+→ El controlador es un bucle, no un script de una vez.
+
+Mantené consistente la fuente
+Un scale imperativo cambia el estado deseado en vivo. Aplicar un manifiesto que sigue declarando dos réplicas puede volver a dos. Para cambios durables, actualizá el manifiesto que mantenés y revisá diferencias antes de aplicar.
+→ El estado vivo y la intención versionada pueden separarse.
+
+LABORATORIO
+1. Restaurá la base declarada
+Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: El Deployment signal termina el rollout con dos réplicas listas.
+
+2. Cambiá el estado deseado vivo
+Escalá el Deployment a tres y esperá convergencia.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab scale deployment/signal --replicas=3
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: Hay tres réplicas deseadas y listas.
+
+3. Leé especificación y estado
+Compará cantidad deseada y lista en vez de suponer que apply equivale a readiness.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal -o 'jsonpath={.spec.replicas}/{.status.readyReplicas}'
+
+Observá: 3/3 tras converger.
+
+4. Volvé a aplicar el archivo
+El archivo sigue declarando dos. Aplicarlo devuelve la cantidad deseada a dos.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal -o 'jsonpath={.spec.replicas}/{.status.readyReplicas}'
+
+Observá: 2/2. Un cambio durable de escala va en el manifiesto mantenido.
+
+CONTROL
+1. ¿Apply exitoso significa rollout terminado?
+A. Solo si el archivo es YAML
+B. No, observá readiness aparte
+C. Sí
+Respuesta: B. La aceptación de la API precede a la convergencia.
+
+2. ¿Qué sigue actuando al terminar kubectl?
+A. La terminal cerrada
+B. El navegador del curso
+C. Los controladores del clúster
+Respuesta: C. El bucle de control pertenece a Kubernetes.
+
+3. ¿Por qué aplicar el archivo puede deshacer un scale manual?
+A. El archivo todavía declara otra cantidad
+B. YAML siempre borra Pods
+C. Un Service fija la cantidad
+Respuesta: A. Mantené la configuración declarada consistente con los cambios deseados.
+
+
+16. Mantené réplicas en marcha
+=================================================================
+Un Deployment administra reemplazos mediante ReplicaSets.
+
+Una plantilla y una cantidad
+Un Deployment declara una plantilla de Pod y réplicas deseadas. Administra ReplicaSets que mantienen esos Pods. Las labels conectan selectores con los objetos correctos.
+→ La plantilla crea los reemplazos.
+
+Borrá las instancias
+Borrá los Pods de práctica y esperá al Deployment. El ReplicaSet crea reemplazos porque la cantidad deseada sigue en dos. Los Pods nuevos reciben otras identidades; los archivos de sus capas escribibles no se transfieren.
+→ La recuperación restaura cantidad, no estado local arbitrario.
+
+Las réplicas necesitan capacidad real
+Escalar cambia la cantidad deseada. Los nodos necesitan recursos para esos Pods. Dos réplicas en un worker ayudan ante fallas de un Pod, pero no sobreviven como copias activas independientes si se pierde ese worker.
+→ La cantidad sola no es una arquitectura de disponibilidad.
+
+LABORATORIO
+1. Restaurá la base declarada
+Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: El Deployment signal termina el rollout con dos réplicas listas.
+
+2. Mirá la cadena de propiedad
+Leé Deployments, ReplicaSets y Pods juntos.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment,replicaset,pod -l app=signal
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal
+
+Observá: Existe el Deployment; su ReplicaSet es dueño de los Pods.
+
+3. Borrá solo instancias de aplicación
+Esto borra deliberadamente todos los Pods app=signal del namespace de práctica. Puede interrumpir tráfico. El controlador sigue queriendo dos.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab delete pod -l app=signal --wait=true
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: Nuevas instancias de Pod quedan listas.
+
+4. Comprobá cantidad y comportamiento
+Revisá réplicas listas y consultá el Service desde un reemplazo. El Service signal lo creó base.yaml; la lección 17 lo explica. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal -o 'jsonpath={.status.readyReplicas}'
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal 1.0.0 200 30
+
+Observá: Dos réplicas listas y PASS para 1.0.0.
+
+CONTROL
+1. ¿Qué administra directamente un Deployment?
+A. Cuentas externas de DNS
+B. ReplicaSets
+C. Respaldos del host
+Respuesta: B. Los ReplicaSets mantienen Pods para una revisión de plantilla.
+
+2. ¿Qué sigue después de borrar sus Pods?
+A. La cantidad deseada declarada
+B. Cada UID de Pod
+C. Archivos no compartidos de sus capas escribibles
+Respuesta: A. Los controladores crean instancias desde la plantilla.
+
+3. ¿Dos réplicas garantizan dos dominios de falla?
+A. Sí
+B. Solo si la imagen es pequeña
+C. No; importan ubicación e infraestructura
+Respuesta: C. Ambas copias pueden correr en la misma máquina.
+
+
+17. Una entrada estable
+=================================================================
+Un Service lleva tráfico a endpoints listos que coinciden.
+
+Elegí por label
+Un Service selecciona Pods mediante labels. Su nombre e IP virtual estables separan clientes de reemplazos de Pods. Nuestro Service recibe en 80 y envía a targetPort 8080.
+→ Port y targetPort cumplen funciones distintas.
+
+Observá endpoints
+Los EndpointSlices registran direcciones y readiness de los destinos. Un Service con selector incorrecto puede existir sin destinos útiles. Una respuesta DNS no prueba salud de la aplicación.
+→ Revisá selectores y readiness si el tráfico no tiene destino.
+
+Interno no significa público
+Nuestro Service es ClusterIP, accesible dentro del clúster. Para depurar localmente, port-forward crea un túnel temporal mientras corre el comando. Un Ingress o Gateway necesita infraestructura adicional y queda fuera de este lab.
+→ Un Service no publica automáticamente en internet.
+
+LABORATORIO
+1. Restaurá la base declarada
+Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: El Deployment signal termina el rollout con dos réplicas listas.
+
+2. Inspeccioná la traducción de puerto
+Leé el Service ClusterIP y su targetPort.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get service signal -o yaml
+
+Observá: port 80, targetPort 8080, selector app: signal.
+
+3. Inspeccioná destinos descubiertos
+Las direcciones vienen de Pods seleccionados, no de una lista escrita en el Service.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get endpointslices -l kubernetes.io/service-name=signal -o yaml
+
+Observá: Hay endpoints listos con referencias a Pods.
+
+4. Usá el nombre DNS estable
+Dentro de dk-lab se resuelve el nombre corto. Es acceso interno, no publicación en internet. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal 1.0.0 200 30
+
+Observá: Respuesta HTTP por el Service y PASS.
+
+CONTROL
+1. ¿Qué une este Service con sus Pods?
+A. Labels y selector coincidentes
+B. El tamaño de imagen
+C. El nombre del proyecto Docker
+Respuesta: A. Los selectores eligen destinos; los nombres solos no.
+
+2. ¿Puede existir un Service sin destinos listos?
+A. Solo si DNS está deshabilitado
+B. Sí
+C. No
+Respuesta: B. Inspeccioná EndpointSlices y readiness de Pods.
+
+3. ¿Este ClusterIP es público por defecto?
+A. Sí
+B. Solo en kind
+C. No
+Respuesta: C. El acceso externo requiere un mecanismo explícito.
+
+
+18. Inyectá configuración de ejecución
+=================================================================
+Usá objetos de API para entregar valores, con reglas claras de actualización.
+
+Separá valores comunes
+Un ConfigMap guarda configuración no confidencial. set env --from agrega referencias a sus claves en la plantilla. Los Pods nuevos leen MESSAGE al arrancar; cambiar solo el ConfigMap no cambia el entorno de un proceso existente.
+→ Actualizar el entorno requiere procesos nuevos.
+
+Los secretos tienen otro límite de acceso
+Un Secret guarda valores sensibles con controles específicos de acceso a la API, pero base64 es codificación, no cifrado. Los Secrets no están cifrados en etcd por defecto. El ejemplo usa solo un token claramente falso.
+→ Protegé almacenamiento, acceso a API y exposición en la aplicación.
+
+La entrega cambia cómo se actualiza
+Los volúmenes de ConfigMap y Secret pueden recibir actualizaciones eventuales, con excepciones como subPath. La aplicación tiene que releer archivos. Este lab importa entorno explícitamente para observar un rollout en vez de suponer recarga en vivo.
+→ Entregar y consumir son pasos distintos.
+
+LABORATORIO
+1. Restaurá la base declarada
+Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: El Deployment signal termina el rollout con dos réplicas listas.
+
+2. Creá objetos de configuración
+Aplicá el mensaje común y el Secret falso. Inspeccioná metadatos sin imprimir el token.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/config.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get configmap signal-settings
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get secret demo-token
+
+Observá: Ambos objetos existen en dk-lab.
+
+3. Importá valores a una plantilla nueva
+set env agrega referencias a claves del ConfigMap y cambia la plantilla. Los procesos nuevos leen esas claves; el entorno de los existentes no se refresca.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab set env deployment/signal --from=configmap/signal-settings
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: Procesos nuevos arrancan con MESSAGE=hello-kubernetes.
+
+4. Comprobá y quitá el reemplazo
+Verificá el mensaje y quitá MESSAGE de la plantilla para dejar la base de los próximos labs. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal hello-kubernetes 200 30
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab set env deployment/signal MESSAGE-
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: PASS para el mensaje configurado y rollout que restaura el valor por defecto.
+
+CONTROL
+1. ¿Dónde va una configuración común MESSAGE?
+A. Dentro de una contraseña real
+B. Solo en una IP de Pod
+C. Un ConfigMap
+Respuesta: C. Los ConfigMaps separan valores no confidenciales de las imágenes.
+
+2. ¿Base64 cifra un Secret?
+A. Solo en YAML
+B. No
+C. Sí
+Respuesta: B. La codificación se revierte sin una clave.
+
+3. Tras cambiar el origen del entorno importado, ¿qué hace falta?
+A. Arrancar procesos nuevos que lean el origen actualizado
+B. Solo refrescar el navegador
+C. Solo cambiar el nombre del Service
+Respuesta: A. Un proceso activo no recibe nuevos valores de entorno.
+
+
+19. Almacenamiento más allá de un Pod
+=================================================================
+Un claim pide almacenamiento; no promete un respaldo.
+
+Claim y volumen
+Un PersistentVolumeClaim solicita tamaño y acceso. Un PersistentVolume representa almacenamiento provisto. Un StorageClass puede habilitar provisión dinámica; kind incluye un provisioner local para este ejercicio.
+→ La solicitud y el almacenamiento son objetos distintos.
+
+Volvé a montar tras reemplazar
+El Pod writer monta notebook en /data. Escribí una marca, borrá solo el Pod y recrealo con el mismo claim. ReadWriteOnce significa montaje de lectura y escritura por un nodo, no necesariamente un único Pod.
+→ Borrar el Pod no borra por sí solo su claim.
+
+El almacenamiento local tiene límites locales
+Este volumen vive en el entorno local de kind. Borrar el clúster lo pierde. Borrar el PVC y la política de reclamación afectan el borrado del almacenamiento; inspeccionalos antes de limpiar. Esto no es una base replicada ni un ejercicio de respaldos.
+→ La persistencia tiene que nombrar su límite de falla.
+
+LABORATORIO
+1. Creá un claim y writer
+Completá antes la lección 13. El provisioner local asigna almacenamiento cuando se ubica el Pod.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/storage.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab wait --for=condition=Ready pod/writer --timeout=120s
+
+Observá: writer llega a Ready y notebook a Bound.
+
+2. Escribí e inspeccioná el claim
+El usuario sin root escribe en el montaje. El usuario 10001 puede escribir porque el provisioner de kind crea el directorio con permisos abiertos; fsGroup importa con tipos de volumen que admiten cambio de propietario.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec writer -- sh -c 'echo pvc-survived > /data/marker'
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get pvc notebook
+
+Observá: El claim está Bound.
+
+3. Reemplazá solo el Pod
+Conservá notebook. Borrá writer, volvé a aplicar y esperá.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab delete pod writer --wait=true
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/storage.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab wait --for=condition=Ready pod/writer --timeout=120s
+
+Observá: Un writer nuevo usa el mismo claim.
+
+4. Leé después del reemplazo
+La marca debe seguir. Esto no prueba pérdida del host ni restauración de respaldo.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec writer -- cat /data/marker
+
+Observá: pvc-survived.
+
+CONTROL
+1. ¿Qué objeto pide almacenamiento?
+A. RoleBinding
+B. PVC
+C. Service
+Respuesta: B. El claim declara requisitos de almacenamiento.
+
+2. ¿Qué restringe ReadWriteOnce?
+A. El montaje de lectura y escritura a un nodo
+B. Exactamente un proceso para siempre
+C. Todas las lecturas a un pedido
+Respuesta: A. No garantiza exclusividad de un Pod.
+
+3. ¿Estos datos locales sobreviven al borrado de kind?
+A. Sí, todo PVC es remoto
+B. Sí, Kubernetes los respalda
+C. No
+Respuesta: C. El almacenamiento comparte la vida de este entorno local.
+
+
+20. Vivo, listo, arrancado
+=================================================================
+Elegí la pregunta correcta antes de elegir una sonda.
+
+Readiness habilita tráfico
+Una sonda de readiness fallida marca el Pod no listo. El Service normalmente excluye endpoints no listos; el contenedor puede seguir corriendo. Usala para decidir si la instancia puede atender ahora.
+→ No listo significa dejar de enviar tráfico normal del servicio.
+
+Liveness dispara reinicio
+Fallas repetidas de liveness provocan reinicio del contenedor por el kubelet según la política. Una caída de dependencia suele ser una mala prueba de liveness: reiniciar todo puede empeorar la recuperación.
+→ Reiniciá cuando reiniciar pueda ayudar.
+
+Startup da tiempo de inicialización
+Una startup probe demora readiness y liveness hasta tener éxito. Su umbral y período definen un presupuesto de inicialización. En el lab fallás readiness, observás el estado de tráfico y lo restaurás sin reiniciar el proceso.
+→ Usá señales distintas para decisiones de recuperación distintas.
+
+LABORATORIO
+1. Prepará un Pod dedicado a sondas
+Completá antes la lección 13. Un Pod y Service con nombre aíslan el experimento de cambios de escala.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/probe.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab wait --for=condition=Ready pod/probe --timeout=90s
+
+Observá: El Pod probe está Ready.
+
+2. Inspeccioná las tres sondas
+Leé startup, readiness y liveness antes de provocar fallas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get pod probe -o yaml
+
+Observá: Endpoints HTTP separados para readiness y liveness; startup controla inicialización.
+
+3. Fallá solo readiness
+Creá la marca y esperá este Pod exacto. Inspeccioná propagación de endpoints; repetí el último comando hasta ready: false.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec probe -- touch /tmp/not-ready
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab wait --for=condition=Ready=false pod/probe --timeout=60s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get endpointslices -l kubernetes.io/service-name=probe-entry -o yaml
+
+Observá: El endpoint deja de estar listo mientras el proceso sigue corriendo.
+
+4. Restaurá y verificá
+Borrá la marca, esperá Ready y comprobá la respuesta. La sonda admite hasta 30 intentos por propagación de endpoints. Después borrá solo estos objetos de práctica.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec probe -- rm /tmp/not-ready
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab wait --for=condition=Ready pod/probe --timeout=60s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec probe -- python /app/probe.py http://probe-entry 1.0.0 200 30
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab delete -f k8s/probe.yaml --wait=true
+
+Observá: PASS tras recuperarse; se borran el Pod y Service dedicados.
+
+CONTROL
+1. ¿Qué cambia normalmente readiness fallido?
+A. La aptitud para recibir tráfico
+B. El tag de imagen
+C. El tamaño del PVC
+Respuesta: A. Cambia readiness, no necesariamente ejecución del proceso.
+
+2. ¿Qué pueden disparar fallas repetidas de liveness?
+A. Un build nuevo
+B. Una reparación garantizada de base
+C. Un reinicio del contenedor
+Respuesta: C. El kubelet reinicia; la aplicación tiene que tolerarlo.
+
+3. ¿Para qué usar startup probe?
+A. Para deshabilitar liveness para siempre
+B. Para dar tiempo de inicio antes de las otras sondas
+C. Para publicar una dirección de internet
+Respuesta: B. Tras startup exitoso, las otras sondas pueden operar.
+
+
+21. Requests, limits y ubicación
+=================================================================
+El scheduler necesita un presupuesto de recursos declarado.
+
+Requests reservan capacidad de scheduling
+El scheduler usa requests para ubicar un Pod, junto con restricciones como taints y selección de nodo. CPU 50m significa 0,05 CPU; memoria 32Mi son 32 mebibytes. Un uso actual bajo no borra los requests declarados.
+→ La ubicación usa necesidades declaradas, no deseos.
+
+Limits restringen ejecución
+Un límite CPU puede restringir ejecución; exceder memoria puede provocar terminación OOM. Requests y limits hacen trabajos distintos. Los límites solos no garantizan latencia ni protección ante cualquier falla del nodo.
+→ El presupuesto de scheduling y el techo de ejecución son distintos.
+
+Pending es evidencia
+El Pod no-room pide 1000 CPU, deliberadamente más de lo que ofrece este clúster de estudio. describe muestra FailedScheduling y su causa. Diagnosticá la restricción antes de cambiar requests o agregar nodos.
+→ Pending es un estado para explicar, no para reiniciar a ciegas.
+
+LABORATORIO
+1. Inspeccioná presupuestos
+La app pide 50m CPU y 32Mi por réplica, con límites mayores.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal -o 'jsonpath={.spec.template.spec.containers[0].resources}'
+
+Observá: Requests y limits son campos distintos.
+
+2. Enviá un pedido imposible
+Este Pod pide 1000 CPU. Debe quedar Pending en este clúster local.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/pending.yaml
+
+Observá: Se crea no-room pero no puede ubicarse.
+
+3. Leé el motivo del FailedScheduling
+Esperá unos segundos y repetí describe hasta ver FailedScheduling en Events.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab describe pod no-room
+
+Observá: FailedScheduling por CPU insuficiente y posiblemente detalles del taint del nodo de control.
+
+4. Borrá solo el ejercicio fallido
+Borrá no-room. No borra el Deployment de la aplicación.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab delete pod no-room --wait=true
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal
+
+Observá: signal sigue disponible.
+
+CONTROL
+1. ¿Qué significa CPU 250m?
+A. Un cuarto de CPU
+B. 250 núcleos CPU
+C. 250 MiB
+Respuesta: A. 1000m equivale a una CPU.
+
+2. ¿Qué valores informan el encaje normal de recursos?
+A. Nombres de contenedor
+B. Requests
+C. Solo el uso de ayer
+Respuesta: B. Los requests son parte de la decisión de scheduling.
+
+3. ¿Dónde buscás por qué un Pod sigue Pending?
+A. Solo la consola del navegador
+B. La licencia
+C. Eventos y descripción del Pod
+Respuesta: C. Los eventos FailedScheduling identifican restricciones incumplidas.
+
+
+22. Cambiá versiones con una vuelta posible
+=================================================================
+Un rollout es una transición que tenés que observar.
+
+Una revisión de plantilla nueva
+Cambiar la imagen actualiza la plantilla y crea otro ReplicaSet. Un rolling update reemplaza instancias gradualmente según maxSurge y maxUnavailable. Nuestro manifiesto admite una extra y cero no disponibles.
+→ La estrategia controla la transición, no la compatibilidad de la aplicación.
+
+Observá convergencia
+Construí 1.1.0, importala en kind y cambiá la imagen. rollout status espera finalización o timeout. Con imagePullPolicy: Never, olvidar la importación impide arrancar Pods nuevos.
+→ Pedir una actualización no equivale a publicar con éxito.
+
+Rollback tiene un límite
+rollout undo restaura una revisión anterior de plantilla. No deshace migraciones, restaura datos externos ni revierte un ConfigMap independiente. Verificá versión y comportamiento después de volver.
+→ Rollback restaura una plantilla, no todo el mundo.
+
+LABORATORIO
+1. Restaurá la base declarada
+Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: El Deployment signal termina el rollout con dos réplicas listas.
+
+2. Construí e importá el próximo artefacto
+Conservá 1.0.0 para volver. Importá 1.1.0 antes de cambiar la plantilla.
+
+docker build --build-arg APP_VERSION=1.1.0 -t prumathe-signal:1.1.0 app
+kind load docker-image prumathe-signal:1.1.0 --name prumathe-dk
+
+Observá: Ambas versiones están disponibles en los nodos.
+
+3. Avanzá y comprobá
+Cambiá imagen, esperá réplicas actualizadas y verificá respuesta. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab set image deployment/signal app=prumathe-signal:1.1.0
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal 1.1.0 200 30
+
+Observá: Versión 1.1.0 y PASS.
+
+4. Volvé a la revisión anterior
+Revertí la actualización de imagen anterior y verificá otra vez. undo no restaura datos externos. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout undo deployment/signal
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal 1.0.0 200 30
+
+Observá: Versión 1.0.0 y PASS.
+
+CONTROL
+1. ¿Qué dispara esta revisión nueva?
+A. Leer logs
+B. Abrir la URL del Service
+C. Un cambio de plantilla de Pod
+Respuesta: C. La imagen pertenece a la plantilla.
+
+2. ¿Qué permite maxSurge: 1 acá?
+A. Una réplica extra permanente
+B. Un Pod extra sobre la cantidad deseada durante el rollout
+C. Un nodo físico de reserva garantizado
+Respuesta: B. Surge permite demanda temporal adicional de capacidad.
+
+3. ¿Rollout undo revierte cambios de base?
+A. No
+B. Sí
+C. Solo con readiness
+Respuesta: A. Los efectos externos necesitan su plan de recuperación.
+
+
+23. Otorgá solo los verbos necesarios
+=================================================================
+Identidad, permisos y vínculo son objetos distintos.
+
+Identificá quién llama
+Un ServiceAccount da identidad a cargas para acceder a la API. observer es una identidad de práctica. La mayoría de los Pods del curso no necesita API, así que deshabilitamos el montaje automático del token.
+→ No montes credenciales de API sin necesidad.
+
+Vinculá verbos con recursos
+Un Role otorga get, list y watch sobre Pods dentro de dk-lab. Un RoleBinding lo vincula a observer. No otorga acceso a secretos ni borrado de Pods. Los permisos RBAC se suman; acá no hay una regla deny.
+→ Acotá sujeto, verbos, recursos y namespace.
+
+Comprobá autorización
+auth can-i pregunta si una acción está autorizada. El administrador del lab suplanta observer para comprobar una acción permitida y dos denegadas; suplantar también requiere permiso. La autorización no informa conectividad ni login de la aplicación.
+→ Una comprobación prueba una acción para una identidad.
+
+LABORATORIO
+1. Creá una identidad de lectura
+Aplicá ServiceAccount, Role y RoleBinding en dk-lab. No se otorga un rol de todo el clúster.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/rbac.yaml
+
+Observá: observer queda vinculado a pod-reader.
+
+2. Comprobá la acción permitida
+El administrador del lab usa suplantación para esta comprobación.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab auth can-i list pods --as=system:serviceaccount:dk-lab:observer
+
+Observá: yes.
+
+3. Comprobá una acción destructiva denegada
+Solo consulta autorización; no borra un Pod. Se espera no y salida distinta de cero.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab auth can-i delete pods --as=system:serviceaccount:dk-lab:observer
+
+Observá: no, código 1. La denegación es el resultado previsto.
+
+4. Comprobá una lectura denegada
+El rol permite Pods, no Secrets. Otra vez, la salida distinta de cero demuestra la restricción.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab auth can-i get secrets --as=system:serviceaccount:dk-lab:observer
+
+Observá: no, código 1.
+
+CONTROL
+1. ¿Qué vincula permisos a observer?
+A. Service
+B. Dockerfile USER
+C. RoleBinding
+Respuesta: C. El Role define permisos; el vínculo los asigna.
+
+2. ¿Este observer puede borrar Pods?
+A. No, no se otorga delete
+B. Sí, list incluye delete
+C. Sí, todos son administradores
+Respuesta: A. Los verbos son explícitos y los permisos se suman entre vínculos.
+
+3. ¿Can-i prueba conectividad de red?
+A. Solo para Secrets
+B. No
+C. Sí
+Respuesta: B. Evalúa autorización, no todo lo necesario para un pedido exitoso.
+
+
+24. Desplegá, rompé, recuperá
+=================================================================
+Explicá la cadena de una imagen a un servicio disponible.
+
+Definí criterios de aceptación
+Desplegá dos réplicas de Signal 1.0.0. Exigí Pods listos, Service con destinos listos y respuesta HTTP con la versión esperada. Esas comprobaciones miden capas distintas del éxito.
+→ Un estado verde sirve con un criterio declarado.
+
+Provocá y explicá una falla
+Borrá los Pods, esperá reemplazos y consultá otra vez. Explicá qué controlador actuó, qué identidad cambió y qué datos no se conservaron. Es una prueba de reemplazo, no una medición de cero interrupciones.
+→ Informá la garantía junto con su límite.
+
+Anotá las próximas preguntas operativas
+Antes de un despliegue real, decidí distribución de imágenes, TLS y acceso externo, capacidad, observabilidad, respaldos y políticas. HPA necesita métricas; NetworkPolicy necesita una red que la aplique. Esas extensiones requieren validación aparte y quedan fuera de esta base.
+→ Un clúster de estudio enseña mecanismos; no completa la preparación productiva.
+
+LABORATORIO
+1. Restaurá la base declarada
+Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab apply -f k8s/base.yaml
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: El Deployment signal termina el rollout con dos réplicas listas.
+
+2. Registrá una respuesta base
+Comprobá versión e inspeccioná endpoints listos antes de fallar. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal 1.0.0 200 30
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get endpointslices -l kubernetes.io/service-name=signal -o yaml
+
+Observá: PASS y endpoints listos.
+
+3. Borrá y recuperá instancias
+Borrá solo Pods app=signal de dk-lab. Puede interrumpir tráfico. Esperá que el controlador restaure la cantidad.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab delete pod -l app=signal --wait=true
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab rollout status deployment/signal --timeout=90s
+
+Observá: Los Pods de reemplazo quedan listos.
+
+4. Comprobá y explicá el límite
+Verificá otra vez. Anotá qué cambió, qué persistió y por qué no prueba cero interrupciones. Los comandos de limpieza y sus efectos están en labs/README.md. La sonda del Service admite hasta 30 intentos, separados por un segundo tras fallar, para dar tiempo a propagar endpoints.
+
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab exec deployment/signal -- python /app/probe.py http://signal 1.0.0 200 30
+kubectl --kubeconfig kubeconfig --context kind-prumathe-dk -n dk-lab get deployment signal
+
+Observá: PASS y dos réplicas listas. Observaste reemplazo, no resistencia del host.
+
+CONTROL
+1. ¿Qué prueba que la aplicación devolvió la versión esperada?
+A. Solo un tag en un archivo
+B. Una respuesta HTTP con versión comprobada
+C. Solo apply exitoso
+Respuesta: B. Observá aplicación y estado de infraestructura.
+
+2. ¿Qué demuestra borrar y reemplazar Pods?
+A. Reemplazo por controlador en este entorno
+B. Cero interrupciones garantizado
+C. Supervivencia a la destrucción del host
+Respuesta: A. La disponibilidad en cada instante necesita otra medición.
+
+3. ¿Qué sigue haciendo falta para recuperar datos productivos?
+A. Solo dos réplicas
+B. Solo un digest de imagen
+C. Un plan probado de respaldo y restauración
+Respuesta: C. Las réplicas y las imágenes no reemplazan respaldos de datos.
+
+
