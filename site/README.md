@@ -1,0 +1,22 @@
+# Prumathe home page / Portada de Prumathe
+
+The pages that present Prumathe and link to the courses: what the project is, how a course works, the three courses with their entry points, and where the name comes from. One page in **English and Rioplatense Spanish** (switch at the top), light and dark appearance, no server, account, framework or external resource. Open [index.html](index.html) directly from the repository: the course links point to the sibling folders.
+
+Las páginas que presentan Prumathe y enlazan a los cursos: qué es el proyecto, cómo funciona un curso, los tres cursos con sus puntos de entrada y de dónde viene el nombre. Una página en **inglés y español rioplatense** (selector arriba), apariencia clara y oscura, sin servidor, cuenta, framework ni recursos externos. Abrí [index.html](index.html) directamente desde el repositorio: los enlaces a los cursos apuntan a las carpetas vecinas.
+
+## Files / Archivos
+
+- `index.html`, `assets/site.js`, `assets/site.css`, `assets/theme.js`: the page, its bilingual text and its styles, with the courses' palette and type. / La página, su texto bilingüe y sus estilos, con la paleta y la tipografía de los cursos.
+- `assets/favicon.svg`: the Prumathe mark, as in the courses. / La marca de Prumathe, como en los cursos.
+- `404.html`, `_headers`: error page and headers for a static host. / Página de error y cabeceras para un host estático.
+- `scripts/build.mjs`: assembles the complete publishable site in `dist/` (ignored by Git). / Arma el sitio publicable completo en `dist/` (fuera de Git).
+
+## Publish / Publicar
+
+`node site/scripts/build.mjs`, from the repository root, builds every course folder that has a `scripts/build.mjs` and writes `site/dist/`: this home page at the root and each course under its own name (`kafka-from-scratch/`, `docker-kubernetes-from-scratch/`, `github-from-scratch/`), with one `_headers` file for the whole site. On Cloudflare Pages, use the repository root as root directory, `node site/scripts/build.mjs` as build command and `site/dist` as output directory. A new course only needs its folder beside this one.
+
+`node site/scripts/build.mjs`, desde la raíz del repositorio, construye cada carpeta de curso que tenga `scripts/build.mjs` y escribe `site/dist/`: esta portada en la raíz y cada curso bajo su nombre (`kafka-from-scratch/`, `docker-kubernetes-from-scratch/`, `github-from-scratch/`), con un solo `_headers` para todo el sitio. En Cloudflare Pages, usá la raíz del repositorio como directorio raíz, `node site/scripts/build.mjs` como comando de build y `site/dist` como directorio de salida. Un curso nuevo solo necesita su carpeta al lado de esta.
+
+The course links carry the chosen language (`?lang=en` or `?lang=es`); each course keeps its own appearance and progress. The text of the cards (lesson and lab counts, requirements) is maintained by hand in `assets/site.js` when a course changes.
+
+Los enlaces a los cursos llevan el idioma elegido (`?lang=en` o `?lang=es`); cada curso conserva su propia apariencia y su avance. El texto de las tarjetas (cantidad de lecciones y pasos, requisitos) se mantiene a mano en `assets/site.js` cuando un curso cambia.

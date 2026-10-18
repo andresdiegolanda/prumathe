@@ -1,0 +1,445 @@
+/* The Prumathe home page shares the courses' palette and type: paper, ink, green and orange, a
+   serif for display text, a sans for reading and a mono for labels. Light and dark follow
+   html[data-theme], set by assets/theme.js before this file loads. */
+@font-face {
+  font-family: SiteFallback;
+  src: local('Segoe UI');
+}
+* {
+  box-sizing: border-box;
+}
+:root {
+  color-scheme: light;
+  font-size: 16px;
+  --paper: #f6f5ed;
+  --white: #fffef8;
+  --ink: #183c35;
+  --muted: #64756a;
+  --line: #d5dcd0;
+  --green: #21664e;
+  --green-dark: #174c3b;
+  --mint: #d9ecd9;
+  --mint-border: #afc5ad;
+  --orange: #b75d30;
+  --on-green: #ffffff;
+  --soft: #edf0e6;
+  --hover: #e9eee2;
+  --focus: #bb6a30;
+  --grid-dot: #cbd4c055;
+  --shadow: #122f2722;
+  --mono: 'Cascadia Code', Consolas, monospace;
+  --sans: SiteFallback, Inter, system-ui, sans-serif;
+  --serif: Georgia, 'Times New Roman', serif;
+}
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #0f1f1c;
+  --white: #172b27;
+  --ink: #e4ede7;
+  --muted: #9bb0a6;
+  --line: #2d463f;
+  --green: #5ec79c;
+  --green-dark: #7fd6b2;
+  --mint: #1d4337;
+  --mint-border: #2f6b55;
+  --orange: #f09a66;
+  --on-green: #0b1f1a;
+  --soft: #1c342e;
+  --hover: #1c342e;
+  --focus: #f0a060;
+  --grid-dot: #ffffff12;
+  --shadow: #00000055;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  font: 1rem/1.6 var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: var(--green);
+}
+button {
+  font: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0.5rem;
+  background: var(--green);
+  color: var(--on-green);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  z-index: 10;
+}
+.skip-link:focus {
+  left: 0.5rem;
+}
+.page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.eyebrow {
+  display: block;
+  font: 0.72rem/1.4 var(--mono);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+/* Header */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ink);
+  text-decoration: none;
+  min-width: 0;
+}
+.brand svg {
+  width: 18px;
+  height: 36px;
+  flex: none;
+}
+.brand span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+.brand strong {
+  font: 600 1.15rem/1.2 var(--sans);
+  letter-spacing: 0.3px;
+}
+.brand small {
+  font: 0.62rem/1.4 var(--mono);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+.switch {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--white);
+}
+.switch button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0.45rem 0.8rem;
+  font: 0.78rem var(--mono);
+  cursor: pointer;
+}
+.switch button.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+html[data-theme='dark'] .switch button.on {
+  background: var(--green);
+  color: var(--on-green);
+}
+.ghost {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--ink);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.ghost:hover {
+  background: var(--hover);
+}
+
+/* Hero */
+.hero {
+  padding: 4.5rem 0 3.5rem;
+  max-width: 46rem;
+}
+.hero h1 {
+  font: 400 clamp(2.6rem, 6vw, 4.4rem) / 1.04 var(--serif);
+  letter-spacing: -1.5px;
+  margin: 0.9rem 0 1.5rem;
+}
+.hero h1 span {
+  display: block;
+}
+.hero h1 .accent {
+  color: var(--green);
+  font-style: italic;
+}
+.lead {
+  font-size: 1.12rem;
+  color: var(--ink);
+  margin: 0 0 1.75rem;
+  max-width: 40rem;
+}
+.facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+}
+.facts li {
+  font: 0.72rem/1.4 var(--mono);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 0.6rem;
+  border-top: 2px solid var(--line);
+}
+
+/* Sections */
+section {
+  padding: 3rem 0;
+  border-top: 1px solid var(--line);
+}
+.section-head {
+  max-width: 44rem;
+  margin-bottom: 1.75rem;
+}
+.section-head p {
+  margin: 0.6rem 0 0;
+  font-size: 1.05rem;
+}
+
+/* Course cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.5rem 1.5rem 1.25rem;
+  box-shadow: 0 1px 0 var(--shadow);
+}
+.card .tech {
+  font: 0.68rem/1.4 var(--mono);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+.card h2 {
+  font: 400 1.75rem/1.15 var(--serif);
+  letter-spacing: -0.5px;
+  margin: 0.4rem 0 0.75rem;
+}
+.card > p {
+  margin: 0 0 1rem;
+  color: var(--ink);
+}
+.stats {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.stats li {
+  font: 0.72rem/1.4 var(--mono);
+  letter-spacing: 0.5px;
+  background: var(--mint);
+  border: 1px solid var(--mint-border);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+.needs {
+  margin: 0 0 1.25rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  flex: 1;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+}
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.btn:hover {
+  background: var(--hover);
+}
+.btn.primary {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--on-green);
+}
+.btn.primary:hover {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+}
+.link {
+  font-size: 0.88rem;
+  color: var(--green);
+}
+
+/* Method grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem 2rem;
+}
+.grid article {
+  border-top: 2px solid var(--line);
+  padding-top: 1rem;
+}
+.num {
+  font: 0.72rem/1.4 var(--mono);
+  letter-spacing: 1.5px;
+  color: var(--green);
+}
+.grid h3 {
+  font: 400 1.3rem/1.2 var(--serif);
+  margin: 0.4rem 0 0.5rem;
+}
+.grid p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+/* Lesson anatomy */
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.steps li {
+  counter-increment: step;
+  background: var(--soft);
+  border-radius: 10px;
+  padding: 1.1rem 1.1rem 1.1rem 1.1rem;
+  font-size: 0.95rem;
+  position: relative;
+}
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  display: block;
+  font: 0.72rem/1.4 var(--mono);
+  letter-spacing: 1.5px;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+}
+.note {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* Name */
+.name-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 48rem;
+}
+.name-body svg {
+  width: 34px;
+  height: 72px;
+  flex: none;
+  margin-top: 0.2rem;
+}
+.name-body p {
+  margin: 0;
+  font: 400 1.25rem/1.5 var(--serif);
+}
+
+/* Footer */
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding: 1.5rem 0 2.5rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.bottom a {
+  color: var(--green);
+}
+
+/* No JavaScript */
+.noscript {
+  max-width: 40rem;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .cards,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .page {
+    padding: 0 1rem;
+  }
+  .brand small {
+    display: none;
+  }
+  .hero {
+    padding: 3rem 0 2.5rem;
+  }
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .name-body {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
