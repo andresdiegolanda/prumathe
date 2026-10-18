@@ -20,7 +20,7 @@ Un curso de Prumathe toma una tecnología de base (Kafka, Docker y Kubernetes, G
 
 El nombre: Prumathe es como los etruscos llamaban a Prometeo, el que le acercó a la gente el fuego y, con el fuego, los oficios. Acá el fuego son las tecnologías que mueven los sistemas de todos los días, y acercarlo quiere decir que cualquiera con ganas pueda abrirlas, tocarlas y entenderlas.
 
-Repositorio: [github.com/andresdiegolanda/prumathe](https://github.com/andresdiegolanda/prumathe), con copia de trabajo local en `D:\_claude\prumathe`. Cada curso es una carpeta independiente; el primero es [`kafka-from-scratch/`](kafka-from-scratch/), y marca el patrón para los que sigan.
+Sitio publicado: [prumathe.andresdiegolanda.workers.dev](https://prumathe.andresdiegolanda.workers.dev). Repositorio: [github.com/andresdiegolanda/prumathe](https://github.com/andresdiegolanda/prumathe), con copia de trabajo local en `D:\_claude\prumathe`. Cada curso es una carpeta independiente; el primero es [`kafka-from-scratch/`](kafka-from-scratch/), y marca el patrón para los que sigan.
 
 ## Estructura
 
