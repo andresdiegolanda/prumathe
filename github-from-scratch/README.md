@@ -12,6 +12,7 @@ Open [index.html](index.html?lang=en) or start with [Before you start](lessons/b
 
 - 20 lecciones en 6 unidades, con 60 escenas y modelos interactivos. / 20 lessons in 6 units, with 60 scenes and interactive models.
 - Una página de cinco minutos, "Qué son Git y GitHub": qué son, de dónde salieron, dónde encajan y dónde no, con sus fuentes. / A five minute "What Git and GitHub are" page: what they are, where they came from, where they fit and where they do not, with its sources.
+- Una discusión por lección, en la pestaña Profundizá: hilos en GitHub Discussions, cargados solo cuando los abrís en el sitio publicado; leer es abierto, publicar pide una cuenta de GitHub. / A discussion per lesson, in the Go deeper tab: threads on GitHub Discussions, loaded only when you open them on the published site; reading is open, posting needs a GitHub account.
 - 60 preguntas sobre predicción, explicación y límites, con distractores plausibles y devolución. / 60 questions about prediction, explanation and limits, with plausible distractors and feedback.
 - 14 experimentos locales con Git real y 41 aserciones. / 14 local experiments using real Git with 41 assertions.
 - 6 actividades de GitHub, cada una con alternativa de caso de estudio sin cuenta. / 6 GitHub activities, each with an account-free case-study alternative.
@@ -46,9 +47,9 @@ GitHub activities need an account, your own practice repository and appropriate 
 
 ## Edición y evidencia / Editing and evidence
 
-Versión del curso: **1.2.0**, 18/10/2026. Referencias oficiales revisadas en esa fecha. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
+Versión del curso: **1.3.0**, 18/10/2026. Referencias oficiales revisadas en esa fecha. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
 
-Course version: **1.2.0**, 18 October 2026. Official references were reviewed on that date. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
+Course version: **1.3.0**, 18 October 2026. Official references were reviewed on that date. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
 
 ```text
 npm run build

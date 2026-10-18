@@ -12,7 +12,7 @@ npm run check
 npm run release
 ```
 
-`dist/` contiene el sitio estático (portada, lecciones, assets, apuntes, 404 y `_headers`) y las fuentes públicas de los laboratorios; no incluye `docs/` ni este README. `release/docker-kubernetes-from-scratch.zip` contiene la carpeta portable completa. `release/cloudflare-pages.zip` contiene solo el sitio listo para un host estático. `downloads/docker-kubernetes-labs.zip` contiene la carpeta `labs/` y sus instrucciones. Los ZIP excluyen kubeconfig y evidencia local.
+`dist/` contiene el sitio estático (portada, lecciones, assets, apuntes, 404 y `_headers`) y las fuentes públicas de los laboratorios; no incluye `docs/` ni este README. La discusión de cada lección es el único contenido de terceros: giscus (giscus.app) sobre GitHub Discussions, cargado a pedido, permitido por `_headers` en `script-src` y `frame-src`; el repositorio tiene que ser público con Discussions activado y la app de giscus instalada, y `assets/forum.js` guarda los identificadores (ver TEACHING). `release/docker-kubernetes-from-scratch.zip` contiene la carpeta portable completa. `release/cloudflare-pages.zip` contiene solo el sitio listo para un host estático. `downloads/docker-kubernetes-labs.zip` contiene la carpeta `labs/` y sus instrucciones. Los ZIP excluyen kubeconfig y evidencia local.
 
 ## Como carpeta de Prumathe
 

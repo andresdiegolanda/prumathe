@@ -267,7 +267,7 @@
   }
   function sourcesView() {
     const sources = [refs.sources[lesson.source], ...(refs.more[lesson.source] || [])];
-    return `<section class="source-card"><span class="eyebrow">${t('PRIMARY REFERENCES','REFERENCIAS PRIMARIAS')}</span><h2>${t('Follow the idea to its source.','Seguí la idea hasta su fuente.')}</h2><p>${t('Official documentation reviewed on '+dateText()+'. GitHub is a changing service; availability depends on your repository and plan. Diagrams are illustrative.', 'Documentación oficial revisada el '+dateText()+'. GitHub es un servicio que cambia; la disponibilidad depende del repositorio y plan. Los diagramas son ilustrativos.')}</p>${sources.map(([label,url])=>`<p><a href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(label)} ↗</a></p>`).join('')}</section><section class="source-card"><h2>${t('Inspect the experiment.','Inspeccioná el experimento.')}</h2><p>${t('The local helper prints real Git operations and checks repository state. Each run uses new isolated folders and no network. GitHub activities require separate observation; a local PASS does not verify a hosted workflow.', 'El asistente local imprime operaciones reales de Git y comprueba el estado del repositorio. Cada ejecución usa carpetas aisladas nuevas y ninguna red. Las actividades de GitHub requieren observación separada; un PASS local no verifica un workflow alojado.')}</p><p><a href="${prefix}labs/lab.mjs" download>lab.mjs ↓</a></p><p><a href="${prefix}downloads/github-labs.zip" download>${t('Complete kit','Kit completo')} ↓</a></p></section><section class="source-card"><h2>${t('Teach it back.','Explicalo con tus palabras.')}</h2><p>${t('Record prediction, observation, explanation and limit. Explain the state change without naming a command. Then identify which tool could perform it.', 'Registrá predicción, observación, explicación y límite. Explicá el cambio de estado sin nombrar un comando. Después identificá qué herramienta podría hacerlo.')}</p><p><a href="${prefix}downloads/course-notes-${lang}.txt" download>${t('Complete course notes','Apuntes completos')} ↓</a></p><button class="btn" data-action="glossary">${t('Visual glossary','Glosario visual')} →</button></section>${lesson.id === 0 ? `<section class="source-card"><h2>${t('Not sure what Git and GitHub are yet?', '¿Todavía no sabés qué son Git y GitHub?')}</h2><p>${t('Five minutes on what they are, where they came from, where they fit and where they do not, before the first lesson.', 'Cinco minutos sobre qué son, de dónde salieron, dónde encajan y dónde no, antes de la primera lección.')}</p><a href="${aboutLink()}">${t('What Git and GitHub are', 'Qué son Git y GitHub')} →</a></section>` : ''}`;
+    return `<section class="source-card"><span class="eyebrow">${t('PRIMARY REFERENCES','REFERENCIAS PRIMARIAS')}</span><h2>${t('Follow the idea to its source.','Seguí la idea hasta su fuente.')}</h2><p>${t('Official documentation reviewed on '+dateText()+'. GitHub is a changing service; availability depends on your repository and plan. Diagrams are illustrative.', 'Documentación oficial revisada el '+dateText()+'. GitHub es un servicio que cambia; la disponibilidad depende del repositorio y plan. Los diagramas son ilustrativos.')}</p>${sources.map(([label,url])=>`<p><a href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(label)} ↗</a></p>`).join('')}</section><section class="source-card"><h2>${t('Inspect the experiment.','Inspeccioná el experimento.')}</h2><p>${t('The local helper prints real Git operations and checks repository state. Each run uses new isolated folders and no network. GitHub activities require separate observation; a local PASS does not verify a hosted workflow.', 'El asistente local imprime operaciones reales de Git y comprueba el estado del repositorio. Cada ejecución usa carpetas aisladas nuevas y ninguna red. Las actividades de GitHub requieren observación separada; un PASS local no verifica un workflow alojado.')}</p><p><a href="${prefix}labs/lab.mjs" download>lab.mjs ↓</a></p><p><a href="${prefix}downloads/github-labs.zip" download>${t('Complete kit','Kit completo')} ↓</a></p></section><section class="source-card"><h2>${t('Teach it back.','Explicalo con tus palabras.')}</h2><p>${t('Record prediction, observation, explanation and limit. Explain the state change without naming a command. Then identify which tool could perform it.', 'Registrá predicción, observación, explicación y límite. Explicá el cambio de estado sin nombrar un comando. Después identificá qué herramienta podría hacerlo.')}</p><p><a href="${prefix}downloads/course-notes-${lang}.txt" download>${t('Complete course notes','Apuntes completos')} ↓</a></p><button class="btn" data-action="glossary">${t('Visual glossary','Glosario visual')} →</button></section>${lesson.id === 0 ? `<section class="source-card"><h2>${t('Not sure what Git and GitHub are yet?', '¿Todavía no sabés qué son Git y GitHub?')}</h2><p>${t('Five minutes on what they are, where they came from, where they fit and where they do not, before the first lesson.', 'Cinco minutos sobre qué son, de dónde salieron, dónde encajan y dónde no, antes de la primera lección.')}</p><a href="${aboutLink()}">${t('What Git and GitHub are', 'Qué son Git y GitHub')} →</a></section>` : ''}${lesson ? `<section class="source-card forum-card"><span class="eyebrow">${t('DISCUSSION', 'DISCUSIÓN')}</span><h2>${t('Talk about this lesson.', 'Hablá de esta lección.')}</h2><p>${t('Questions, what you observed, what did not match the model. The thread of this lesson lives in GitHub Discussions; reading is open, posting needs a GitHub account. Nothing is loaded from the forum until you open it.', 'Preguntas, lo que observaste, lo que no coincidió con el modelo. El hilo de esta lección vive en GitHub Discussions; leer es abierto, publicar pide una cuenta de GitHub. No se carga nada del foro hasta que lo abrís.')}</p><div class="forum" id="forum"><button class="btn primary" data-action="forum">${t('Open the discussion', 'Abrir la discusión')} →</button></div></section>` : ''}`;
   }
   function render() {
     document.documentElement.lang = lang === 'es' ? 'es-AR' : 'en';
@@ -506,6 +506,7 @@
       bindObjects();
     } else if (a === 'map') openMap();
     else if (a === 'help') openHelp();
+    else if (a === 'forum') openForum();
   }
   function toast(text) {
     document.querySelector('.toast')?.remove();
@@ -584,6 +585,47 @@
         }),
     );
   }
+  /* The discussion of the lesson: giscus over GitHub Discussions, loaded on demand. Only the
+     published site (http or https) can embed it; a local copy gets the link to the thread list. */
+  function openForum() {
+    const F = window.GITHUB_FORUM;
+    const box = $('#forum');
+    if (!F || !box) return;
+    const term = `${F.term}/${lesson.slug}`;
+    const list = `https://github.com/${F.repo}/discussions`;
+    if (!F.enabled || !F.repoId || !F.categoryId || !/^https?:$/.test(location.protocol)) {
+      box.innerHTML = `<p class="forum-note">${t('The embedded discussion works on the published site. Until then, the threads are on GitHub:', 'La discusión incrustada funciona en el sitio publicado. Mientras tanto, los hilos están en GitHub:')} <a href="${list}" target="_blank" rel="noopener noreferrer">${e(F.repo)} ↗</a></p>`;
+      return;
+    }
+    const giscusTheme = { light: 'light', dark: 'dark_dimmed', reading: 'light', projector: 'light_high_contrast' }[theme] || 'light';
+    const script = document.createElement('script');
+    const attrs = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': F.repo,
+      'data-repo-id': F.repoId,
+      'data-category': F.category,
+      'data-category-id': F.categoryId,
+      'data-mapping': 'specific',
+      'data-term': term,
+      'data-strict': '1',
+      'data-reactions-enabled': '1',
+      'data-emit-metadata': '0',
+      'data-input-position': 'top',
+      'data-theme': giscusTheme,
+      'data-lang': lang,
+      'data-loading': 'eager',
+      crossorigin: 'anonymous',
+    };
+    for (const [k, v] of Object.entries(attrs)) script.setAttribute(k, v);
+    script.async = true;
+    box.innerHTML = `<p class="forum-note">${t('Thread', 'Hilo')}: <code>${e(term)}</code> · <a href="${list}" target="_blank" rel="noopener noreferrer">GitHub Discussions ↗</a></p>`;
+    box.appendChild(script);
+    announce(t('Discussion loaded', 'Discusión cargada'));
+  }
+  function announce(text) {
+    const live = $('#announce');
+    if (live) live.textContent = text;
+  }
   function openHelp() {
     dialog(
       t('A small guide to the guide', 'Una guía breve de la guía'),
@@ -596,7 +638,7 @@
         .map(([a, b]) => `<div class="help-row"><span>${a}</span><kbd>${b}</kbd></div>`)
         .join(
           '',
-        )}<p>${t('Progress is self-reported. Completing a checkpoint does not verify Git or GitHub execution. The course uses no account or telemetry. Local experiments work offline after installing Git and Node.js. Online practice uses your own GitHub account.', 'El avance lo declarás vos. Resolver un control no verifica ejecuciones de Git o GitHub. El curso no usa cuenta ni telemetría. Los experimentos locales funcionan sin conexión después de instalar Git y Node.js. La práctica en línea usa tu cuenta de GitHub.')}</p><p>${t('New to Git? Read', '¿Nuevo en Git? Leé')} <a href="${aboutLink()}">${t('What Git and GitHub are', 'Qué son Git y GitHub')}</a>${t(' first: five minutes on what Git and GitHub are, where they came from and where they fit.', ' primero: cinco minutos sobre qué son Git y GitHub, de dónde salieron y dónde encajan.')}</p><a class="btn primary" href="${prefix}downloads/github-labs.zip" download>${t('Download the complete lab kit', 'Descargá el kit completo')} ↓</a>`,
+        )}<p>${t('Progress is self-reported. Completing a checkpoint does not verify Git or GitHub execution. The course uses no account or telemetry. Local experiments work offline after installing Git and Node.js. Online practice uses your own GitHub account.', 'El avance lo declarás vos. Resolver un control no verifica ejecuciones de Git o GitHub. El curso no usa cuenta ni telemetría. Los experimentos locales funcionan sin conexión después de instalar Git y Node.js. La práctica en línea usa tu cuenta de GitHub.')}</p><p>${t('New to Git? Read', '¿Nuevo en Git? Leé')} <a href="${aboutLink()}">${t('What Git and GitHub are', 'Qué son Git y GitHub')}</a>${t(' first: five minutes on what Git and GitHub are, where they came from and where they fit.', ' primero: cinco minutos sobre qué son Git y GitHub, de dónde salieron y dónde encajan.')}</p><p>${t('Each lesson has a discussion in the Go deeper tab: threads on GitHub Discussions, shown through giscus only when you open them on the published site; posting needs a GitHub account.', 'Cada lección tiene una discusión en la pestaña Profundizá: hilos en GitHub Discussions, mostrados con giscus solo cuando los abrís en el sitio publicado; publicar pide una cuenta de GitHub.')}</p><a class="btn primary" href="${prefix}downloads/github-labs.zip" download>${t('Download the complete lab kit', 'Descargá el kit completo')} ↓</a>`,
     );
   }
   document.addEventListener('keydown', (ev) => {

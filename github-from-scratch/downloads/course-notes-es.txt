@@ -1,5 +1,5 @@
 GITHUB DESDE CERO. APUNTES DEL CURSO
-Git + GitHub | 2026-10-18 | v1.2.0
+Git + GitHub | 2026-10-18 | v1.3.0
 
 QUÉ SON GIT Y GITHUB
 =================================================================

@@ -2098,3 +2098,17 @@ html[data-theme='reading'] .about {
     color: var(--muted);
   }
 }
+
+/* The discussion of the lesson (giscus), inside the last card of "Go deeper". */
+.forum {
+  margin-top: 10px;
+}
+.forum-note {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.forum .giscus,
+.forum .giscus-frame {
+  width: 100%;
+}

@@ -1,5 +1,9 @@
 # Evidencia de validación
 
+## Versión 1.3.0, 18/10/2026
+
+Una discusión por lección (GitHub Discussions a través de giscus) al final de la pestaña Profundizá, cargada solo a pedido en el sitio publicado; configuración en `assets/forum.js`, CSP en `_headers`. Experimentos, lecciones y requisitos sin cambios respecto de la 1.2.0, así que su evidencia sigue valiendo. Ejecutado: `npm run build` y `npm run check` con los controles nuevos del foro (configuración, `forum.js` en las páginas, CSP que permite giscus); la tarjeta y el enlace alternativo renderizados en los dos idiomas en un navegador sin interfaz, sin errores de consola, y con una configuración de prueba el botón genera el elemento `script` de giscus con el término `github-from-scratch/<slug>`. No ejecutado: el widget incrustado en sí, que necesita el repositorio público, la app de giscus y los identificadores de categoría; hasta que existan, el botón muestra el enlace a la página de Discussions.
+
 ## Versión 1.2.0, 18/10/2026
 
 Página nueva "Qué son Git y GitHub" (`what-git-and-github-are.html`, texto en `assets/about.js`), fuera de la numeración de lecciones; experimentos, lecciones y requisitos sin cambios respecto de la 1.1.0, así que su evidencia sigue valiendo. Ejecutado: `npm run build` y `npm run check` con los controles nuevos de la página (cadenas bilingües, seis hitos, tres columnas, fuentes https, página generada y publicada en `dist/`); la página renderizada en un navegador sin interfaz en los dos idiomas, en las cuatro apariencias y a 390 px, sin errores de consola ni desborde horizontal; las fuentes oficiales listadas al pie abiertas y contrastadas en la fecha indicada. No ejecutado: nada nuevo en una cuenta de GitHub.

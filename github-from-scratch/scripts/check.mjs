@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const context={window:{}};
-for(const name of ['curriculum','reference','visuals','about'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),context);
+for(const name of ['curriculum','reference','visuals','about','forum'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),context);
 const course=context.window.GITHUB_COURSE, refs=context.window.GITHUB_REFERENCE, visuals=context.window.GitHubVisuals;
 const c={window:context.window};
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
@@ -103,4 +103,10 @@ for(const [hour,success]of [['09:00',false],['10:00',true]]){
   const result=spawnSync(process.execPath,['--test',path.join(root,'labs/examples/hours.test.mjs')],{cwd:sample,encoding:'utf8',windowsHide:true});
   assert.equal(result.status,success?0:1,'Unexpected hours assertion: '+result.stdout+result.stderr);
 }
+// The discussion of each lesson: configuration present, pages load it, the CSP allows giscus.
+const forum = context.window.GITHUB_FORUM;
+assert.ok(forum && forum.repo && forum.category && forum.term === 'github-from-scratch', 'forum configuration');
+if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
+assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
+assert.ok(fs.readFileSync(path.join(root, 'lessons', course.lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
 console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 80 activity steps, 37 glossary terms, ${renderings} model renderings, the What Git and GitHub are page, bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);

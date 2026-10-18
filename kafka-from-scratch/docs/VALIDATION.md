@@ -4,6 +4,12 @@ Two layers of evidence: what the Docker suites proved on the platform, and what 
 
 Dos capas de evidencia: lo que las suites Docker probaron sobre la plataforma, y lo que las verificaciones estáticas y las pasadas de navegador probaron sobre el sitio. Cada entrada dice cuándo corrió y contra qué versión, y las verificaciones no ejecutadas figuran como tales.
 
+## 1.4.0, 18 October 2026 / 1.4.0, 18 de octubre de 2026
+
+A discussion per lesson (GitHub Discussions through giscus) at the end of the Go deeper tab, loaded only on demand on the published site; configuration in `assets/forum.js`, CSP in `_headers`. Image tags, `package.json` and the two `pom.xml` move to 1.4.0 by convention; lab content did not change, so the Docker evidence of 1.0.0 still applies and the suites were not rerun. Executed: `npm run build` and `npm run check` with the new forum checks; the card and the fallback link rendered in both languages in a headless browser without console errors. Not executed: the embedded widget itself, which needs the public repository, the giscus app and the category identifiers; until they exist the button shows the link to the Discussions page.
+
+Una discusión por lección (GitHub Discussions a través de giscus) al final de la pestaña Profundizá, cargada solo a pedido en el sitio publicado; configuración en `assets/forum.js`, CSP en `_headers`. Las etiquetas de imagen, `package.json` y los dos `pom.xml` pasan a 1.4.0 por convención; el contenido del lab no cambió, así que la evidencia Docker de la 1.0.0 sigue valiendo y las suites no se repitieron. Ejecutado: `npm run build` y `npm run check` con los controles nuevos del foro; la tarjeta y el enlace alternativo renderizados en los dos idiomas en un navegador sin interfaz, sin errores de consola. No ejecutado: el widget incrustado en sí, que necesita el repositorio público, la app de giscus y los identificadores de categoría; hasta que existan, el botón muestra el enlace a la página de Discussions.
+
 ## 1.3.0, 18 October 2026 / 1.3.0, 18 de octubre de 2026
 
 New page `what-kafka-is.html`, outside the lesson count: what Kafka is, where it came from, where it fits and where it does not, and how to decide; reached from the home page, the help dialog and the references of lesson 00, and opening the course notes. Course version and both local image tags move to 1.3.0; labs, lessons and Kafka 4.1.2 are unchanged.

@@ -8,7 +8,7 @@ Para una vista previa con un origen estable, ejecutá `npm run preview` y abrí 
 
 ## Sitio estático
 
-Desde `github-from-scratch`, ejecutá `npm run build` y `npm run check`. Publicá el contenido de `dist/` con cualquier alojamiento estático que respete rutas relativas. No hay backend, credenciales ni pasos de configuración del servicio. El archivo `_headers` contiene las cabeceras para proveedores que reconozcan ese formato; otros hosts necesitan su configuración equivalente.
+Desde `github-from-scratch`, ejecutá `npm run build` y `npm run check`. Publicá el contenido de `dist/` con cualquier alojamiento estático que respete rutas relativas. No hay backend, credenciales ni pasos de configuración del servicio. El archivo `_headers` contiene las cabeceras para proveedores que reconozcan ese formato; otros hosts necesitan su configuración equivalente. La discusión de cada lección es el único contenido de terceros: giscus (giscus.app) sobre GitHub Discussions, cargado a pedido, permitido por `_headers` en `script-src` y `frame-src`; el repositorio tiene que ser público con Discussions activado y la app de giscus instalada, y `assets/forum.js` guarda los identificadores (ver TEACHING).
 
 Como carpeta de Prumathe, usá `github-from-scratch` como directorio de trabajo y `dist` como salida. Para copiar el curso a un repositorio independiente, copiá la carpeta entera. Su workflow `.github/workflows/validate.yml` funciona desde esa raíz; el del repositorio de cursos vive en `/.github/workflows/validate-github.yml`.
 

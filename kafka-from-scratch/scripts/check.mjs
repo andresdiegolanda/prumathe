@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ctx = { window: {}, TextEncoder };
-for (const name of ['curriculum', 'visuals', 'reference', 'about']) {
+for (const name of ['curriculum', 'visuals', 'reference', 'about', 'forum']) {
   vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', name + '.js'), 'utf8'), ctx);
 }
 const course = ctx.window.KAFKA_COURSE;
@@ -224,11 +224,17 @@ for (const artifact of ['kafka-clients', 'kafka-streams'])
   );
 
 // The no-dash rule also covers the interface strings and the reference data.
-for (const name of ['app.js', 'visuals.js', 'reference.js', 'theme.js', 'about.js']) {
+for (const name of ['app.js', 'visuals.js', 'reference.js', 'theme.js', 'about.js', 'forum.js']) {
   const text = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
   assert.ok(!DASHES.test(text), name + ' contains an en or em dash');
 }
 
+// The discussion of each lesson: configuration present, pages load it, the CSP allows giscus.
+const forum = ctx.window.KAFKA_FORUM;
+assert.ok(forum && forum.repo && forum.category && forum.term === 'kafka-from-scratch', 'forum configuration');
+if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
+assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
+assert.ok(fs.readFileSync(path.join(root, 'lessons', lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
 console.log(
   `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage and version consistency.`,
 );

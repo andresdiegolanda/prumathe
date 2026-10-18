@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const c={window:{}};
-for(const f of ['curriculum','reference','visuals','about'])vm.runInNewContext(fs.readFileSync(path.join(root,`assets/${f}.js`),'utf8'),c);
+for(const f of ['curriculum','reference','visuals','about','forum'])vm.runInNewContext(fs.readFileSync(path.join(root,`assets/${f}.js`),'utf8'),c);
 const course=c.window.DK_COURSE,refs=c.window.DK_REFERENCE,visuals=c.window.DKVisuals;
 const pair=(v,label)=>{assert.equal(typeof v?.en,'string',label);assert.equal(typeof v?.es,'string',label);assert.ok(v.en.trim()&&v.es.trim(),label);};
 assert.equal(course.lessons.length,25);
@@ -54,7 +54,13 @@ for(const file of walk(root)) {
   const raw=fs.readFileSync(file),text=raw.toString('utf8');assert.ok(!raw.subarray(0,3).equals(Buffer.from([239,187,191])),file+' BOM');assert.ok(!text.includes('\r'),file+' CRLF');assert.ok(!/[\u2013\u2014]/.test(text),file+' dash');if(!file.endsWith('check.mjs')){assert.ok(!/Ã.|Â.|â€|â†/.test(text),file+' double-encoded UTF-8');assert.ok(!/\bkafka\b|norton|codex|chatgpt|openai|anthropic|\bclaude\b/i.test(text),file+' mentions another course, a tool or a product of the validation machine');}
   if(file.endsWith('.html'))for(const match of text.matchAll(/(?:href|src)="([^"#?]+)(?:[?#][^"]*)?"/g)){const target=match[1];if(!/^(https?:|mailto:)/.test(target))assert.ok(fs.existsSync(path.resolve(path.dirname(file),target)),file+' missing '+target);}
 }
-for(const f of ['app','theme','curriculum','reference','visuals','about']) new vm.Script(fs.readFileSync(path.join(root,'assets',f+'.js'),'utf8'));
+for(const f of ['app','theme','curriculum','reference','visuals','about','forum']) new vm.Script(fs.readFileSync(path.join(root,'assets',f+'.js'),'utf8'));
 const app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.ok(!/Kafka|KAFKA|kafka|Spring|Lab\.java/.test(app));
 for(const lang of ['en','es']){const notes=fs.readFileSync(path.join(root,`downloads/course-notes-${lang}.txt`),'utf8');for(const l of course.lessons)assert.ok(notes.includes(`${String(l.id).padStart(2,'0')}. ${l.title[lang]}`));}
+// The discussion of each lesson: configuration present, pages load it, the CSP allows giscus.
+const forum = c.window.DK_FORUM;
+assert.ok(forum && forum.repo && forum.category && forum.term === 'docker-kubernetes-from-scratch', 'forum configuration');
+if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
+assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
+assert.ok(fs.readFileSync(path.join(root, 'lessons', course.lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
 console.log(`PASS: 25 lessons, 75 scenes, 75 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, quoting, versions, the What Docker and Kubernetes are page, local links and UTF-8/LF.`);

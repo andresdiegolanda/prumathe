@@ -8,7 +8,7 @@ Las páginas que presentan Prumathe y enlazan a los cursos: qué es el proyecto,
 
 - `index.html`, `assets/site.js`, `assets/site.css`, `assets/theme.js`: the page, its bilingual text and its styles, with the courses' palette and type. / La página, su texto bilingüe y sus estilos, con la paleta y la tipografía de los cursos.
 - `assets/favicon.svg`: the Prumathe mark, as in the courses. / La marca de Prumathe, como en los cursos.
-- `404.html`, `_headers`: error page and headers for a static host. / Página de error y cabeceras para un host estático.
+- `404.html`, `_headers`: error page and headers for a static host; the CSP allows giscus, which shows the discussion of each lesson. / Página de error y cabeceras para un host estático; la CSP permite giscus, que muestra la discusión de cada lección.
 - `scripts/build.mjs`: assembles the complete publishable site in `dist/` (ignored by Git). / Arma el sitio publicable completo en `dist/` (fuera de Git).
 
 ## Publish / Publicar
