@@ -1,0 +1,11 @@
+// Cloudflare Workers, static assets only: the published site is site/dist, built by
+// node site/scripts/build.mjs (the home page at the root and each course under its folder).
+// _headers and 404.html inside site/dist are honoured by the assets layer; there is no Worker code.
+{
+  "name": "prumathe",
+  "compatibility_date": "2026-10-18",
+  "assets": {
+    "directory": "./site/dist",
+    "not_found_handling": "404-page"
+  }
+}

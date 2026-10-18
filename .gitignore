@@ -7,3 +7,6 @@ tmp/*
 
 # Carpeta de salida de herramientas de escritorio, creada en la raiz al entregar archivos
 Claude outputs/
+
+# Estado local de wrangler (Cloudflare), si se corre en la maquina
+.wrangler/
