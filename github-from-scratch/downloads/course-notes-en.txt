@@ -1,5 +1,51 @@
 GITHUB FROM SCRATCH. COURSE NOTES
-Git + GitHub | 2026-10-18 | v1.1.0
+Git + GitHub | 2026-10-18 | v1.2.0
+
+WHAT GIT AND GITHUB ARE
+=================================================================
+What they are, where they came from, where they fit and where they do not. Read it once; the lessons do the rest.
+
+Snapshots you keep, changes you agree on
+Git is a distributed version control system. Each commit is a complete snapshot of the project, identified by the hash of its content and linked to the commit or commits it came from; a branch is a movable pointer to one of them. Every copy of the repository holds the whole history, so recording, comparing and branching happen on your machine, without a network.
+GitHub is a service that hosts Git repositories and adds what a team needs to agree on changes: issues, pull requests and reviews, rules on branches, Actions to automate, releases. It does not replace Git; it hosts it. A commit you record locally does not exist on GitHub until you publish it, and nothing on GitHub reaches your copy until you fetch it.
+→ Git records history; GitHub is where people agree on it.
+
+Where they came from
+Git was written by Linus Torvalds in April 2005 for the development of the Linux kernel, after the project lost the use of BitKeeper, the proprietary tool it had relied on since 2002. The goals were set from the start: speed, a simple design, strong support for non-linear development with thousands of parallel branches, fully distributed, and able to handle a project the size of the kernel. Within months Torvalds handed maintenance to Junio Hamano, who has led the project since.
+GitHub was built by Tom Preston-Werner, Chris Wanstrath and PJ Hyett and launched in April 2008: hosting for Git repositories, with the collaboration around them on the web. Microsoft completed its acquisition in October 2018, with the commitment that GitHub would operate independently. It grew into the place where a large part of open source is published, and the tools around a change, issues, pull requests, Actions and releases, grew with it. The timeline keeps the changes that still shape how it is used.
+2005 Git: Linus Torvalds records the first commit on 7 April; version 1.0 follows in December.
+2008 GitHub: Public launch in April: hosting for Git repositories with collaboration on the web.
+2018 Microsoft: Microsoft completes the acquisition of GitHub in October, committing that it will operate independently and remain an open platform.
+2019 Actions: GitHub Actions is generally available in November: workflows that run on events in the repository.
+2020 main: Git 2.28 adds init.defaultBranch in July; in October, main becomes the default name of the first branch in new GitHub repositories.
+2023 Rulesets: Repository rules (rulesets) are generally available in July: protections for branches and tags, visible to everyone who collaborates.
+
+Where they fit
+The official documentation of both describes what they are for. These are the cases you will meet in everyday development.
+- Source code and any text that changes bit by bit: Configuration, documentation, infrastructure as code: anything written in lines, where a diff tells you what changed.
+- Parallel work without stepping on each other: Each line of work on its own branch; merge or rebase joins them when they are ready, and conflicts are shown instead of lost.
+- Agreeing on a change before integrating it: A pull request puts the proposal, the discussion, the review and the automatic checks in one place, before the change reaches the main branch.
+- A history you can audit and recover from: Who changed what and when; revert undoes a change with a new commit; bisect finds the commit that broke something.
+- Automation that runs with every change: Actions runs workflows on a push, on a pull request or on a schedule: build, tests, checks, deployment.
+- Deliveries you can name: A tag fixes a point in history; a release adds notes and files to it, so everyone knows which version was delivered.
+
+Where they do not fit
+This part is the course's judgment, not official documentation. Each row says what to use instead.
+- Large binary files that keep changing: Videos, datasets and compiled artifacts have no useful diff, and every version stays in every clone. GitHub blocks files over 100 MiB and recommends keeping repositories small, ideally under 1 GB. Use instead: Git LFS for the files that must travel with the code; an artifact store or object storage for the rest.
+- Secrets and credentials: Once committed they are in the history of every clone and fork, and rewriting history does not reach other people's copies. The first step is always to revoke the secret. Use instead: A secrets manager, values injected at deploy time, and rotation.
+- Generated artifacts: Build output is rebuilt from the code; versioning it doubles the history and produces a conflict on every build. Use instead: An artifact registry (Maven, npm, container images) or the files attached to a release.
+- Business data and databases: Git versions files, not rows: no queries, no concurrent writers, no transactions. Use instead: The database, plus versioned migrations in the repository so the schema has a history.
+- Editing a document together in real time: Git integrates finished changes; it does not merge keystrokes. Two people in the same paragraph at the same time end in conflicts. Use instead: A collaborative editor for the writing; Git for the result, once it is text worth keeping.
+- As the deployment or backup tool itself: A repository says which version exists, not that it is running or safe: no environments, no rollback of state, no retention policy. Use instead: Git as the source for both: a pipeline that deploys from a tag, and backups of the repository and of the data it does not hold.
+
+How to decide
+1. Does it change bit by bit, and is it text?
+2. Does more than one person work on it at the same time?
+3. Does someone need to agree before a change is integrated?
+4. Do you need to go back, and to know who changed what?
+5. Does something have to run with every change: tests, checks, a deployment?
+Three yes answers and you are in the right place. Lesson 00 shows how the course works and what your machine needs.
+
 
 00. Before you start
 =================================================================

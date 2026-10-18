@@ -1,8 +1,8 @@
 # Docker and Kubernetes kit / Kit de Docker y Kubernetes
 
-Version 1.1.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. The `sh` shell used by some commands runs inside the Linux container.
+Version 1.2.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. The `sh` shell used by some commands runs inside the Linux container.
 
-Versión 1.1.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. El shell `sh` de algunos comandos corre dentro del contenedor Linux.
+Versión 1.2.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. El shell `sh` de algunos comandos corre dentro del contenedor Linux.
 
 ## Tools and first run / Herramientas y primera ejecución
 

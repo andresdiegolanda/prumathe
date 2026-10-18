@@ -1,5 +1,9 @@
 # Evidencia de validación
 
+## Versión 1.2.0, 18/10/2026
+
+Página nueva "Qué son Git y GitHub" (`what-git-and-github-are.html`, texto en `assets/about.js`), fuera de la numeración de lecciones; experimentos, lecciones y requisitos sin cambios respecto de la 1.1.0, así que su evidencia sigue valiendo. Ejecutado: `npm run build` y `npm run check` con los controles nuevos de la página (cadenas bilingües, seis hitos, tres columnas, fuentes https, página generada y publicada en `dist/`); la página renderizada en un navegador sin interfaz en los dos idiomas, en las cuatro apariencias y a 390 px, sin errores de consola ni desborde horizontal; las fuentes oficiales listadas al pie abiertas y contrastadas en la fecha indicada. No ejecutado: nada nuevo en una cuenta de GitHub.
+
 ## Versión 1.1.0, 18/10/2026
 
 Correcciones de la revisión del 18 de octubre de 2026 (carpeta `reviews/` del repositorio de cursos) aplicadas: actions de ejemplo y workflows a v7, mínimo declarado de Git 2.32, textos de las actividades de las lecciones 10, 16 y 19, terminología en español, página 404 propia y controles nuevos en `scripts/check.mjs`.

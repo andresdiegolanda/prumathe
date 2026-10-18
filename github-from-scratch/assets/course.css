@@ -1928,3 +1928,182 @@ html[data-theme='reading'] .home-footnote {
   .inspector p { font-size: 1rem; }
 }
 .selectable:focus-visible > rect, .selectable:focus-visible > circle { stroke: var(--focus); stroke-width: 4; }
+
+/* The "What Git and GitHub are" page: one scrolling column in every skin. */
+.about {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding: 5vh 6vw 4vh;
+}
+.about-inner {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+.about h1 {
+  font: clamp(2.25rem, 4vw, 3.5rem) / 1.08 var(--serif);
+  font-weight: 400;
+  letter-spacing: -1.5px;
+  margin: 12px 0 14px;
+}
+.about-lead {
+  font-size: 1.0625rem;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 40rem;
+  margin: 0 0 2.5rem;
+}
+.about-section {
+  margin: 0 0 2.75rem;
+}
+.about-section h2 {
+  font: 1.5rem/1.25 var(--serif);
+  font-weight: 400;
+  margin: 0 0 0.75rem;
+}
+.about-section p {
+  max-width: 40rem;
+  line-height: 1.7;
+  margin: 0 0 0.9rem;
+}
+.about-section .principle {
+  max-width: 40rem;
+  margin: 1rem 0 1.25rem;
+}
+.about-model .diagram {
+  flex: none;
+  background-color: var(--white);
+}
+.about-model .diagram svg {
+  height: auto;
+}
+.about-timeline svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5rem 0 1rem;
+}
+.about-milestones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+.about-milestones strong {
+  display: block;
+  font: 600 0.6875rem var(--mono);
+  letter-spacing: 1.2px;
+  color: var(--green);
+  margin-bottom: 2px;
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+}
+.about-grid article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  padding: 16px;
+}
+.about-grid h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+}
+.about-grid p {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.55;
+}
+.about-table {
+  display: grid;
+  grid-template-columns: 1.1fr 1.7fr 1.1fr;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--white);
+}
+.about-table > div {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+.about-table .head {
+  font: 600 0.625rem var(--mono);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--soft);
+}
+.about-table .case {
+  font-weight: 600;
+}
+.about-table .why {
+  color: var(--muted);
+}
+.about-table .instead {
+  color: var(--green-dark);
+}
+.about-questions {
+  padding-left: 1.25rem;
+  line-height: 1.7;
+  max-width: 40rem;
+  margin: 0 0 1rem;
+}
+.about-questions li {
+  margin-bottom: 0.3rem;
+}
+.about-sources ul {
+  padding-left: 1.1rem;
+  line-height: 1.8;
+  font-size: 0.8125rem;
+  margin: 0;
+}
+.about .home-actions {
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+html[data-theme='reading'] .about {
+  overflow: visible;
+  height: auto;
+  max-width: 46rem;
+  padding: 2.5rem 1.25rem 3rem;
+}
+@media (max-width: 760px) {
+  .about {
+    padding: 22px 23px;
+  }
+  .about-table {
+    grid-template-columns: 1fr;
+  }
+  .about-table .head {
+    display: none;
+  }
+  .about-table .case {
+    border-bottom: 0;
+    padding-bottom: 2px;
+  }
+  .about-table .why {
+    border-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 2px;
+  }
+  .about-table .instead {
+    padding-top: 0;
+  }
+  .about-table .instead::before {
+    content: attr(data-label) ': ';
+    font: 600 0.625rem var(--mono);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}

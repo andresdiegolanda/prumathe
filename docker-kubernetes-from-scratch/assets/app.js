@@ -4,8 +4,9 @@
     refs = window.DK_REFERENCE,
     $ = (s) => document.querySelector(s);
   const id = document.body.dataset.lesson,
-    home = id === undefined,
-    prefix = home ? '' : '../';
+    about = document.body.dataset.page === 'about',
+    home = id === undefined && !about,
+    prefix = id === undefined ? '' : '../';
   let lang = 'en',
     progress = {},
     currentTab = 'learn',
@@ -17,7 +18,7 @@
     inspected = null,
     glossaryIndex = 0,
     glossarySearch = '',
-    mapUnit = home ? 0 : course.lessons[Number(id)].unit,
+    mapUnit = id === undefined ? 0 : course.lessons[Number(id)].unit,
     lastFocus = null,
     homeUnit = 0;
   try {
@@ -31,16 +32,16 @@
   const THEMES = ['light', 'dark', 'reading', 'projector'];
   let theme = document.documentElement.dataset.theme;
   if (!THEMES.includes(theme)) theme = 'light';
-  const reading = () => theme === 'reading' && !home;
+  const reading = () => theme === 'reading' && id !== undefined;
   const query = new URLSearchParams(location.search);
   if (['en', 'es'].includes(query.get('lang'))) lang = query.get('lang');
-  if (!home) {
+  if (id !== undefined) {
     if (['learn', 'lab', 'check', 'sources'].includes(query.get('view')))
       currentTab = query.get('view');
     frame = Math.max(0, Math.min(2, Number(query.get('step')) || 0));
   }
   if (currentTab === 'lab') surface = 'notes';
-  const lesson = home ? null : course.lessons[Number(id)];
+  const lesson = id === undefined ? null : course.lessons[Number(id)];
   const t = (a, b) => (lang === 'es' ? b : a),
     L = (x) => x?.[lang] || '',
     e = (s) =>
@@ -76,6 +77,9 @@
   function homeLink() {
     return `${prefix}index.html?lang=${lang}&theme=${theme}`;
   }
+  function aboutLink() {
+    return `${prefix}what-docker-and-kubernetes-are.html?lang=${lang}&theme=${theme}`;
+  }
   function save() {
     try {
       localStorage.setItem('dk-course-language', lang);
@@ -97,7 +101,7 @@
     return `<header><a class="brand" href="${homeLink()}" aria-label="${t('Course home', 'Inicio del curso')}">${icon}<span><strong>Docker & Kubernetes<span class="brand-suffix"> from scratch</span></strong><small>${t('A visual field guide', 'Una guía visual de campo')}</small></span></a><span class="header-meta">${course.lessons.length} ${t('LESSONS', 'LECCIONES')} / KUBERNETES ${course.kubernetes}</span><div class="header-actions"><button class="btn drawer-only" data-action="map">${t('Course', 'Curso')}</button><button class="btn extra" data-action="glossary">${t('Glossary', 'Glosario')} <span aria-hidden="true">↗</span></button><a class="btn extra" href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Download labs', 'Descargar labs')} ↓</a><label class="theme-pick"><span class="sr-only">${t('Skin', 'Apariencia')}</span><select data-theme-pick aria-label="${t('Skin', 'Apariencia')}">${THEMES.map((x) => `<option value="${x}" ${x === theme ? 'selected' : ''}>${themeName(x)}</option>`).join('')}</select></label><div class="language" role="group" aria-label="${t('Language', 'Idioma')}"><button data-lang="en" aria-pressed="${lang === 'en'}" lang="en">EN</button><button data-lang="es" aria-pressed="${lang === 'es'}" lang="es-AR" title="Español rioplatense">ES</button></div><button class="btn extra" data-action="help" aria-label="${t('Help and keyboard shortcuts', 'Ayuda y atajos de teclado')}">?</button></div></header>`;
   }
   function footer() {
-    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${home ? 'DOCKER + KUBERNETES' : String(Number(id)).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
+    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${!lesson ? 'DOCKER + KUBERNETES' : String(Number(id)).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
   }
   function sidebar() {
     const unit = lesson.unit;
@@ -116,7 +120,52 @@
     const next =
       course.lessons.find((l) => !progress[l.slug]?.quiz || !progress[l.slug]?.lab) ||
       course.lessons[0];
-    return `<main class="home" id="main"><section class="home-intro"><span class="eyebrow">${t('FROM A PROCESS TO A RUNNING CLUSTER', 'DE UN PROCESO A UN CLÚSTER EN MARCHA')}</span><h1>${t('Build it.<br>Run it.<br><em>Keep it alive.</em>', 'Construí.<br>Desplegá.<br><em>Entendé.</em>')}</h1><p class="home-lead">${t('Start a process. Package an image. Lose a Pod. Follow one small application from Docker to Kubernetes and test every boundary.', 'Arrancá un proceso. Construí una imagen. Hacé caer un Pod. Seguí una aplicación desde Docker hasta Kubernetes y probá cada límite.')}</p><div class="home-actions"><a class="btn primary" href="${link(next)}">${score() ? t('Continue learning', 'Seguí aprendiendo') : t('Start from zero', 'Empezá desde cero')} <span aria-hidden="true">→</span></a><a class="btn" href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Get the lab kit', 'Descargá el kit')} ↓</a></div><div class="home-tag"><span>${course.lessons.length} ${t('VISUAL LESSONS', 'LECCIONES VISUALES')}</span><span>${course.lessons.length} ${t('HANDS-ON LABS', 'LABORATORIOS')}</span><span>EN / ES</span></div><div class="hero-art" aria-hidden="true">${hero()}</div></section><section class="home-curriculum" aria-label="${t('Course curriculum', 'Programa del curso')}"><div class="eyebrow"><span>${t('THE LEARNING PATH', 'EL RECORRIDO')}</span><span>00 ${t('to', 'a')} ${String(course.lessons.at(-1).id).padStart(2, '0')}</span></div>${course.units.map((u, i) => `<a class="unit-row ${i === homeUnit ? 'mobile-active' : ''}" href="${link(course.lessons.find((l) => l.unit === i))}"><span class="num">${String(i).padStart(2, '0')}</span><span><strong>${e(L(u))}</strong><small>${(() => { const group = course.lessons.filter((l) => l.unit === i); return group.length === 1 ? e(L(group[0].intro)) : e(L(group[0].title)) + ' → ' + e(L(group.at(-1).title)); })()}</small></span><span class="unit-arrow" aria-hidden="true">↗</span></a>`).join('')}<div class="home-mobile-pager"><button class="btn" data-home-prev aria-label="${t('Previous unit', 'Unidad anterior')}">←</button><span>${t('Unit', 'Unidad')} ${String(homeUnit).padStart(2, '0')} / ${String(course.units.length - 1).padStart(2, '0')}</span><button class="btn" data-home-next aria-label="${t('Next unit', 'Siguiente unidad')}">→</button></div><p class="home-footnote">${t('No account. No external scripts. Open locally or host anywhere.<br>Docker is required for the labs, not for exploring the visual models.', 'Sin cuenta ni scripts externos. Abrilo localmente o publicalo donde quieras.<br>Docker es necesario para los laboratorios, no para explorar los modelos.')}</p></section></main>`;
+    return `<main class="home" id="main"><section class="home-intro"><span class="eyebrow">${t('FROM A PROCESS TO A RUNNING CLUSTER', 'DE UN PROCESO A UN CLÚSTER EN MARCHA')}</span><h1>${t('Build it.<br>Run it.<br><em>Keep it alive.</em>', 'Construí.<br>Desplegá.<br><em>Entendé.</em>')}</h1><p class="home-lead">${t('Start a process. Package an image. Lose a Pod. Follow one small application from Docker to Kubernetes and test every boundary.', 'Arrancá un proceso. Construí una imagen. Hacé caer un Pod. Seguí una aplicación desde Docker hasta Kubernetes y probá cada límite.')}</p><div class="home-actions"><a class="btn primary" href="${link(next)}">${score() ? t('Continue learning', 'Seguí aprendiendo') : t('Start from zero', 'Empezá desde cero')} <span aria-hidden="true">→</span></a><a class="btn" href="${aboutLink()}">${t('What Docker and Kubernetes are', '¿Qué son Docker y Kubernetes?')}</a><a class="btn" href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Get the lab kit', 'Descargá el kit')} ↓</a></div><div class="home-tag"><span>${course.lessons.length} ${t('VISUAL LESSONS', 'LECCIONES VISUALES')}</span><span>${course.lessons.length} ${t('HANDS-ON LABS', 'LABORATORIOS')}</span><span>EN / ES</span></div><div class="hero-art" aria-hidden="true">${hero()}</div></section><section class="home-curriculum" aria-label="${t('Course curriculum', 'Programa del curso')}"><div class="eyebrow"><span>${t('THE LEARNING PATH', 'EL RECORRIDO')}</span><span>00 ${t('to', 'a')} ${String(course.lessons.at(-1).id).padStart(2, '0')}</span></div>${course.units.map((u, i) => `<a class="unit-row ${i === homeUnit ? 'mobile-active' : ''}" href="${link(course.lessons.find((l) => l.unit === i))}"><span class="num">${String(i).padStart(2, '0')}</span><span><strong>${e(L(u))}</strong><small>${(() => { const group = course.lessons.filter((l) => l.unit === i); return group.length === 1 ? e(L(group[0].intro)) : e(L(group[0].title)) + ' → ' + e(L(group.at(-1).title)); })()}</small></span><span class="unit-arrow" aria-hidden="true">↗</span></a>`).join('')}<div class="home-mobile-pager"><button class="btn" data-home-prev aria-label="${t('Previous unit', 'Unidad anterior')}">←</button><span>${t('Unit', 'Unidad')} ${String(homeUnit).padStart(2, '0')} / ${String(course.units.length - 1).padStart(2, '0')}</span><button class="btn" data-home-next aria-label="${t('Next unit', 'Siguiente unidad')}">→</button></div><p class="home-footnote">${t('No account. No external scripts. Open locally or host anywhere.<br>Docker is required for the labs, not for exploring the visual models.', 'Sin cuenta ni scripts externos. Abrilo localmente o publicalo donde quieras.<br>Docker es necesario para los laboratorios, no para explorar los modelos.')}</p></section></main>`;
+  }
+  /* The "What Docker and Kubernetes are" page: one scrolling document built from assets/about.js, with the model
+     of one lesson as its only interactive piece. */
+  let aboutModel = null;
+  function aboutView() {
+    const A = window.DK_ABOUT;
+    aboutModel = DKVisuals.render('reconcile', 0, {}, lang, theme);
+    const P = DKVisuals.palette(theme);
+    const points = A.origin.timeline;
+    const stepX = 640 / (points.length - 1);
+    const timeline = `<svg viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${t('Timeline', 'Línea de tiempo')}"><path d="M40 52H680" stroke="${P.line}" stroke-width="2"/>${points
+      .map(
+        (p, i) =>
+          `<circle cx="${40 + i * stepX}" cy="52" r="7" fill="${i === points.length - 1 ? P.orange : P.green}"/><text x="${40 + i * stepX}" y="28" text-anchor="middle" font-family="Consolas,monospace" font-size="14" fill="${P.ink}">${p.year}</text><text x="${40 + i * stepX}" y="86" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="12" fill="${P.muted}">${e(L(p.label))}</text>`,
+      )
+      .join('')}</svg>`;
+    const section = (title, body, cls = '') =>
+      `<section class="about-section ${cls}"><h2>${e(L(title))}</h2>${body}</section>`;
+    const paras = (list) => list.map((p) => `<p>${e(L(p))}</p>`).join('');
+    const what = section(
+      A.what.title,
+      `${paras(A.what.text)}<div class="principle"><span class="eyebrow">${t('TAKE THIS WITH YOU', 'QUEDATE CON ESTO')}</span>${e(L(A.what.rule))}</div><div class="about-model"><div class="diagram" id="diagram">${aboutModel.svg}</div><p class="model-note">${e(L(A.what.modelNote))}</p></div>`,
+    );
+    const origin = section(
+      A.origin.title,
+      `${paras(A.origin.text)}<div class="about-timeline">${timeline}</div><ol class="about-milestones">${points.map((p) => `<li><strong>${p.year} · ${e(L(p.label))}</strong>${e(L(p.text))}</li>`).join('')}</ol>`,
+    );
+    const fits = section(
+      A.fits.title,
+      `<p>${e(L(A.fits.intro))}</p><div class="about-grid">${A.fits.items.map((x) => `<article><h3>${e(L(x.title))}</h3><p>${e(L(x.text))}</p></article>`).join('')}</div>`,
+    );
+    const misfits = section(
+      A.misfits.title,
+      `<p>${e(L(A.misfits.intro))}</p><div class="about-table" role="table">${A.misfits.headers.map((h) => `<div class="head" role="columnheader">${e(L(h))}</div>`).join('')}${A.misfits.items.map((x) => `<div class="case" role="cell">${e(L(x.title))}</div><div class="why" role="cell">${e(L(x.why))}</div><div class="instead" role="cell" data-label="${e(L(A.misfits.headers[2]))}">${e(L(x.instead))}</div>`).join('')}</div>`,
+    );
+    const decide = section(
+      A.decide.title,
+      `<ol class="about-questions">${A.decide.questions.map((q) => `<li>${e(L(q))}</li>`).join('')}</ol><p>${e(L(A.decide.closing))}</p><div class="home-actions"><a class="btn primary" href="${link(course.lessons[0])}">${e(L(A.decide.start))} <span aria-hidden="true">→</span></a><a class="btn" href="${homeLink()}">${e(L(A.decide.back))}</a></div>`,
+    );
+    const sources = section(
+      A.sources.title,
+      `<p>${e(L(A.sources.intro))} ${dateText()}.</p><ul>${A.sources.items.map(([name, url]) => `<li><a href="${url}" target="_blank" rel="noopener noreferrer">${e(name)} ↗</a></li>`).join('')}</ul>`,
+      'about-sources',
+    );
+    return `<main class="about" id="main"><div class="about-inner"><span class="eyebrow">${e(L(A.eyebrow))}</span><h1>${e(L(A.title))}</h1><p class="about-lead">${e(L(A.lead))}</p>${what}${origin}${fits}${misfits}${decide}${sources}</div></main>`;
   }
   function hero() {
     const P = DKVisuals.palette(theme);
@@ -217,23 +266,25 @@
   }
   function sourcesView() {
     const source = refs.sources[lesson.source];
-    return `<section class="source-card"><span class="eyebrow">${t('PRIMARY REFERENCE','REFERENCIA PRIMARIA')}</span><h2>${t('Follow the idea to its source.','Seguí la idea hasta su fuente.')}</h2><p>${t('Baseline: Kubernetes '+course.kubernetes+', kind '+course.kind+'. References checked on '+dateText()+'. The models illustrate mechanisms; they do not execute Docker or Kubernetes.','Base: Kubernetes '+course.kubernetes+', kind '+course.kind+'. Referencias verificadas el '+dateText()+'. Los modelos ilustran mecanismos; no ejecutan Docker ni Kubernetes.')}</p><a href="${source[1]}" target="_blank" rel="noopener noreferrer">${e(source[0])} ↗</a><p><a href="${prefix}docs/VALIDATION.md" download>${t('Validation and limits','Validación y límites')} ↓</a></p></section><section class="source-card"><h2>${t('Read the experiment.','Leé el experimento.')}</h2><p>${t('The kit includes a small Python HTTP application, its Dockerfile, Compose configuration and Kubernetes manifests. No host Python is needed. Use only the course kubeconfig and named context.','El kit incluye una aplicación HTTP pequeña en Python, su Dockerfile, Compose y los manifiestos de Kubernetes. No necesitás Python en tu máquina. Usá el kubeconfig y el contexto propios del curso.')}</p><a href="${prefix}labs/app/Dockerfile" download>Dockerfile ↓</a> · <a href="${prefix}labs/k8s/base.yaml" download>base.yaml ↓</a> · <a href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Complete kit','Kit completo')} ↓</a></section><section class="source-card"><h2>${t('Make a prediction.','Hacé una predicción.')}</h2><p>${t('Before each command, write the expected state. Compare it with the observation and explain one thing the experiment cannot prove. Lab completion is your declaration; the browser cannot see your terminal.','Antes de cada comando, anotá el estado esperado. Comparalo con la observación y explicá una cosa que el experimento no demuestra. Vos declarás el lab completo; el navegador no ve tu terminal.')}</p><a href="${prefix}downloads/course-notes-${lang}.txt" download>${t('Course notes','Apuntes del curso')} ↓</a></section>`;
+    return `<section class="source-card"><span class="eyebrow">${t('PRIMARY REFERENCE','REFERENCIA PRIMARIA')}</span><h2>${t('Follow the idea to its source.','Seguí la idea hasta su fuente.')}</h2><p>${t('Baseline: Kubernetes '+course.kubernetes+', kind '+course.kind+'. References checked on '+dateText()+'. The models illustrate mechanisms; they do not execute Docker or Kubernetes.','Base: Kubernetes '+course.kubernetes+', kind '+course.kind+'. Referencias verificadas el '+dateText()+'. Los modelos ilustran mecanismos; no ejecutan Docker ni Kubernetes.')}</p><a href="${source[1]}" target="_blank" rel="noopener noreferrer">${e(source[0])} ↗</a><p><a href="${prefix}docs/VALIDATION.md" download>${t('Validation and limits','Validación y límites')} ↓</a></p></section><section class="source-card"><h2>${t('Read the experiment.','Leé el experimento.')}</h2><p>${t('The kit includes a small Python HTTP application, its Dockerfile, Compose configuration and Kubernetes manifests. No host Python is needed. Use only the course kubeconfig and named context.','El kit incluye una aplicación HTTP pequeña en Python, su Dockerfile, Compose y los manifiestos de Kubernetes. No necesitás Python en tu máquina. Usá el kubeconfig y el contexto propios del curso.')}</p><a href="${prefix}labs/app/Dockerfile" download>Dockerfile ↓</a> · <a href="${prefix}labs/k8s/base.yaml" download>base.yaml ↓</a> · <a href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Complete kit','Kit completo')} ↓</a></section><section class="source-card"><h2>${t('Make a prediction.','Hacé una predicción.')}</h2><p>${t('Before each command, write the expected state. Compare it with the observation and explain one thing the experiment cannot prove. Lab completion is your declaration; the browser cannot see your terminal.','Antes de cada comando, anotá el estado esperado. Comparalo con la observación y explicá una cosa que el experimento no demuestra. Vos declarás el lab completo; el navegador no ve tu terminal.')}</p><a href="${prefix}downloads/course-notes-${lang}.txt" download>${t('Course notes','Apuntes del curso')} ↓</a></section>${lesson.id === 0 ? `<section class="source-card"><h2>${t('Not sure what Docker and Kubernetes are yet?', '¿Todavía no sabés qué son Docker y Kubernetes?')}</h2><p>${t('Five minutes on what they are, where they came from, where they fit and where they do not, before the first lesson.', 'Cinco minutos sobre qué son, de dónde salieron, dónde encajan y dónde no, antes de la primera lección.')}</p><a href="${aboutLink()}">${t('What Docker and Kubernetes are', 'Qué son Docker y Kubernetes')} →</a></section>` : ''}`;
   }
   function render() {
     document.documentElement.lang = lang === 'es' ? 'es-AR' : 'en';
     document.documentElement.dataset.theme = theme;
-    document.title = home
+    document.title = about
+      ? L(window.DK_ABOUT.title) + ' · Docker & Kubernetes from scratch'
+      : home
       ? t('Docker & Kubernetes from scratch. A visual field guide', 'Docker y Kubernetes desde cero. Una guía visual')
       : L(lesson.title) + ' · Docker & Kubernetes from scratch';
     const scrolled = window.scrollY;
     $('#app').innerHTML =
-      `<a class="skip-link" href="#main">${t('Skip to lesson', 'Ir a la lección')}</a><div class="shell">${header()}${home ? homeView() : mainView()}${footer()}</div><dialog class="dialog" id="dialog"></dialog><div class="sr-only" aria-live="polite" id="announce"></div>`;
+      `<a class="skip-link" href="#main">${t('Skip to lesson', 'Ir a la lección')}</a><div class="shell">${header()}${about ? aboutView() : home ? homeView() : mainView()}${footer()}</div><dialog class="dialog" id="dialog"></dialog><div class="sr-only" aria-live="polite" id="announce"></div>`;
     bind();
     // The reading skin scrolls the document; a re-render must not send the reader back to the top.
     if (theme === 'reading' && scrolled) window.scrollTo(0, scrolled);
   }
   function updateURL() {
-    if (home) return;
+    if (!lesson) return;
     const u = new URL(location.href);
     u.searchParams.set('lang', lang);
     u.searchParams.set('theme', theme);
@@ -363,7 +414,7 @@
     if (focused) document.querySelector(`[data-sim-action="${focused}"]`)?.focus();
   }
   function inspect(key, model = null, area = null) {
-    const v = model || DKVisuals.render(lesson.visual, frame, sim, lang, theme),
+    const v = model || aboutModel || DKVisuals.render(lesson.visual, frame, sim, lang, theme),
       text = v.details[key];
     if (!text) return;
     const target = area || $('#dialog[open] .expanded-model') || $('#diagram');
@@ -543,7 +594,7 @@
         .map(([a, b]) => `<div class="help-row"><span>${a}</span><kbd>${b}</kbd></div>`)
         .join(
           '',
-        )}<p>${t('Progress is self-reported for labs. Completing a checkpoint does not prove that a Docker command ran. No account or telemetry is used. Diagrams work offline; downloading Docker images needs internet the first time.', 'El avance de laboratorios lo declarás vos. Resolver un control no prueba que se ejecutó un comando Docker. No hay cuenta ni telemetría. Los diagramas funcionan sin internet; la primera descarga de imágenes Docker necesita conexión.')}</p><a class="btn primary" href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Download the complete lab kit', 'Descargá el kit completo')} ↓</a>`,
+        )}<p>${t('Progress is self-reported for labs. Completing a checkpoint does not prove that a Docker command ran. No account or telemetry is used. Diagrams work offline; downloading Docker images needs internet the first time.', 'El avance de laboratorios lo declarás vos. Resolver un control no prueba que se ejecutó un comando Docker. No hay cuenta ni telemetría. Los diagramas funcionan sin internet; la primera descarga de imágenes Docker necesita conexión.')}</p><p>${t('New to containers? Read', '¿Nuevo en contenedores? Leé')} <a href="${aboutLink()}">${t('What Docker and Kubernetes are', 'Qué son Docker y Kubernetes')}</a>${t(' first: five minutes on what Docker and Kubernetes are, where they came from and where they fit.', ' primero: cinco minutos sobre qué son Docker y Kubernetes, de dónde salieron y dónde encajan.')}</p><a class="btn primary" href="${prefix}downloads/docker-kubernetes-labs.zip" download>${t('Download the complete lab kit', 'Descargá el kit completo')} ↓</a>`,
     );
   }
   document.addEventListener('keydown', (ev) => {
@@ -567,7 +618,7 @@
     if (ev.key.toLowerCase() === 'g') openGlossary();
     else if (ev.key.toLowerCase() === 'm') openMap();
     else if (
-      !home &&
+      lesson &&
       ['learn', 'lab'].includes(currentTab) &&
       ['ArrowRight', 'ArrowLeft'].includes(ev.key)
     ) {

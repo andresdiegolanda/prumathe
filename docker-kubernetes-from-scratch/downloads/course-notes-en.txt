@@ -1,5 +1,51 @@
 DOCKER & KUBERNETES FROM SCRATCH. COURSE NOTES
-Kubernetes 1.37.0 | 2026-10-18 | v1.1.0
+Kubernetes 1.37.0 | 2026-10-18 | v1.2.0
+
+WHAT DOCKER AND KUBERNETES ARE
+=================================================================
+What they are, where they came from, where they fit and where they do not. Read it once; the lessons do the rest.
+
+An isolated process and a declared state
+A container is a process that the Linux kernel isolates with namespaces (its own view of processes, network and filesystem) and limits with cgroups (CPU and memory), and that shares the host kernel with every other container. It is not a virtual machine: there is no guest operating system, only a process with the files it needs. Those files travel as an image, immutable and made of layers. Docker is the tool that builds that image from a Dockerfile, runs it as a container and distributes it through a registry; Compose describes several containers on one host in a single file.
+Kubernetes is a platform for running many containers across many machines. You declare the desired state as objects of its API: a Deployment with three replicas of an image, a Service in front of them. Controllers compare that declaration with what exists and act on the difference; the scheduler places each Pod on a node; a Service gives the Pods a stable name and address while they come and go; a rollout replaces instances a few at a time. Kubernetes does not need Docker to run containers: it talks to a runtime through the Container Runtime Interface, usually containerd. The image you built with Docker is the same one that runtime pulls.
+→ Docker runs a container; Kubernetes keeps a declared state.
+
+Where they came from
+Docker was shown in public in March 2013, in a talk at PyCon by Solomon Hykes, from the team at dotCloud, which already used Linux containers. The kernel pieces existed: namespaces had been in Linux since 2008 and control groups with them, and LXC and union filesystems were in use. What Docker added was the image, the Dockerfile, the registry and one command line to build, run and share. In June 2015 Docker donated its container format and its runtime, runC, to the Open Container Initiative, formed under the Linux Foundation; the image and runtime specifications that came out of it are why an image built with Docker runs under any CRI runtime.
+Kubernetes came out of Google in 2014, written by engineers who had built and operated Borg, the system that had run Google's containers for more than a decade. Version 1.0 arrived on July 21, 2015, and on the same day Google, the Linux Foundation and a group of companies formed the Cloud Native Computing Foundation and seeded it with Kubernetes. Since then the changes that matter most to how it is used are the ones on the timeline.
+2013 Docker: Solomon Hykes shows Docker in public at PyCon on March 15, built on namespaces and control groups the kernel had had since 2008.
+2014 Kubernetes: Google open sources Kubernetes, built on what it had learned with Borg.
+2015 OCI and CNCF: June 22: the Open Container Initiative is formed and Docker donates runC. July 21: Kubernetes 1.0 and the Cloud Native Computing Foundation.
+2020 Compose spec: April: the Compose file format becomes an open specification. Late in the year, Kubernetes 1.20 announces that dockershim, the direct integration with Docker Engine, will be removed.
+2022 Kubernetes 1.24: Dockershim is removed from the kubelet; a cluster needs a CRI runtime such as containerd or CRI-O. Images built with Docker keep working.
+2026 Today: Kubernetes 1.37 is the current minor release and kind 0.33.0 runs it as its default node image. The course pins both.
+
+Where they fit
+The official documentation describes what each one is for. These are the cases you will meet in event driven systems and enterprise integration.
+- One artifact with its dependencies: The runtime, the application and the files it expects, built once into an image that runs the same on a laptop and on a server.
+- The same environment for the whole team: A Compose file with the application, its database and its broker; everyone starts the same versions with one command, and so does the test suite.
+- Continuous integration: The image built from a commit is the one that passes the tests, goes to staging and reaches production; what changes between stages is configuration, not the artifact.
+- Many services that must stay up: Kubernetes places each instance, restarts or replaces the ones that fail, and rolls out a new version without taking the service down.
+- Scaling across nodes: More replicas of a consumer when the lag grows, spread over several machines, with requests and limits that say how much each one may take.
+- One way to operate across teams: The same declarations, the same hooks for logs and metrics and the same permission model (RBAC) for every service, whoever wrote it.
+
+Where they do not fit
+This part is the course's judgment, not official documentation. Each row says what to use instead.
+- One application on one machine: A control plane, a node agent and a network layer to run one process is cost without return; most of what Kubernetes gives you solves problems you do not have yet. Use instead: Docker or Compose on that machine, or a service managed by the operating system.
+- A team with nobody to operate it: The official documentation says Kubernetes is not a traditional, all-inclusive PaaS: upgrades, networking, storage, certificates and monitoring are your choices and your work. Use instead: A managed Kubernetes service from your provider, or a platform as a service that takes the image and runs it.
+- Desktop and GUI applications: Containers are made for processes that serve over the network; a window, a graphics session or a sound card need the host in ways the model does not cover well. Use instead: A native installer or a package for the operating system.
+- Workloads tied to a kernel, hard real time or specific hardware: A container shares the host kernel: it cannot bring its own, cannot guarantee a latency the kernel does not guarantee, and reaches devices only through what the host passes in. Use instead: A virtual machine or a dedicated machine with the kernel and drivers the workload needs.
+- Databases and stateful systems without the experience: Kubernetes replaces instances freely; a database needs ordered failover, backups, storage with known performance and someone who has done it before, usually through an operator. Use instead: A managed database, with the application in the cluster pointing at it.
+- Small, sporadic jobs: A report at night or a cleanup once a week does not justify a cluster that runs all day waiting for it. Use instead: A function in your provider, or a cron entry on a machine you already have; a CronJob later, if the cluster already exists.
+
+How to decide
+1. Will more than a handful of services and instances run?
+2. Will they need more than one host?
+3. Is there someone to operate the platform, with the time it takes?
+4. Do you need automatic replacement of failed instances and updates without downtime?
+5. Is there a managed Kubernetes offering you can start from, instead of building the cluster yourself?
+Three yes answers and Kubernetes is worth learning for real; Docker you will need either way. Lesson 00 shows how the course works and leaves Docker ready.
+
 
 00. Before you start
 =================================================================

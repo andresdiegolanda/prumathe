@@ -18,6 +18,10 @@ Cada lección contiene tres escenas, una manipulación del modelo, cuatro pasos 
 
 La versión también figura en `package.json`; `npm run check` exige coincidencia. Cambiar contenido requiere `npm run build`: genera HTML por lección, apuntes, kit ZIP y `dist/` (portada, lecciones, assets, apuntes, kit, `_headers` y 404; los documentos de `docs/` y este README no se publican). No edites a mano los apuntes o páginas generadas. El curso tiene cero dependencias de npm. `check.mjs` también rechaza guiones largos y medios, doble codificación UTF-8, comillas dobles dentro de comillas simples en los comandos (fallan en Windows PowerShell 5.1) y menciones a otros cursos, herramientas o productos de la máquina de validación.
 
+## La página "Qué son Docker y Kubernetes"
+
+Fuera de la numeración de lecciones, `what-docker-and-kubernetes-are.html` responde qué son, de dónde salieron, dónde encajan y dónde no, y cómo decidir, en cinco minutos de lectura. Su texto vive en `assets/about.js` (bilingüe, con sus fuentes oficiales y la fecha de verificación del curso); `app.js` la dibuja con el modelo de la lección 15 como única pieza interactiva; `build.mjs` genera la página y la pone al frente de los apuntes; `check.mjs` exige cada cadena en los dos idiomas, seis hitos en la línea de tiempo, tres columnas en la tabla y fuentes https. Se llega desde el botón de la portada, el diálogo de ayuda y las referencias de la lección 00. La sección "dónde no encaja" es criterio del curso y lo dice; el resto se contrasta con las fuentes listadas al pie.
+
 ## Criterio editorial
 
 Usá voseo en español: mirá, ejecutá, comprobá. Conservá comandos, estados, nombres de objetos y propiedades. Definí el término cuando aparece por primera vez y vinculalo al glosario. Ambos idiomas deben enseñar la misma distinción y el mismo límite. Evitá presentar un modelo determinista como medición de tiempos reales.

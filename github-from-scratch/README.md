@@ -4,13 +4,14 @@ Un curso para **entender qué cambia, dónde y para quién**, inspirado en el m�
 
 A course for **understanding what changes, where and for whom**, following Prumathe’s visual method. Commands are tools for experiments and reference; no checkpoint tests syntax recall.
 
-Abrí [index.html](index.html?lang=es) o empezá por [Antes de empezar](lessons/before-you-start.html?lang=es). El sitio es estático, independiente y funciona sin servidor, cuenta ni conexión. El idioma inicial es español rioplatense; el selector ofrece inglés con el mismo contenido.
+Abrí [index.html](index.html?lang=es) o empezá por [Antes de empezar](lessons/before-you-start.html?lang=es); si todavía no sabés qué son, leé antes [Qué son Git y GitHub](what-git-and-github-are.html?lang=es). El sitio es estático, independiente y funciona sin servidor, cuenta ni conexión. El idioma inicial es español rioplatense; el selector ofrece inglés con el mismo contenido.
 
-Open [index.html](index.html?lang=en) or start with [Before you start](lessons/before-you-start.html?lang=en). The static, self-contained site works without a server, account or connection. The default language is Rioplatense Spanish; the selector offers English with equivalent content.
+Open [index.html](index.html?lang=en) or start with [Before you start](lessons/before-you-start.html?lang=en); if you do not know what the two are yet, read [What Git and GitHub are](what-git-and-github-are.html?lang=en) first. The static, self-contained site works without a server, account or connection. The default language is Rioplatense Spanish; the selector offers English with equivalent content.
 
 ## Incluye / Includes
 
 - 20 lecciones en 6 unidades, con 60 escenas y modelos interactivos. / 20 lessons in 6 units, with 60 scenes and interactive models.
+- Una página de cinco minutos, "Qué son Git y GitHub": qué son, de dónde salieron, dónde encajan y dónde no, con sus fuentes. / A five minute "What Git and GitHub are" page: what they are, where they came from, where they fit and where they do not, with its sources.
 - 60 preguntas sobre predicción, explicación y límites, con distractores plausibles y devolución. / 60 questions about prediction, explanation and limits, with plausible distractors and feedback.
 - 14 experimentos locales con Git real y 41 aserciones. / 14 local experiments using real Git with 41 assertions.
 - 6 actividades de GitHub, cada una con alternativa de caso de estudio sin cuenta. / 6 GitHub activities, each with an account-free case-study alternative.
@@ -45,9 +46,9 @@ GitHub activities need an account, your own practice repository and appropriate 
 
 ## Edición y evidencia / Editing and evidence
 
-Versión del curso: **1.1.0**, 18/10/2026. Referencias oficiales revisadas en esa fecha. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
+Versión del curso: **1.2.0**, 18/10/2026. Referencias oficiales revisadas en esa fecha. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
 
-Course version: **1.1.0**, 18 October 2026. Official references were reviewed on that date. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
+Course version: **1.2.0**, 18 October 2026. Official references were reviewed on that date. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
 
 ```text
 npm run build

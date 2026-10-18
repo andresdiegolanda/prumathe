@@ -7,8 +7,9 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const context={window:{}};
-for(const name of ['curriculum','reference','visuals'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),context);
+for(const name of ['curriculum','reference','visuals','about'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),context);
 const course=context.window.GITHUB_COURSE, refs=context.window.GITHUB_REFERENCE, visuals=context.window.GitHubVisuals;
+const c={window:context.window};
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 const runnerSource=fs.readFileSync(path.join(root,'labs/lab.mjs'),'utf8');
 const supported=new Set(runnerSource.match(/const experiments = \{([^}]+)\}/)[1].split(',').map(s=>s.trim()));
@@ -45,6 +46,17 @@ for(const [i,l] of course.lessons.entries()){
   const html=fs.readFileSync(path.join(root,'lessons',l.slug+'.html'),'utf8');assert.ok(html.includes('data-lesson="'+i+'"'));
   for(const lang of ['en','es'])assert.ok(fs.readFileSync(path.join(root,'downloads','course-notes-'+lang+'.txt'),'utf8').includes(l.title[lang]));
 }
+// The "What Git and GitHub are" page: every string bilingual, six milestones, three table headers, https sources.
+const about=c.window.GITHUB_ABOUT;
+(function walkAbout(node,where){
+  if(node&&typeof node==='object'&&'en' in node&&'es' in node&&typeof node.en==='string'){assert.ok(node.en.trim()&&node.es.trim(),where+' empty');return;}
+  if(Array.isArray(node))node.forEach((x,i)=>walkAbout(x,where+'['+i+']'));
+  else if(node&&typeof node==='object')for(const [k,v] of Object.entries(node))walkAbout(v,where+'.'+k);
+})(about,'about');
+assert.equal(about.origin.timeline.length,6);assert.equal(about.misfits.headers.length,3);assert.ok(about.fits.items.length>=5&&about.misfits.items.length>=5&&about.decide.questions.length===5);
+for(const [name,url] of about.sources.items)assert.ok(name&&/^https:\/\//.test(url),'about source '+name);
+const aboutPage=fs.readFileSync(path.join(root,'what-git-and-github-are.html'),'utf8');assert.ok(aboutPage.includes('data-page="about"')&&aboutPage.includes('assets/about.js'),'about page shell');
+assert.ok(visuals.render('git-and-github',0,{},'en','light').svg.includes('<svg'),'about model');
 assert.equal(commands,14);assert.equal(course.lessons.filter(l=>l.mode==='github').length,6);
 for(const [i,u] of course.units.entries()){B(u,'unit');assert.ok(course.lessons.some(l=>l.unit===i));}
 for(const g of refs.glossary){assert.equal(g.length,5);assert.ok(course.lessons[g[4]]);for(let i=0;i<4;i++)assert.ok(g[i]);}
@@ -83,6 +95,7 @@ const zip=fs.readFileSync(path.join(root,'downloads/github-labs.zip'));
 assert.equal(zip.readUInt32LE(0),0x04034b50);assert.ok(!zip.includes(Buffer.from('labs/runs/')));
 assert.ok(zip.includes(Buffer.from('labs/lab.mjs'))&&zip.includes(Buffer.from('labs/CAPSTONE.md')));
 for(const l of course.lessons)assert.ok(fs.existsSync(path.join(root,'dist/lessons',l.slug+'.html')));
+assert.ok(fs.existsSync(path.join(root,'dist/what-git-and-github-are.html')),'about page in dist');
 // Prove the supplied narrow assertion fails for 09:00 and passes for 10:00, locally, outside the course folder.
 const sample=fs.mkdtempSync(path.join(os.tmpdir(),'github-course-hours-'));
 for(const [hour,success]of [['09:00',false],['10:00',true]]){
@@ -90,4 +103,4 @@ for(const [hour,success]of [['09:00',false],['10:00',true]]){
   const result=spawnSync(process.execPath,['--test',path.join(root,'labs/examples/hours.test.mjs')],{cwd:sample,encoding:'utf8',windowsHide:true});
   assert.equal(result.status,success?0:1,'Unexpected hours assertion: '+result.stdout+result.stderr);
 }
-console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 80 activity steps, 37 glossary terms, ${renderings} model renderings, bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);
+console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 80 activity steps, 37 glossary terms, ${renderings} model renderings, the What Git and GitHub are page, bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);

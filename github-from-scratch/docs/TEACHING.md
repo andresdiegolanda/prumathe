@@ -27,6 +27,10 @@ Los pasos empiezan por la predicción y no por un comando. El comando se abre a 
 
 Español rioplatense con voseo e inglés equivalente. Explicá el término técnico al presentarlo y conservá nombres reales de herramientas. No uses guiones largos ni cortos tipográficos. Archivos UTF-8 sin BOM con finales LF. El selector de idioma conserva escena, paso y estado del modelo durante la sesión; las direcciones conservan lección, apariencia, vista, escena y paso de actividad. El modelo se reinicia al recargar.
 
+## La página "Qué son Git y GitHub"
+
+Fuera de la numeración de lecciones, `what-git-and-github-are.html` responde qué son, de dónde salieron, dónde encajan y dónde no, y cómo decidir, en cinco minutos de lectura. Su texto vive en `assets/about.js` (bilingüe, con sus fuentes oficiales y la fecha de verificación del curso); `app.js` la dibuja con el modelo de la lección 01 como única pieza interactiva; `build.mjs` genera la página y la pone al frente de los apuntes; `check.mjs` exige cada cadena en los dos idiomas, seis hitos en la línea de tiempo, tres columnas en la tabla y fuentes https. Se llega desde el botón de la portada, el diálogo de ayuda y las referencias de la lección 00. La sección "dónde no encaja" es criterio del curso y lo dice; el resto se contrasta con las fuentes listadas al pie.
+
 ## Alcance y mantenimiento
 
 Las lecciones iniciales construyen el modelo de Git necesario para entender GitHub. Las finales trabajan propuestas, evidencia y autoridad. Autenticación y autorización se distinguen, pero no se configura SSH ni tokens: las actividades de GitHub se pueden recorrer por la web. El historial compartido se corrige con contexto; no se propone forzar como receta universal.

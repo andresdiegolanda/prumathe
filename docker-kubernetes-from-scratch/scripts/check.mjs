@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const c={window:{}};
-for(const f of ['curriculum','reference','visuals'])vm.runInNewContext(fs.readFileSync(path.join(root,`assets/${f}.js`),'utf8'),c);
+for(const f of ['curriculum','reference','visuals','about'])vm.runInNewContext(fs.readFileSync(path.join(root,`assets/${f}.js`),'utf8'),c);
 const course=c.window.DK_COURSE,refs=c.window.DK_REFERENCE,visuals=c.window.DKVisuals;
 const pair=(v,label)=>{assert.equal(typeof v?.en,'string',label);assert.equal(typeof v?.es,'string',label);assert.ok(v.en.trim()&&v.es.trim(),label);};
 assert.equal(course.lessons.length,25);
@@ -27,6 +27,17 @@ for(const [i,l] of course.lessons.entries()) {
   const html=fs.readFileSync(path.join(root,'lessons',l.slug+'.html'),'utf8');assert.ok(html.includes(`data-lesson="${i}"`));
 }
 assert.equal(steps,100);
+// The "What Docker and Kubernetes are" page: every string bilingual, six milestones, three table headers, https sources.
+const about=c.window.DK_ABOUT;
+(function walkAbout(node,where){
+  if(node&&typeof node==='object'&&'en' in node&&'es' in node&&typeof node.en==='string'){assert.ok(node.en.trim()&&node.es.trim(),where+' empty');return;}
+  if(Array.isArray(node))node.forEach((x,i)=>walkAbout(x,where+'['+i+']'));
+  else if(node&&typeof node==='object')for(const [k,v] of Object.entries(node))walkAbout(v,where+'.'+k);
+})(about,'about');
+assert.equal(about.origin.timeline.length,6);assert.equal(about.misfits.headers.length,3);assert.ok(about.fits.items.length>=5&&about.misfits.items.length>=5&&about.decide.questions.length===5);
+for(const [name,url] of about.sources.items)assert.ok(name&&/^https:\/\//.test(url),'about source '+name);
+const aboutPage=fs.readFileSync(path.join(root,'what-docker-and-kubernetes-are.html'),'utf8');assert.ok(aboutPage.includes('data-page="about"')&&aboutPage.includes('assets/about.js'),'about page shell');
+assert.ok(visuals.render('reconcile',0,{},'en','light').svg.includes('<svg'),'about model');
 // The correct answer must not sit in a predictable position: no lesson repeats the previous lesson's
 // sequence shifted by one, which is what a simple rotation produces.
 const answers=course.lessons.map(l=>l.quiz.map(q=>q.correct).join(''));
@@ -43,7 +54,7 @@ for(const file of walk(root)) {
   const raw=fs.readFileSync(file),text=raw.toString('utf8');assert.ok(!raw.subarray(0,3).equals(Buffer.from([239,187,191])),file+' BOM');assert.ok(!text.includes('\r'),file+' CRLF');assert.ok(!/[\u2013\u2014]/.test(text),file+' dash');if(!file.endsWith('check.mjs')){assert.ok(!/Ã.|Â.|â€|â†/.test(text),file+' double-encoded UTF-8');assert.ok(!/\bkafka\b|norton|codex|chatgpt|openai|anthropic|\bclaude\b/i.test(text),file+' mentions another course, a tool or a product of the validation machine');}
   if(file.endsWith('.html'))for(const match of text.matchAll(/(?:href|src)="([^"#?]+)(?:[?#][^"]*)?"/g)){const target=match[1];if(!/^(https?:|mailto:)/.test(target))assert.ok(fs.existsSync(path.resolve(path.dirname(file),target)),file+' missing '+target);}
 }
-for(const f of ['app','theme','curriculum','reference','visuals']) new vm.Script(fs.readFileSync(path.join(root,'assets',f+'.js'),'utf8'));
+for(const f of ['app','theme','curriculum','reference','visuals','about']) new vm.Script(fs.readFileSync(path.join(root,'assets',f+'.js'),'utf8'));
 const app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.ok(!/Kafka|KAFKA|kafka|Spring|Lab\.java/.test(app));
 for(const lang of ['en','es']){const notes=fs.readFileSync(path.join(root,`downloads/course-notes-${lang}.txt`),'utf8');for(const l of course.lessons)assert.ok(notes.includes(`${String(l.id).padStart(2,'0')}. ${l.title[lang]}`));}
-console.log(`PASS: 25 lessons, 75 scenes, 75 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, quoting, versions, local links and UTF-8/LF.`);
+console.log(`PASS: 25 lessons, 75 scenes, 75 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, quoting, versions, the What Docker and Kubernetes are page, local links and UTF-8/LF.`);

@@ -2,6 +2,10 @@
 
 Este documento registra evidencia ejecutada y límites por versión; los modelos del navegador siguen siendo ilustrativos. Cada sección dice qué se ejecutó, en qué plataforma y qué quedó fuera.
 
+## Versión 1.2.0, 18 de octubre de 2026
+
+Página nueva "Qué son Docker y Kubernetes" (`what-docker-and-kubernetes-are.html`, texto en `assets/about.js`), fuera de la numeración de lecciones; labs, lecciones y versiones fijadas sin cambios respecto de la 1.1.0, así que su evidencia de plataforma sigue valiendo. Ejecutado: `npm run build` y `npm run check` con los controles nuevos de la página (cadenas bilingües, seis hitos, tres columnas, fuentes https, página generada y publicada en `dist/`); la página renderizada en un navegador sin interfaz en los dos idiomas, en las cuatro apariencias y a 390 px, sin errores de consola ni desborde horizontal; las fuentes oficiales listadas al pie abiertas y contrastadas en la fecha indicada. No ejecutado: las suites de laboratorio (no cambió nada que las toque).
+
 ## Versión 1.1.0, 18 de octubre de 2026
 
 Correcciones de la revisión del 18 de octubre de 2026 (carpeta `reviews/` del repositorio de cursos) aplicadas: base Kubernetes 1.37.0 (imagen de nodo predeterminada de kind 0.33.0) y kubectl 1.37.x; imagen base `python:3.14.8-alpine3.24` fijada por digest; `server.py` atiende SIGTERM; `scripts/build.mjs` con la codificación corregida; el comando de la lección 06 sin comillas anidadas; textos de las lecciones 00, 02, 08, 10, 11, 14, 16, 19 y 21; terminología en español (readiness, tag y label, scheduling, bucle, provisioner, healthy); posiciones de las respuestas sin patrón; README y guía del kit bilingües; `dist/` sin `docs/`; controles nuevos en `check.mjs`.

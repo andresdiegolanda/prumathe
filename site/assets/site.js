@@ -40,7 +40,7 @@
         needs: B('Docker Desktop or Docker Engine with Compose v2.', 'Docker Desktop o Docker Engine con Compose v2.'),
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
-          ['what-kafka-is.html', B('What Kafka is', 'Qué es Kafka'), false],
+          ['what-kafka-is.html', B('What it is', 'Qué es'), false],
         ],
       },
       {
@@ -53,7 +53,10 @@
         ),
         stats: [B('25 lessons', '25 lecciones'), B('100 lab steps', '100 pasos de lab'), B('Compose and kind', 'Compose y kind')],
         needs: B('Docker with Linux containers; kind and kubectl for the second half.', 'Docker con contenedores Linux; kind y kubectl para la segunda mitad.'),
-        links: [['index.html', B('Open the course', 'Abrir el curso'), true]],
+        links: [
+          ['index.html', B('Open the course', 'Abrir el curso'), true],
+          ['what-docker-and-kubernetes-are.html', B('What they are', 'Qué son'), false],
+        ],
       },
       {
         slug: 'github-from-scratch',
@@ -65,7 +68,10 @@
         ),
         stats: [B('20 lessons', '20 lecciones'), B('14 Git experiments', '14 experimentos Git'), B('6 GitHub activities', '6 actividades en GitHub')],
         needs: B('Git and Node.js; a GitHub account for the service activities, with an account-free alternative.', 'Git y Node.js; una cuenta de GitHub para las actividades del servicio, con alternativa sin cuenta.'),
-        links: [['index.html', B('Open the course', 'Abrir el curso'), true]],
+        links: [
+          ['index.html', B('Open the course', 'Abrir el curso'), true],
+          ['what-git-and-github-are.html', B('What they are', 'Qué son'), false],
+        ],
       },
     ],
     startLesson: B('Start with lesson 00', 'Empezar por la lección 00'),

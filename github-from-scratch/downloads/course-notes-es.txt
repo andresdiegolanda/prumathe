@@ -1,5 +1,51 @@
 GITHUB DESDE CERO. APUNTES DEL CURSO
-Git + GitHub | 2026-10-18 | v1.1.0
+Git + GitHub | 2026-10-18 | v1.2.0
+
+QUÉ SON GIT Y GITHUB
+=================================================================
+Qué son, de dónde salieron, dónde encajan y dónde no. Se lee una vez; el resto lo hacen las lecciones.
+
+Instantáneas que guardás, cambios que acordás
+Git es un sistema de control de versiones distribuido. Cada commit es una instantánea completa del proyecto, identificada por el hash de su contenido y enlazada al commit o commits de los que viene; una rama es un puntero móvil a uno de ellos. Cada copia del repositorio tiene toda la historia, así que registrar, comparar y ramificar pasan en tu máquina, sin red.
+GitHub es un servicio que aloja repositorios Git y agrega lo que un equipo necesita para ponerse de acuerdo sobre los cambios: issues, pull requests y revisiones, reglas sobre las ramas, Actions para automatizar, releases. No reemplaza a Git; lo aloja. Un commit que registrás en tu máquina no existe en GitHub hasta que lo publicás, y nada de GitHub llega a tu copia hasta que hacés fetch.
+→ Git registra la historia; GitHub es donde la gente se pone de acuerdo.
+
+De dónde salieron
+Git lo escribió Linus Torvalds en abril de 2005 para el desarrollo del kernel de Linux, después de que el proyecto perdió el uso de BitKeeper, la herramienta propietaria con la que trabajaba desde 2002. Los objetivos estaban fijados desde el principio: velocidad, diseño simple, soporte fuerte para desarrollo no lineal con miles de ramas en paralelo, totalmente distribuido y capaz de manejar un proyecto del tamaño del kernel. A los pocos meses Torvalds pasó el mantenimiento a Junio Hamano, que lleva el proyecto desde entonces.
+GitHub lo construyeron Tom Preston-Werner, Chris Wanstrath y PJ Hyett y se lanzó en abril de 2008: alojamiento de repositorios Git, con la colaboración alrededor en la web. Microsoft completó la compra en octubre de 2018, con el compromiso de que GitHub operaría de forma independiente. Creció hasta ser el lugar donde se publica buena parte del open source, y las herramientas alrededor de un cambio, issues, pull requests, Actions y releases, crecieron con él. La línea de tiempo conserva los cambios que todavía marcan cómo se usa.
+2005 Git: Linus Torvalds registra el primer commit el 7 de abril; la versión 1.0 llega en diciembre.
+2008 GitHub: Lanzamiento público en abril: alojamiento de repositorios Git con colaboración en la web.
+2018 Microsoft: Microsoft completa la compra de GitHub en octubre, con el compromiso de que opere de forma independiente y siga siendo una plataforma abierta.
+2019 Actions: GitHub Actions queda disponible en general en noviembre: workflows que corren con eventos del repositorio.
+2020 main: Git 2.28 agrega init.defaultBranch en julio; en octubre, main pasa a ser el nombre por defecto de la primera rama en los repositorios nuevos de GitHub.
+2023 Rulesets: Las reglas de repositorio (rulesets) quedan disponibles en general en julio: protecciones para ramas y tags, visibles para quien colabora.
+
+Dónde encajan
+La documentación oficial de los dos describe para qué sirven. Estos son los casos que vas a encontrar en el desarrollo de todos los días.
+- Código fuente y cualquier texto que cambia de a poco: Configuración, documentación, infraestructura como código: todo lo que se escribe en líneas, donde un diff te dice qué cambió.
+- Trabajo en paralelo sin pisarse: Cada línea de trabajo en su propia rama; merge o rebase las juntan cuando están listas, y los conflictos se muestran en lugar de perderse.
+- Acordar un cambio antes de integrarlo: Un pull request junta la propuesta, la conversación, la revisión y los controles automáticos en un solo lugar, antes de que el cambio llegue a la rama principal.
+- Una historia auditable y recuperable: Quién cambió qué y cuándo; revert deshace un cambio con un commit nuevo; bisect encuentra el commit que rompió algo.
+- Automatización que corre con cada cambio: Actions corre workflows con cada push, con un pull request o por calendario: build, tests, controles, despliegue.
+- Entregas identificables: Un tag fija un punto de la historia; una release le agrega notas y archivos, así todos saben qué versión se entregó.
+
+Dónde no encajan
+Esta parte es criterio del curso, no documentación oficial. Cada fila dice qué usar en su lugar.
+- Archivos binarios grandes que cambian: Videos, datasets y artefactos compilados no tienen un diff útil, y cada versión queda en cada clon. GitHub bloquea archivos de más de 100 MiB y recomienda repositorios chicos, idealmente de menos de 1 GB. Usá en su lugar: Git LFS para los archivos que tienen que viajar con el código; un almacén de artefactos u object storage para el resto.
+- Secretos y credenciales: Una vez en un commit quedan en la historia de cada clon y cada fork, y reescribir la historia no llega a las copias de los demás. El primer paso siempre es revocar el secreto. Usá en su lugar: Un gestor de secretos, valores inyectados al desplegar y rotación.
+- Artefactos generados: Lo que produce el build se reconstruye desde el código; versionarlo duplica la historia y genera un conflicto en cada build. Usá en su lugar: Un registro de artefactos (Maven, npm, imágenes de contenedores) o los archivos adjuntos a una release.
+- Datos de negocio y bases de datos: Git versiona archivos, no filas: sin consultas, sin escritores concurrentes, sin transacciones. Usá en su lugar: La base de datos, más migraciones versionadas en el repositorio para que el esquema tenga historia.
+- Edición simultánea de un documento en tiempo real: Git integra cambios terminados; no mezcla pulsaciones. Dos personas en el mismo párrafo al mismo tiempo terminan en conflictos. Usá en su lugar: Un editor colaborativo para escribir; Git para el resultado, cuando ya es un texto que vale la pena guardar.
+- Como herramienta de despliegue o respaldo en sí misma: Un repositorio dice qué versión existe, no que esté corriendo ni a salvo: sin entornos, sin rollback de estado, sin política de retención. Usá en su lugar: Git como fuente de los dos: un pipeline que despliega desde un tag, y respaldos del repositorio y de los datos que no contiene.
+
+Cómo decidir
+1. ¿Cambia de a poco y es texto?
+2. ¿Trabaja más de una persona a la vez?
+3. ¿Hace falta que alguien acuerde antes de integrar un cambio?
+4. ¿Hay que poder volver atrás y saber quién cambió qué?
+5. ¿Hay que correr algo con cada cambio: tests, controles, un despliegue?
+Tres síes y estás en el lugar correcto. La lección 00 muestra cómo funciona el curso y qué necesita tu máquina.
+
 
 00. Antes de empezar
 =================================================================
