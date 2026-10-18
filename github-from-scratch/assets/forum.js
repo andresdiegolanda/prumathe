@@ -2,13 +2,13 @@
    shown by giscus (https://giscus.app), which the lesson loads only when the reader opens the
    discussion on the published site; the local copy shows a link instead. One discussion per lesson,
    titled "<term>/<lesson slug>", in the category named here. repoId and categoryId come from the
-   giscus configurator for a public repository with Discussions enabled and the giscus app installed;
-   until they are filled in, enabled stays false and the button links to the Discussions page. */
+   giscus configurator (public repository, Discussions enabled, giscus app installed), read on
+   18 October 2026; with enabled false the button only links to the Discussions page. */
 window.GITHUB_FORUM = {
-  enabled: false,
+  enabled: true,
   repo: 'andresdiegolanda/prumathe',
-  repoId: '',
+  repoId: 'R_kgDOVNrLSA',
   category: 'GitHub from scratch',
-  categoryId: '',
+  categoryId: 'DIC_kwDOVNrLSM4DI5-a',
   term: 'github-from-scratch',
 };
