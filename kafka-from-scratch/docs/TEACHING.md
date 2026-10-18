@@ -4,6 +4,20 @@ The course uses a repeated learning cycle: name one idea, inspect a visual model
 
 El curso repite un ciclo: nombrar una idea, inspeccionar un modelo, predecir un cambio, manipularlo, ejecutar un experimento real, explicar lo observado y recuperar la distinción en un control.
 
+## Entry point and numbering / Entrada y numeración
+
+Lesson 00, Before you start, introduces the method and sets up Docker without creating topics. Its unit is 0, Start here. Existing lessons remain 01 to 29 in units 1 to 8. Each lesson carries its unit; navigation groups by that field. The lesson id is also its displayed number; Java lab arguments retain their original topic numbers.
+
+La lección 00, Antes de empezar, presenta el método y prepara Docker sin crear tópicos. Su unidad es 0, Antes de empezar. Las lecciones existentes siguen como 01 a 29 en las unidades 1 a 8. Cada lección lleva su unidad; la navegación agrupa por ese campo. El id de lección también es su número visible; los argumentos del cliente Java conservan sus números de tópico originales.
+
+Progress uses lesson slugs in browser storage. Version 1.2.0 migrates the old numeric keys 0 to 28 to the corresponding original lessons, preserving existing slug entries if both occur. Lesson 00 starts without credit. Keep those slugs stable; new insertions must not reassign saved progress. The glossary still uses lesson indices; update and verify every link after an insertion.
+
+El avance usa slugs de lección en el almacenamiento del navegador. La versión 1.2.0 migra las claves numéricas anteriores 0 a 28 a las lecciones originales correspondientes y conserva las entradas por slug si coexisten. La 00 empieza sin avance. Mantené estables esos slugs; una inserción nueva no debe reasignar avance guardado. El glosario todavía usa índices de lección; actualizá y comprobá todos los enlaces después de una inserción.
+
+The method model has three scenes and uses only the active palette. Its two planes distinguish browser simulation from Docker execution; its cycle connects intuition, rule, experiment and checkpoint.
+
+El modelo del método tiene tres escenas y usa solo la paleta activa. Sus dos planos distinguen simulación en el navegador de ejecución en Docker; su circuito conecta intuición, regla, experimento y control.
+
 ## Session structure / Estructura de sesión
 
 Work through one unit at a time. Ask the learner to record four lines for each activity: prediction, observation, explanation, limit. Have them teach one concept back without using the wording from the page. On a later day, rerun an experiment before rereading the explanation. The Projector skin (header picker) enlarges the interface for a shared screen and hides the sidebar; the Reading skin is the one to hand out for self-study away from a terminal.
@@ -66,17 +80,21 @@ Al actualizar Kafka, revisá defaults, protocolos, share groups, réplicas inter
 
 `assets/curriculum.js` declares `version`, `kafka` and `date`; the interface, the notes and the reference texts read them from there. `npm run check` verifies that these other places agree, because their tools cannot read `curriculum.js`:
 
-- `package.json` (`version`, same major and minor);
-- `labs/compose.yaml` (the `apache/kafka` image tag and the `kafka-course-lab` tag);
+- `package.json` (`version`, the complete course version);
+- `labs/compose.yaml` (the `apache/kafka` image tag and the `kafka-course-lab` and `kafka-course-spring` tags, which since 1.2.0 carry the complete course version, for example `kafka-course-lab:1.2.0`; lesson 01 prints that tag);
 - `labs/pom.xml` and `labs/spring/pom.xml` (`version`, and the `kafka-clients` and `kafka-streams` versions in the first one);
 - `labs/README.md`, `labs/spring/README.md`, `README.md` and `docs/VALIDATION.md`, by hand.
 
 `assets/curriculum.js` declara `version`, `kafka` y `date`; la interfaz, los apuntes y los textos de referencia los leen de ahí. `npm run check` verifica que estos otros lugares coincidan, porque sus herramientas no pueden leer `curriculum.js`:
 
-- `package.json` (`version`, mismos major y minor);
-- `labs/compose.yaml` (la etiqueta de la imagen `apache/kafka` y la de `kafka-course-lab`);
+- `package.json` (`version`, la versión completa del curso);
+- `labs/compose.yaml` (la etiqueta de la imagen `apache/kafka` y las de `kafka-course-lab` y `kafka-course-spring`, que desde 1.2.0 llevan la versión completa del curso, por ejemplo `kafka-course-lab:1.2.0`; la lección 01 imprime esa etiqueta);
 - `labs/pom.xml` y `labs/spring/pom.xml` (`version`, y en el primero las versiones de `kafka-clients` y `kafka-streams`);
 - `labs/README.md`, `labs/spring/README.md`, `README.md` y `docs/VALIDATION.md`, a mano.
+
+For each release, update the date and all course versions above, including image tags printed in lesson text. Keep product pins unless the release changes the baseline. Rebuild the pages, notes, ZIP and dist, run the checks, exercise the affected pages in both languages and all four skins, and record executed and unexecuted checks in VALIDATION.md. Update the root course summary, changelog and owned backlog cards. Read every changed text file back as UTF-8 without BOM and LF line endings.
+
+Para cada versión, actualizá la fecha y todas las versiones del curso de arriba, incluidas las etiquetas de imagen impresas en las lecciones. Conservá las versiones de productos salvo que cambie la base. Reconstruí páginas, apuntes, ZIP y dist, ejecutá los controles, recorré las páginas afectadas en ambos idiomas y las cuatro apariencias, y registrá lo ejecutado y lo pendiente en VALIDATION.md. Actualizá el resumen del curso en la raíz, el changelog y las cards con dueño. Releé cada archivo de texto cambiado como UTF-8 sin BOM y con finales LF.
 
 Advanced production topics such as full TLS lifecycle, real Debezium deployment, registry operations, MirrorMaker checkpoint translation, tiered-storage plugins, multi-region failover and large-scale capacity testing require expanded labs beyond these bounded introductory experiments. The lessons identify those boundaries and link to official documentation.
 

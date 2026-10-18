@@ -4,6 +4,8 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## Backlog
 
+- [ ] **Medir tiempos por lección y memoria del clúster en una máquina real**: registrar plataforma, versiones, duración observada de cada lección y memoria del clúster de tres brokers sin servicios opcionales y con ellos; separar la primera descarga de las ejecuciones siguientes y llevar la evidencia a [VALIDATION.md](kafka-from-scratch/docs/VALIDATION.md). **Andrés**
+
 - [ ] **Pasar la lección 29 a Spring Boot 4.x**: 3.5.16 es la última 3.5 open source y su soporte open source terminó el 30/06/2026; lo que el ejemplo usa existe sin cambios en Spring Kafka 4 ([`labs/spring/README.md`](kafka-from-scratch/labs/spring/README.md)); requiere reconstruir la imagen y correr la suite `spring`. **Andrés**
 - [ ] **Revisar el curso sobre Kafka 4.2 o 4.3**: share groups production-ready desde 4.2 y argumentos de CLI estandarizados (KIP-1147) que cambian comandos de las lecciones; sección Versiones del [README del curso](kafka-from-scratch/README.md) y §5.1 de la [revisión del 17/10](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md). Es una versión mayor del curso, no un cambio de etiqueta. **Andrés**
 - [ ] **Probar los brokers sin `user: "0:0"`**: con volúmenes nuevos, si la imagen `apache/kafka` como `appuser` escribe bien en los volúmenes con nombre, sacar el root y actualizar la nota de [`labs/README.md`](kafka-from-scratch/labs/README.md); si no, documentar por qué se queda (§4.9 de la [revisión](reviews/2026-10-17-kafka-from-scratch-v1.0.0.md)). **Andrés**
@@ -17,7 +19,7 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## En curso
 
-- [ ] **Volver a correr las suites Docker sobre la 1.1.0**: el cliente Java se separó en clases, cambiaron los dos Dockerfile y los health checks; hasta que `core`, `failures`, `integrations` y `spring` pasen sobre `kafka-course-lab:1.1`, la evidencia de plataforma de [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md) es la de la 1.0.0. En la laptop, con Docker levantado, desde `kafka-from-scratch/labs`: `docker compose build lab`, `docker compose up -d --wait`, y desde la raíz del curso las cuatro suites en orden. **Andrés**
+- [ ] **Volver a correr las suites Docker sobre la 1.2.0**: el cliente Java se separó en clases, cambiaron los dos Dockerfile y los health checks; hasta que `core`, `failures`, `integrations` y `spring` pasen sobre `kafka-course-lab:1.2.0`, la evidencia de plataforma de [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md) es la de la 1.0.0. En la laptop, con Docker levantado, desde `kafka-from-scratch/labs`: `docker compose build lab`, `docker compose up -d --wait`, y desde la raíz del curso las cuatro suites en orden. **Andrés**
 - [ ] **Primera versión del repositorio en GitHub**: README, CHANGELOG, tablero, la revisión y la 1.1.0 del curso listos; falta crear el repositorio remoto, el primer commit y el push. **Andrés**
 
 ## Hecho

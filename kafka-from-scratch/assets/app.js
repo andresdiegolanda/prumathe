@@ -17,13 +17,23 @@
     inspected = null,
     glossaryIndex = 0,
     glossarySearch = '',
-    mapUnit = home ? 0 : Math.floor(Number(id) / 4),
+    mapUnit = home ? 0 : course.lessons[Number(id)].unit,
     lastFocus = null,
     homeUnit = 0;
   try {
     lang = localStorage.getItem('kafka-course-language') || 'en';
     progress = JSON.parse(localStorage.getItem('kafka-course-progress') || '{}');
-    if (!progress || typeof progress !== 'object') progress = {};
+    if (!progress || typeof progress !== 'object' || Array.isArray(progress)) progress = {};
+    // Version 1.1 stored indices 0 to 28; lesson 00 now precedes those lessons.
+    let migrated = false;
+    for (const key of Object.keys(progress)) {
+      if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) > 28) continue;
+      const slug = course.lessons[Number(key) + 1].slug;
+      progress[slug] = { ...progress[key], ...progress[slug] };
+      delete progress[key];
+      migrated = true;
+    }
+    if (migrated) localStorage.setItem('kafka-course-progress', JSON.stringify(progress));
   } catch {}
   if (!['en', 'es'].includes(lang)) lang = 'en';
   // The skin. assets/theme.js already put the chosen one on <html data-theme> before the
@@ -91,32 +101,32 @@
     updateURL();
   }
   function score() {
-    return course.lessons.filter((l) => progress[l.id]?.quiz && progress[l.id]?.lab).length;
+    return course.lessons.filter((l) => progress[l.slug]?.quiz && progress[l.slug]?.lab).length;
   }
   function header() {
     return `<header><a class="brand" href="${homeLink()}" aria-label="${t('Course home', 'Inicio del curso')}">${icon}<span><strong>Kafka from scratch</strong><small>${t('A visual field guide', 'Una guía visual de campo')}</small></span></a><span class="header-meta">${course.lessons.length} ${t('LESSONS', 'LECCIONES')} / APACHE KAFKA ${course.kafka}</span><div class="header-actions"><button class="btn drawer-only" data-action="map">${t('Course', 'Curso')}</button><button class="btn extra" data-action="glossary">${t('Glossary', 'Glosario')} <span aria-hidden="true">↗</span></button><a class="btn extra" href="${prefix}downloads/kafka-labs.zip" download>${t('Download labs', 'Descargar labs')} ↓</a><label class="theme-pick"><span class="sr-only">${t('Skin', 'Apariencia')}</span><select data-theme-pick aria-label="${t('Skin', 'Apariencia')}">${THEMES.map((x) => `<option value="${x}" ${x === theme ? 'selected' : ''}>${themeName(x)}</option>`).join('')}</select></label><div class="language" role="group" aria-label="${t('Language', 'Idioma')}"><button data-lang="en" aria-pressed="${lang === 'en'}" lang="en">EN</button><button data-lang="es" aria-pressed="${lang === 'es'}" lang="es-AR" title="Español rioplatense">ES</button></div><button class="btn extra" data-action="help" aria-label="${t('Help and keyboard shortcuts', 'Ayuda y atajos de teclado')}">?</button></div></header>`;
   }
   function footer() {
-    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${home ? 'KAFKA / FROM SCRATCH' : String(Number(id) + 1).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
+    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${home ? 'KAFKA / FROM SCRATCH' : String(Number(id)).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
   }
   function sidebar() {
-    const unit = Math.floor(lesson.id / 4);
-    return `<aside class="sidebar"><span class="eyebrow">${t('Your learning path', 'Tu recorrido')}</span><label class="sr-only" for="unit-select">${t('Select unit', 'Elegí una unidad')}</label><select id="unit-select" class="unit-select">${course.units.map((u, i) => `<option value="${i}" ${i === unit ? 'selected' : ''}>${String(i + 1).padStart(2, '0')} / ${e(L(u))}</option>`).join('')}</select><h2>${e(L(course.units[unit]))}</h2><nav aria-label="${t('Lessons in this unit', 'Lecciones de esta unidad')}">${lessonLinks(unit)}</nav><div class="sidebar-bottom"><span>${score()} / ${course.lessons.length} ${t('completed', 'completadas')}</span><div class="progress-track"><span style="width:${(score() / course.lessons.length) * 100}%"></span></div>${t('A lesson is complete after its checkpoint and hands-on lab. Progress stays on this browser.', 'Una lección se completa con su control y laboratorio. El avance queda en este navegador.')}<button class="btn" data-action="map">${t('Explore all ' + course.units.length + ' units', 'Explorá las ' + course.units.length + ' unidades')} ↗</button></div></aside>`;
+    const unit = lesson.unit;
+    return `<aside class="sidebar"><span class="eyebrow">${t('Your learning path', 'Tu recorrido')}</span><label class="sr-only" for="unit-select">${t('Select unit', 'Elegí una unidad')}</label><select id="unit-select" class="unit-select">${course.units.map((u, i) => `<option value="${i}" ${i === unit ? 'selected' : ''}>${String(i).padStart(2, '0')} / ${e(L(u))}</option>`).join('')}</select><h2>${e(L(course.units[unit]))}</h2><nav aria-label="${t('Lessons in this unit', 'Lecciones de esta unidad')}">${lessonLinks(unit)}</nav><div class="sidebar-bottom"><span>${score()} / ${course.lessons.length} ${t('completed', 'completadas')}</span><div class="progress-track"><span style="width:${(score() / course.lessons.length) * 100}%"></span></div>${t('A lesson is complete after its checkpoint and hands-on lab. Progress stays on this browser.', 'Una lección se completa con su control y laboratorio. El avance queda en este navegador.')}<button class="btn" data-action="map">${t('Explore all ' + course.units.length + ' units', 'Explorá las ' + course.units.length + ' unidades')} ↗</button></div></aside>`;
   }
   function lessonLinks(unit) {
     return course.lessons
-      .slice(unit * 4, unit * 4 + 4)
+      .filter((l) => l.unit === unit)
       .map(
         (l) =>
-          `<a class="lesson-link ${lesson?.id === l.id ? 'current' : ''} ${progress[l.id]?.quiz && progress[l.id]?.lab ? 'completed' : ''}" ${lesson?.id === l.id ? 'aria-current="page"' : ''} href="${link(l)}"><span>${progress[l.id]?.quiz && progress[l.id]?.lab ? '✓' : String(l.id + 1).padStart(2, '0')}</span><span>${e(L(l.title))}</span></a>`,
+          `<a class="lesson-link ${lesson?.id === l.id ? 'current' : ''} ${progress[l.slug]?.quiz && progress[l.slug]?.lab ? 'completed' : ''}" ${lesson?.id === l.id ? 'aria-current="page"' : ''} href="${link(l)}"><span>${progress[l.slug]?.quiz && progress[l.slug]?.lab ? '✓' : String(l.id).padStart(2, '0')}</span><span>${e(L(l.title))}</span></a>`,
       )
       .join('');
   }
   function homeView() {
     const next =
-      course.lessons.find((l) => !progress[l.id]?.quiz || !progress[l.id]?.lab) ||
+      course.lessons.find((l) => !progress[l.slug]?.quiz || !progress[l.slug]?.lab) ||
       course.lessons[0];
-    return `<main class="home" id="main"><section class="home-intro"><span class="eyebrow">${t('FROM YOUR FIRST EVENT TO A RESILIENT SYSTEM', 'DE TU PRIMER EVENTO A UN SISTEMA RESISTENTE')}</span><h1>${t('Learn Kafka.<br>See every<br><em>moving part.</em>', 'Aprendé Kafka.<br>Entendé cada<br><em>pieza.</em>')}</h1><p class="home-lead">${t('Follow an event. Move a bookmark. Break a broker. Build an intuition you can test in a real Docker lab.', 'Seguí un evento. Mové un señalador. Hacé caer un broker. Construí una intuición que puedas probar en un laboratorio Docker real.')}</p><div class="home-actions"><a class="btn primary" href="${link(next)}">${score() ? t('Continue learning', 'Seguí aprendiendo') : t('Start from zero', 'Empezá desde cero')} <span aria-hidden="true">→</span></a><a class="btn" href="${prefix}downloads/kafka-labs.zip" download>${t('Get the lab kit', 'Descargá el kit')} ↓</a></div><div class="home-tag"><span>${course.lessons.length} ${t('VISUAL LESSONS', 'LECCIONES VISUALES')}</span><span>${course.lessons.length} ${t('DOCKER LABS', 'LABS DOCKER')}</span><span>EN / ES</span></div><div class="hero-art" aria-hidden="true">${hero()}</div></section><section class="home-curriculum" aria-label="${t('Course curriculum', 'Programa del curso')}"><div class="eyebrow"><span>${t('THE LEARNING PATH', 'EL RECORRIDO')}</span><span>01 ${t('to', 'a')} ${String(course.lessons.length).padStart(2, '0')}</span></div>${course.units.map((u, i) => `<a class="unit-row ${i === homeUnit ? 'mobile-active' : ''}" href="${link(course.lessons[i * 4])}"><span class="num">${String(i + 1).padStart(2, '0')}</span><span><strong>${e(L(u))}</strong><small>${i * 4 + 3 < course.lessons.length ? e(L(course.lessons[i * 4].title)) + ' → ' + e(L(course.lessons[i * 4 + 3].title)) : t('KafkaTemplate · @KafkaListener · JSON', 'KafkaTemplate · @KafkaListener · JSON')}</small></span><span class="unit-arrow" aria-hidden="true">↗</span></a>`).join('')}<div class="home-mobile-pager"><button class="btn" data-home-prev aria-label="${t('Previous unit', 'Unidad anterior')}">←</button><span>${t('Unit', 'Unidad')} ${homeUnit + 1} / ${course.units.length}</span><button class="btn" data-home-next aria-label="${t('Next unit', 'Siguiente unidad')}">→</button></div><p class="home-footnote">${t('No account. No external scripts. Open locally or host anywhere.<br>Docker is required for the labs, not for exploring the visual models.', 'Sin cuenta ni scripts externos. Abrilo localmente o publicalo donde quieras.<br>Docker es necesario para los laboratorios, no para explorar los modelos.')}</p></section></main>`;
+    return `<main class="home" id="main"><section class="home-intro"><span class="eyebrow">${t('FROM YOUR FIRST EVENT TO A RESILIENT SYSTEM', 'DE TU PRIMER EVENTO A UN SISTEMA RESISTENTE')}</span><h1>${t('Learn Kafka.<br>See every<br><em>moving part.</em>', 'Aprendé Kafka.<br>Entendé cada<br><em>pieza.</em>')}</h1><p class="home-lead">${t('Follow an event. Move a bookmark. Break a broker. Build an intuition you can test in a real Docker lab.', 'Seguí un evento. Mové un señalador. Hacé caer un broker. Construí una intuición que puedas probar en un laboratorio Docker real.')}</p><div class="home-actions"><a class="btn primary" href="${link(next)}">${score() ? t('Continue learning', 'Seguí aprendiendo') : t('Start from zero', 'Empezá desde cero')} <span aria-hidden="true">→</span></a><a class="btn" href="${prefix}downloads/kafka-labs.zip" download>${t('Get the lab kit', 'Descargá el kit')} ↓</a></div><div class="home-tag"><span>${course.lessons.length} ${t('VISUAL LESSONS', 'LECCIONES VISUALES')}</span><span>${course.lessons.length} ${t('DOCKER LABS', 'LABS DOCKER')}</span><span>EN / ES</span></div><div class="hero-art" aria-hidden="true">${hero()}</div></section><section class="home-curriculum" aria-label="${t('Course curriculum', 'Programa del curso')}"><div class="eyebrow"><span>${t('THE LEARNING PATH', 'EL RECORRIDO')}</span><span>00 ${t('to', 'a')} ${String(course.lessons.at(-1).id).padStart(2, '0')}</span></div>${course.units.map((u, i) => `<a class="unit-row ${i === homeUnit ? 'mobile-active' : ''}" href="${link(course.lessons.find((l) => l.unit === i))}"><span class="num">${String(i).padStart(2, '0')}</span><span><strong>${e(L(u))}</strong><small>${(() => { const group = course.lessons.filter((l) => l.unit === i); return group.length === 1 ? e(L(group[0].intro)) : e(L(group[0].title)) + ' → ' + e(L(group.at(-1).title)); })()}</small></span><span class="unit-arrow" aria-hidden="true">↗</span></a>`).join('')}<div class="home-mobile-pager"><button class="btn" data-home-prev aria-label="${t('Previous unit', 'Unidad anterior')}">←</button><span>${t('Unit', 'Unidad')} ${String(homeUnit).padStart(2, '0')} / ${String(course.units.length - 1).padStart(2, '0')}</span><button class="btn" data-home-next aria-label="${t('Next unit', 'Siguiente unidad')}">→</button></div><p class="home-footnote">${t('No account. No external scripts. Open locally or host anywhere.<br>Docker is required for the labs, not for exploring the visual models.', 'Sin cuenta ni scripts externos. Abrilo localmente o publicalo donde quieras.<br>Docker es necesario para los laboratorios, no para explorar los modelos.')}</p></section></main>`;
   }
   function hero() {
     const P = KafkaVisuals.palette(theme);
@@ -124,10 +134,10 @@
   }
   function mainView() {
     if (reading()) return documentView();
-    return `<div class="workspace">${sidebar()}<main class="lesson-main" id="main" tabindex="-1"><div class="lesson-heading"><div><span class="eyebrow">${t('UNIT', 'UNIDAD')} ${Math.floor(lesson.id / 4) + 1} / ${e(L(course.units[Math.floor(lesson.id / 4)]))}</span><h1>${e(L(lesson.title))}</h1><p>${e(L(lesson.intro))}</p></div><span class="lesson-number" aria-hidden="true">${String(lesson.id + 1).padStart(2, '0')}</span></div><nav class="tabs" role="tablist" aria-label="${t('Lesson sections', 'Secciones de la lección')}">${[
+    return `<div class="workspace">${sidebar()}<main class="lesson-main" id="main" tabindex="-1"><div class="lesson-heading"><div><span class="eyebrow">${t('UNIT', 'UNIDAD')} ${lesson.unit} / ${e(L(course.units[lesson.unit]))}</span><h1>${e(L(lesson.title))}</h1><p>${e(L(lesson.intro))}</p></div><span class="lesson-number" aria-hidden="true">${String(lesson.id).padStart(2, '0')}</span></div><nav class="tabs" role="tablist" aria-label="${t('Lesson sections', 'Secciones de la lección')}">${[
       ['learn', t('Understand', 'Entendé'), '3'],
       ['lab', t('Docker lab', 'Laboratorio'), lesson.lab.length],
-      ['check', t('Checkpoint', 'Control'), progress[id]?.quiz ? '✓' : lesson.quiz.length],
+      ['check', t('Checkpoint', 'Control'), progress[lesson.slug]?.quiz ? '✓' : lesson.quiz.length],
       ['sources', t('Go deeper', 'Profundizá'), '↗'],
     ]
       .map(
@@ -142,7 +152,7 @@
     if (currentTab === 'check') return quizView();
     if (currentTab === 'sources') return sourcesView();
     const data = window.KafkaVisuals.render(lesson.visual, frame, sim, lang, theme);
-    return `<div class="mobile-surface"><button data-surface="visual" class="${surface === 'visual' ? 'active' : ''}">${t('Visual model', 'Modelo visual')}</button><button data-surface="notes" class="${surface === 'notes' ? 'active' : ''}">${currentTab === 'lab' ? t('Lab steps', 'Pasos del lab') : t('Explanation', 'Explicación')}</button></div><section class="scene-column" aria-label="${t('Interactive model', 'Modelo interactivo')}"><div class="scene-top"><span><i class="live-dot"></i>${t('ILLUSTRATIVE MODEL', 'MODELO ILUSTRATIVO')}</span><span>${t('Select an object to inspect', 'Seleccioná un objeto para inspeccionar')}</span></div><div class="diagram" id="diagram">${data.svg}</div><div class="diagram-tools">${controlsHTML(data.controls)}<button class="btn" data-action="expand" aria-label="${t('Expand the visual model', 'Ampliá el modelo visual')}" title="${t('Expand the visual model', 'Ampliá el modelo visual')}">⤢</button><button class="btn" data-action="reset-model" title="${t('Reset visual model', 'Reiniciá el modelo visual')}">↺</button></div><p class="model-note">${t('This model runs in your browser. The Docker lab is a separate, real experiment.', 'Este modelo corre en tu navegador. El laboratorio Docker es un experimento real y separado.')}</p>${currentTab === 'lab' ? `<div class="lab-context">${t('Run one step at a time in your terminal, from the extracted <strong>labs</strong> folder. Commands work in PowerShell, bash and zsh.', 'Ejecutá un paso por vez en tu terminal, desde la carpeta <strong>labs</strong> descomprimida. Los comandos funcionan en PowerShell, bash y zsh.')} <a href="${prefix}downloads/kafka-labs.zip" download>${t('Download kit', 'Descargá el kit')} ↓</a></div>` : ''}</section><section class="inspector" aria-label="${currentTab === 'lab' ? t('Docker activity', 'Actividad Docker') : t('Explanation', 'Explicación')}">${currentTab === 'lab' ? labView() : frameView()}</section>`;
+    return `<div class="mobile-surface"><button data-surface="visual" class="${surface === 'visual' ? 'active' : ''}">${t('Visual model', 'Modelo visual')}</button><button data-surface="notes" class="${surface === 'notes' ? 'active' : ''}">${currentTab === 'lab' ? t('Lab steps', 'Pasos del lab') : t('Explanation', 'Explicación')}</button></div><section class="scene-column" aria-label="${t('Interactive model', 'Modelo interactivo')}"><div class="scene-top"><span><i class="live-dot"></i>${t('ILLUSTRATIVE MODEL', 'MODELO ILUSTRATIVO')}</span><span>${t('Select an object to inspect', 'Seleccioná un objeto para inspeccionar')}</span></div><div class="diagram" id="diagram">${data.svg}</div><div class="diagram-tools">${controlsHTML(data.controls)}<button class="btn" data-action="expand" aria-label="${t('Expand the visual model', 'Ampliá el modelo visual')}" title="${t('Expand the visual model', 'Ampliá el modelo visual')}">⤢</button><button class="btn" data-action="reset-model" title="${t('Reset visual model', 'Reiniciá el modelo visual')}">↺</button></div><p class="model-note">${t('This model runs in your browser. The Docker lab is a separate, real experiment.', 'Este modelo corre en tu navegador. El laboratorio Docker es un experimento real y separado.')}</p>${currentTab === 'lab' ? `<div class="lab-context">${labContext()} <a href="${prefix}downloads/kafka-labs.zip" download>${t('Download kit', 'Descargá el kit')} ↓</a></div>` : ''}</section><section class="inspector" aria-label="${currentTab === 'lab' ? t('Docker activity', 'Actividad Docker') : t('Explanation', 'Explicación')}">${currentTab === 'lab' ? labView() : frameView()}</section>`;
   }
   function controlsHTML(controls) {
     return controls
@@ -161,6 +171,14 @@
     const f = lesson.frames[frame];
     return `<div class="frame-label"><span>${t('SCENE', 'ESCENA')} ${frame + 1} / 3</span><div class="steps">${lesson.frames.map((_, i) => `<button class="step-dot ${i === frame ? 'active' : ''}" data-frame="${i}" aria-label="${t('Scene', 'Escena')} ${i + 1}" aria-pressed="${i === frame}"></button>`).join('')}</div></div><h2>${e(L(f.title))}</h2><p>${e(L(f.text))}</p><div class="principle"><span class="eyebrow">${t('TAKE THIS WITH YOU', 'QUEDATE CON ESTO')}</span>${e(L(f.rule))}</div><div class="experiment-tip"><strong>${t('Try the model.', 'Probá el modelo.')}</strong> ${e(L(lesson.experiment))}</div><div class="scene-navigation"><button class="btn" data-action="prev" ${frame === 0 ? 'disabled' : ''}>← ${t('Back', 'Atrás')}</button><button class="btn primary" data-action="next">${frame === 2 ? t('Open Docker lab', 'Abrí el laboratorio') : t('Next scene', 'Siguiente escena')} →</button></div>`;
   }
+  function labContext() {
+    return lesson.slug === 'before-you-start'
+      ? t(
+          'Check Docker first. Download and extract the kit, then enter its <strong>labs</strong> folder in step 2.',
+          'Primero verificá Docker. Descargá y descomprimí el kit; en el paso 2, entrá a su carpeta <strong>labs</strong>.',
+        )
+      : t('Run one step at a time in your terminal, from the extracted <strong>labs</strong> folder. Commands work in PowerShell, bash and zsh.', 'Ejecutá un paso por vez en tu terminal, desde la carpeta <strong>labs</strong> descomprimida. Los comandos funcionan en PowerShell, bash y zsh.');
+  }
   function labView() {
     const s = lesson.lab[labStep];
     return `<div class="frame-label"><span>${t('STEP', 'PASO')} ${labStep + 1} / ${lesson.lab.length}</span><span>DOCKER / CLI</span></div><h2>${e(L(s.title))}</h2><p>${e(L(s.text))}</p><div class="lab-command"><div class="command-title"><span>TERMINAL</span><button data-action="copy">${t('Copy', 'Copiar')} ⧉</button></div><pre><code>${e(s.command)}</code></pre></div><div class="expected"><strong>${t('What to observe', 'Qué observar')}</strong>${e(L(s.expected))}</div><div class="scene-navigation"><button class="btn" data-action="prev" ${labStep === 0 ? 'disabled' : ''}>← ${t('Back', 'Atrás')}</button><button class="btn primary" data-action="next">${labStep === lesson.lab.length - 1 ? t('I ran & understood it', 'Lo ejecuté y entendí') : t('Next step', 'Siguiente paso')} →</button></div>`;
@@ -172,7 +190,7 @@
     return `<div class="quiz-block"><span class="eyebrow">${t('QUESTION', 'PREGUNTA')} ${qi + 1} / ${lesson.quiz.length}</span><h2 class="quiz-question">${e(L(q.question))}</h2>${q.options.map((o, i) => `<button class="answer ${chosen === i ? (correct ? 'selected' : 'incorrect') : ''}" data-answer="${qi}:${i}" aria-pressed="${chosen === i}"><span class="letter">${String.fromCharCode(65 + i)}</span>${e(L(o))}</button>`).join('')}${done ? `<div class="quiz-feedback" aria-live="polite"><strong>${correct ? t('That’s the distinction.', 'Esa es la distinción.') : t('Revisit the boundary.', 'Revisá el límite.')}</strong>${e(L(q.explanation))}</div>` : ''}</div>`;
   }
   function quizCompletion() {
-    return `<div class="quiz-completion"><span class="eyebrow">${progress[id]?.lab ? '✓' : '○'} ${t('Docker lab', 'Laboratorio Docker')} &nbsp; ${progress[id]?.quiz ? '✓' : '○'} ${t('Checkpoint', 'Control')}</span>${reading() ? '' : `<button class="btn" data-tab="lab">${t('Return to lab', 'Volvé al laboratorio')}</button>`}${progress[id]?.lab && progress[id]?.quiz && lesson.id < course.lessons.length - 1 ? `<a class="btn primary" href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente lección')} →</a>` : ''}</div>`;
+    return `<div class="quiz-completion"><span class="eyebrow">${progress[lesson.slug]?.lab ? '✓' : '○'} ${t('Docker lab', 'Laboratorio Docker')} &nbsp; ${progress[lesson.slug]?.quiz ? '✓' : '○'} ${t('Checkpoint', 'Control')}</span>${reading() ? '' : `<button class="btn" data-tab="lab">${t('Return to lab', 'Volvé al laboratorio')}</button>`}${progress[lesson.slug]?.lab && progress[lesson.slug]?.quiz && lesson.id < course.lessons.length - 1 ? `<a class="btn primary" href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente lección')} →</a>` : ''}</div>`;
   }
   function quizView() {
     const total = lesson.quiz.length,
@@ -190,7 +208,7 @@
   }
   function documentView() {
     const data = KafkaVisuals.render(lesson.visual, frame, sim, lang, theme);
-    const unit = Math.floor(lesson.id / 4);
+    const unit = lesson.unit;
     const sections = [
       ['model', t('Model', 'Modelo')],
       ['learn', t('Understand', 'Entendé')],
@@ -198,10 +216,10 @@
       ['check', t('Checkpoint', 'Control')],
       ['sources', t('Go deeper', 'Profundizá')],
     ];
-    const heading = `<div class="lesson-heading"><div><span class="eyebrow">${t('UNIT', 'UNIDAD')} ${unit + 1} / ${e(L(course.units[unit]))}</span><h1>${e(L(lesson.title))}</h1><p>${e(L(lesson.intro))}</p></div><span class="lesson-number" aria-hidden="true">${String(lesson.id + 1).padStart(2, '0')}</span></div><nav class="doc-nav" aria-label="${t('Lesson sections', 'Secciones de la lección')}">${sections.map(([a, b]) => `<a href="#doc-${a}">${b}</a>`).join('')}</nav>`;
+    const heading = `<div class="lesson-heading"><div><span class="eyebrow">${t('UNIT', 'UNIDAD')} ${unit} / ${e(L(course.units[unit]))}</span><h1>${e(L(lesson.title))}</h1><p>${e(L(lesson.intro))}</p></div><span class="lesson-number" aria-hidden="true">${String(lesson.id).padStart(2, '0')}</span></div><nav class="doc-nav" aria-label="${t('Lesson sections', 'Secciones de la lección')}">${sections.map(([a, b]) => `<a href="#doc-${a}">${b}</a>`).join('')}</nav>`;
     const model = `<section class="doc-section doc-model" id="doc-model" aria-label="${t('Interactive model', 'Modelo interactivo')}"><div class="scene-top"><span><i class="live-dot"></i>${t('ILLUSTRATIVE MODEL', 'MODELO ILUSTRATIVO')}</span><span>${t('Select an object to inspect', 'Seleccioná un objeto para inspeccionar')}</span></div><div class="diagram" id="diagram">${data.svg}</div><div class="diagram-tools">${controlsHTML(data.controls)}<button class="btn" data-action="expand" aria-label="${t('Expand the visual model', 'Ampliá el modelo visual')}" title="${t('Expand the visual model', 'Ampliá el modelo visual')}">⤢</button><button class="btn" data-action="reset-model" title="${t('Reset visual model', 'Reiniciá el modelo visual')}">↺</button></div><div class="doc-scenes"><span>${t('SCENE', 'ESCENA')} ${frame + 1} / 3</span>${lesson.frames.map((_, i) => `<button class="step-dot ${i === frame ? 'active' : ''}" data-frame="${i}" aria-label="${t('Scene', 'Escena')} ${i + 1}" aria-pressed="${i === frame}"></button>`).join('')}<span>${e(L(lesson.frames[frame].title))}</span></div><p class="model-note">${t('This model runs in your browser. The Docker lab is a separate, real experiment.', 'Este modelo corre en tu navegador. El laboratorio Docker es un experimento real y separado.')}</p></section>`;
     const learn = `<section class="doc-section" id="doc-learn"><h2 class="doc-title">${t('Understand', 'Entendé')}</h2>${lesson.frames.map((f, i) => `<article class="doc-frame"><span class="eyebrow">${t('SCENE', 'ESCENA')} ${i + 1} / 3</span><h3>${e(L(f.title))}</h3><p>${e(L(f.text))}</p><div class="principle"><span class="eyebrow">${t('TAKE THIS WITH YOU', 'QUEDATE CON ESTO')}</span>${e(L(f.rule))}</div></article>`).join('')}<div class="experiment-tip"><strong>${t('Try the model.', 'Probá el modelo.')}</strong> ${e(L(lesson.experiment))}</div></section>`;
-    const lab = `<section class="doc-section" id="doc-lab"><h2 class="doc-title">${t('Docker lab', 'Laboratorio Docker')}</h2><div class="lab-context">${t('Run one step at a time in your terminal, from the extracted <strong>labs</strong> folder. Commands work in PowerShell, bash and zsh.', 'Ejecutá un paso por vez en tu terminal, desde la carpeta <strong>labs</strong> descomprimida. Los comandos funcionan en PowerShell, bash y zsh.')} <a href="${prefix}downloads/kafka-labs.zip" download>${t('Download kit', 'Descargá el kit')} ↓</a></div>${lesson.lab.map((st, i) => `<article class="doc-step"><span class="eyebrow">${t('STEP', 'PASO')} ${i + 1} / ${lesson.lab.length}</span><h3>${e(L(st.title))}</h3><p>${e(L(st.text))}</p><div class="lab-command"><div class="command-title"><span>TERMINAL</span><button data-copy="${i}">${t('Copy', 'Copiar')} ⧉</button></div><pre><code>${e(st.command)}</code></pre></div><div class="expected"><strong>${t('What to observe', 'Qué observar')}</strong>${e(L(st.expected))}</div></article>`).join('')}<div class="lab-done">${progress[id]?.lab ? `<span class="eyebrow">✓ ${t('Lab marked as done', 'Laboratorio marcado como hecho')}</span>` : `<button class="btn primary" data-action="lab-done">${t('I ran & understood it', 'Lo ejecuté y entendí')} ✓</button>`}</div></section>`;
+    const lab = `<section class="doc-section" id="doc-lab"><h2 class="doc-title">${t('Docker lab', 'Laboratorio Docker')}</h2><div class="lab-context">${labContext()} <a href="${prefix}downloads/kafka-labs.zip" download>${t('Download kit', 'Descargá el kit')} ↓</a></div>${lesson.lab.map((st, i) => `<article class="doc-step"><span class="eyebrow">${t('STEP', 'PASO')} ${i + 1} / ${lesson.lab.length}</span><h3>${e(L(st.title))}</h3><p>${e(L(st.text))}</p><div class="lab-command"><div class="command-title"><span>TERMINAL</span><button data-copy="${i}">${t('Copy', 'Copiar')} ⧉</button></div><pre><code>${e(st.command)}</code></pre></div><div class="expected"><strong>${t('What to observe', 'Qué observar')}</strong>${e(L(st.expected))}</div></article>`).join('')}<div class="lab-done">${progress[lesson.slug]?.lab ? `<span class="eyebrow">✓ ${t('Lab marked as done', 'Laboratorio marcado como hecho')}</span>` : `<button class="btn primary" data-action="lab-done">${t('I ran & understood it', 'Lo ejecuté y entendí')} ✓</button>`}</div></section>`;
     const check = `<section class="doc-section" id="doc-check"><h2 class="doc-title">${t('Checkpoint', 'Control')}</h2>${quizView()}</section>`;
     const sources = `<section class="doc-section" id="doc-sources"><h2 class="doc-title">${t('Go deeper', 'Profundizá')}</h2><div class="reference-wrap">${sourcesView()}</div></section>`;
     return `<div class="workspace"><main class="lesson-main document" id="main" tabindex="-1">${heading}${model}${learn}${lab}${check}${sources}</main></div>`;
@@ -295,7 +313,7 @@
           const [qi, choice] = el.dataset.answer.split(':').map(Number);
           answers[qi] = choice;
           if (lesson.quiz.every((q, i) => answers[i] === q.correct)) {
-            progress[id] = { ...progress[id], quiz: true };
+            progress[lesson.slug] = { ...progress[lesson.slug], quiz: true };
             save();
           }
           render();
@@ -326,7 +344,7 @@
     );
     if ($('#unit-select'))
       $('#unit-select').onchange = (event) => {
-        location.href = link(course.lessons[+event.target.value * 4]);
+        location.href = link(course.lessons.find((l) => l.unit === +event.target.value));
       };
     bindObjects();
   }
@@ -398,7 +416,7 @@
       return;
     }
     if (a === 'lab-done') {
-      progress[id] = { ...progress[id], lab: true };
+      progress[lesson.slug] = { ...progress[lesson.slug], lab: true };
       save();
       updatePanel();
       return;
@@ -415,7 +433,7 @@
       } else if (currentTab === 'lab') {
         if (labStep < lesson.lab.length - 1) labStep++;
         else {
-          progress[id] = { ...progress[id], lab: true };
+          progress[lesson.slug] = { ...progress[lesson.slug], lab: true };
           save();
           currentTab = 'check';
         }
@@ -484,7 +502,7 @@
       model = g ? KafkaVisuals.render(course.lessons[g[4]].visual, 0, {}, lang, theme) : null;
     dialog(
       t('Visual glossary', 'Glosario visual'),
-      `<label class="sr-only" for="glossary-search">${t('Search glossary', 'Buscá en el glosario')}</label><input type="search" id="glossary-search" placeholder="${t('Find a concept…', 'Buscá un concepto…')}" value="${e(glossarySearch)}">${g ? `<span class="eyebrow">${glossaryIndex + 1} / ${entries.length}</span><h3 class="glossary-term">${e(g[lang === 'es' ? 1 : 0])}</h3><p>${e(g[lang === 'es' ? 3 : 2])}</p><div class="glossary-art">${model.svg}</div><a href="${link(course.lessons[g[4]])}">${t('See it in lesson', 'Miralo en la lección')} ${g[4] + 1}: ${e(L(course.lessons[g[4]].title))} →</a><div class="dialog-footer"><button class="btn" id="gloss-prev" ${glossaryIndex === 0 ? 'disabled' : ''}>← ${t('Previous', 'Anterior')}</button><button class="btn" id="gloss-next" ${glossaryIndex === entries.length - 1 ? 'disabled' : ''}>${t('Next', 'Siguiente')} →</button></div>` : `<p>${t('No matching concept. Try another term.', 'No hay coincidencias. Probá con otro término.')}</p>`}`,
+      `<label class="sr-only" for="glossary-search">${t('Search glossary', 'Buscá en el glosario')}</label><input type="search" id="glossary-search" placeholder="${t('Find a concept…', 'Buscá un concepto…')}" value="${e(glossarySearch)}">${g ? `<span class="eyebrow">${glossaryIndex + 1} / ${entries.length}</span><h3 class="glossary-term">${e(g[lang === 'es' ? 1 : 0])}</h3><p>${e(g[lang === 'es' ? 3 : 2])}</p><div class="glossary-art">${model.svg}</div><a href="${link(course.lessons[g[4]])}">${t('See it in lesson', 'Miralo en la lección')} ${String(course.lessons[g[4]].id).padStart(2, '0')}: ${e(L(course.lessons[g[4]].title))} →</a><div class="dialog-footer"><button class="btn" id="gloss-prev" ${glossaryIndex === 0 ? 'disabled' : ''}>← ${t('Previous', 'Anterior')}</button><button class="btn" id="gloss-next" ${glossaryIndex === entries.length - 1 ? 'disabled' : ''}>${t('Next', 'Siguiente')} →</button></div>` : `<p>${t('No matching concept. Try another term.', 'No hay coincidencias. Probá con otro término.')}</p>`}`,
     );
     if (model) bindObjects(model, $('.glossary-art'));
     const input = $('#glossary-search');
@@ -512,7 +530,7 @@
   function openMap() {
     dialog(
       t('Your learning path', 'Tu recorrido'),
-      `<div class="map-units" role="group" aria-label="${t('Units', 'Unidades')}">${course.units.map((u, i) => `<button class="btn ${i === mapUnit ? 'active' : ''}" data-unit="${i}" aria-label="${e(L(u))}">${i + 1}</button>`).join('')}</div><span class="eyebrow">${t('UNIT', 'UNIDAD')} ${mapUnit + 1}</span><h3 class="glossary-term">${e(L(course.units[mapUnit]))}</h3><nav>${lessonLinks(mapUnit)}</nav><p>${score()} / ${course.lessons.length} ${t('lessons complete. Progress is stored on this browser only.', 'lecciones completas. El avance queda solo en este navegador.')}</p>`,
+      `<div class="map-units" role="group" aria-label="${t('Units', 'Unidades')}">${course.units.map((u, i) => `<button class="btn ${i === mapUnit ? 'active' : ''}" data-unit="${i}" aria-label="${e(L(u))}">${i}</button>`).join('')}</div><span class="eyebrow">${t('UNIT', 'UNIDAD')} ${mapUnit}</span><h3 class="glossary-term">${e(L(course.units[mapUnit]))}</h3><nav>${lessonLinks(mapUnit)}</nav><p>${score()} / ${course.lessons.length} ${t('lessons complete. Progress is stored on this browser only.', 'lecciones completas. El avance queda solo en este navegador.')}</p>`,
     );
     document.querySelectorAll('[data-unit]').forEach(
       (el) =>

@@ -45,7 +45,7 @@ for (const lang of ['en', 'es']) {
     lang === 'en' ? 'KAFKA FROM SCRATCH. COURSE NOTES\n' : 'KAFKA DESDE CERO. APUNTES DEL CURSO\n';
   text += `Apache Kafka ${course.kafka} | ${course.date} | v${course.version}\n\n`;
   for (const l of course.lessons) {
-    text += `${String(l.id + 1).padStart(2, '0')}. ${l.title[lang]}\n${'='.repeat(65)}\n${l.intro[lang]}\n\n`;
+    text += `${String(l.id).padStart(2, '0')}. ${l.title[lang]}\n${'='.repeat(65)}\n${l.intro[lang]}\n\n`;
     for (const f of l.frames) text += `${f.title[lang]}\n${f.text[lang]}\n→ ${f.rule[lang]}\n\n`;
     text += lang === 'en' ? 'DOCKER ACTIVITY\n' : 'ACTIVIDAD DOCKER\n';
     for (const [i, s] of l.lab.entries()) {

@@ -6,10 +6,10 @@ Un curso visual independiente en **inglés y español rioplatense**. Abrí `inde
 
 ## What is included / Qué incluye
 
-- 29 individual HTML lessons in 8 ordered units; 87 visual teaching scenes.
+- 30 individual HTML lessons in 9 ordered units; 90 visual teaching scenes.
 - Interactive SVG models, clickable objects, keyboard navigation and an expandable canvas.
-- 29 Docker activities with 130 individually paginated steps, copyable commands and expected observations.
-- 87 checkpoint questions, three per lesson, each with an explanation; a 46-term visual glossary.
+- 30 Docker activities with 134 individually paginated steps, copyable commands and expected observations.
+- 90 checkpoint questions, three per lesson, each with an explanation; a 46-term visual glossary.
 - Four skins: Classic, Dark, Reading (each lesson as one scrolling page with larger type) and Projector (for a classroom screen). The choice is kept on the browser and travels in the page address.
 - A language button that preserves the current lesson, scene, lab step and model state.
 - Local progress: completing a lab is a learner declaration, not automatic Docker detection.
@@ -23,7 +23,7 @@ Cada lección combina modelo visual, explicación, laboratorio y control. El esp
 
 1. Open `index.html` / Abrí `index.html`.
 2. Choose EN or ES, and a skin if you want one / Elegí EN o ES, y una apariencia si querés.
-3. Start with lesson 01 / Empezá por la lección 01.
+3. Start with [lesson 00, Before you start](lessons/before-you-start.html?lang=en) / Empezá por la [lección 00, Antes de empezar](lessons/before-you-start.html?lang=es).
 4. Predict the outcome, manipulate the visual model, then run the Docker activity / Predecí el resultado, probá el modelo y después ejecutá la actividad Docker.
 5. Explain your checkpoint answers aloud / Explicá en voz alta tus respuestas al control.
 
@@ -33,20 +33,21 @@ En Clásico, Oscuro y Proyector el espacio de trabajo entra en la pantalla y no 
 
 ## Run the labs / Ejecutá los laboratorios
 
-Prerequisites: Docker Desktop or Docker Engine 25 or newer with Compose v2, Linux containers, roughly 8 GB available to Docker for the main lab (allow more for optional services), several GB of free disk and internet for the first image and dependency downloads. No host Java installation is required. Native ARM and x86 support depends on the pinned upstream images; the executed validation used Linux x86 containers on Windows Docker Desktop.
+Prerequisites: Docker Desktop or Docker Engine 25 or newer with Compose v2.20.2 or newer, Linux containers, roughly 8 GB available to Docker for the main lab (allow more for optional services), several GB of free disk and internet for the first image and dependency downloads. No host Java or Maven installation is required. Native ARM and x86 support depends on the pinned upstream images; the executed validation used Linux x86 containers on Windows Docker Desktop.
 
-Requisitos: Docker Desktop o Docker Engine 25 o posterior con Compose v2, contenedores Linux, unos 8 GB disponibles para Docker en el laboratorio principal (reservá más para los opcionales), varios GB de disco e internet para la primera descarga. No necesitás instalar Java en el host. La validación ejecutada usó contenedores Linux x86 en Docker Desktop para Windows.
+Requisitos: Docker Desktop o Docker Engine 25 o posterior con Compose v2.20.2 o superior, contenedores Linux, unos 8 GB disponibles para Docker en el laboratorio principal (reservá más para los opcionales), varios GB de disco e internet para la primera descarga. No necesitás instalar Java ni Maven en el host. La validación ejecutada usó contenedores Linux x86 en Docker Desktop para Windows.
 
 ```sh
+docker compose version
+docker version
 cd labs
-docker compose build lab
 docker compose up -d --wait
-docker compose run --rm lab cluster
+docker compose run --rm lab help
 ```
 
-Each page provides the rest. Its first preparation step resets only that lesson's practice topics and known inactive groups. Stop the previous lesson's long-running consumers first. Later lessons can be run independently after lesson 01; conceptual prerequisites still follow the course order.
+Lesson 00 covers setup without creating topics. Each later lab provides its own commands. Where present, its first preparation step resets only that lesson's practice topics and known inactive groups. Stop the previous lesson's long-running consumers first. Later lessons can be run independently after lesson 00; conceptual prerequisites still follow the course order.
 
-Cada página trae el resto. El primer paso de preparación reinicia solo los tópicos de práctica y grupos inactivos conocidos de esa lección. Antes, detené los consumidores que hayan quedado funcionando. Después de la lección 01 podés ejecutar cualquier laboratorio por separado; los prerrequisitos conceptuales siguen el orden del curso.
+La lección 00 cubre la puesta a punto sin crear tópicos. Cada lab posterior trae sus comandos. Cuando hay un paso de preparación, reinicia solo los tópicos de práctica y grupos inactivos conocidos de esa lección. Antes, detené los consumidores que hayan quedado funcionando. Después de la lección 00 podés ejecutar cualquier laboratorio por separado; los prerrequisitos conceptuales siguen el orden del curso.
 
 ```sh
 # Pause without deleting data / Pausá sin borrar datos
@@ -66,6 +67,7 @@ El [ejemplo completo de Spring Boot](labs/spring/README.md) acompaña la [lecci�
 
 | Unit / Unidad | Lessons / Lecciones | Outcome / Resultado |
 |---|---|---|
+| 0. Start here / Antes de empezar | 00 | Distinguish simulation from execution and prepare the lab / Distinguir simulación de ejecución y preparar el lab |
 | 1. Foundations / Cimientos | 01 to 04 | Run a cluster; distinguish records, topics, partitions and offsets / Levantar un clúster y distinguir sus piezas |
 | 2. Moving events / Mover eventos | 05 to 08 | Choose keys; explain batching, groups and bookmarks / Elegir claves y explicar lotes, grupos y señaladores |
 | 3. Resilience / Resistencia | 09 to 12 | Observe rebalances, replication, ISR and metadata quorum / Observar rebalanceo, réplicas, ISR y quórum |
@@ -81,9 +83,9 @@ Reservá varias sesiones. Repetí experimentos y anotá predicciones en vez de c
 
 ## Versions / Versiones
 
-The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 27 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned.
+Course 1.2.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 27 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned.
 
-El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 27 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado.
+Curso 1.2.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 27 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado.
 
 ## Develop and publish / Editá y publicá
 

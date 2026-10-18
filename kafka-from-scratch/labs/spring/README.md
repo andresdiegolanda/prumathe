@@ -8,11 +8,15 @@ Una aplicación completa con Java 21 y Spring Boot 3.5.16 que escribe y lee `spr
 
 Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; la línea actual es Spring Boot 4.x. El ejemplo sigue en 3.5.16 porque es la versión que el curso validó; todo lo que usa (`KafkaTemplate`, `@KafkaListener`, `TopicBuilder`, `CommonContainerStoppingErrorHandler`, `JsonSerializer`) existe sin cambios en Spring Kafka 4, y pasar la lección a Boot 4.x está planificado.
 
+Course kit 1.2.0; image `kafka-course-spring:1.2.0`.
+
+Kit del curso 1.2.0; imagen `kafka-course-spring:1.2.0`.
+
 ## Run it / Ejecutalo
 
-Run these commands from the parent `labs` folder, after lesson 01. Port 18080 must be free. The application creates its topic automatically through the `NewTopic` bean; it preserves existing messages and group offsets on later starts.
+Run these commands from the parent `labs` folder, after lesson 00. Port 18080 must be free. The application creates its topic automatically through the `NewTopic` bean; it preserves existing messages and group offsets on later starts.
 
-Ejecutá desde la carpeta padre `labs`, después de la lección 01. El puerto 18080 tiene que estar libre. La aplicación crea el tópico mediante el bean `NewTopic`; en los siguientes arranques conserva mensajes y offsets existentes.
+Ejecutá desde la carpeta padre `labs`, después de la lección 00. El puerto 18080 tiene que estar libre. La aplicación crea el tópico mediante el bean `NewTopic`; en los siguientes arranques conserva mensajes y offsets existentes.
 
 ```sh
 docker compose up -d --wait

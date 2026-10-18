@@ -5,6 +5,7 @@
 window.KAFKA_COURSE = (() => {
   const B = (en, es) => ({ en, es });
   const units = [
+    B('Start here', 'Antes de empezar'),
     B('The foundations', 'Los cimientos'),
     B('Moving events', 'Mover eventos'),
     B('A resilient cluster', 'Un clúster resistente'),
@@ -16,7 +17,7 @@ window.KAFKA_COURSE = (() => {
   ];
   const lessons = [];
   const add = (slug, title, intro, visual, frames, experiment, quiz, lab, source) =>
-    lessons.push({ id: lessons.length, slug, title, intro, visual, frames, experiment, quiz, lab, source });
+    lessons.push({ id: lessons.length, unit: lessons.length === 0 ? 0 : Math.ceil(lessons.length / 4), slug, title, intro, visual, frames, experiment, quiz, lab, source });
   const F = (title, text, rule) => ({ title, text, rule });
   const Q = (question, options, correct, explanation) => ({ question, options, correct, explanation });
   const S = (title, text, command, expected) => ({ title, text, command, expected });
@@ -26,8 +27,81 @@ window.KAFKA_COURSE = (() => {
       B('Prepare this lab', 'Prepará este laboratorio'),
       B('In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.', 'En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y prepará los tópicos de esta lección. La preparación borra únicamente los tópicos de práctica de esta lección.'),
       'docker compose up -d --wait\n' + run('prepare ' + n),
-      B('Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.', 'Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.'),
+      B('Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.', 'Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.'),
     );
+
+  // 00 Before you start
+  add(
+    'before-you-start',
+    B('Before you start', 'Antes de empezar'),
+    B('See the idea, test it, name its limit.', 'Mirá la idea, probala y nombrá su límite.'),
+    'method',
+    [
+      F(
+        B('Two places, two kinds of evidence', 'Dos lugares, dos tipos de evidencia'),
+        B('The browser diagrams simulate a mechanism; the Docker lab runs real Kafka. Moving a shape does not contact a broker. Every claim names the boundary within which it holds: “exactly once” always says exactly once for what.', 'Los diagramas del navegador simulan un mecanismo; el lab de Docker ejecuta Kafka real. Mover una figura no contacta un broker. Cada afirmación nombra el límite dentro del cual vale: «exactamente una vez» siempre dice exactamente una vez de qué.'),
+        B('The diagram teaches; the experiment tests.', 'El diagrama enseña; el experimento prueba.'),
+      ),
+      F(
+        B('Follow the learning cycle', 'Seguí el circuito'),
+        B('Explore the model and three scenes, run the lab, then answer three checkpoint questions. Progress stays in this browser; you declare the lab done. Passing the checkpoint does not prove a command ran. Change language or appearance whenever you want without losing your place.', 'Explorá el modelo y tres escenas, ejecutá el lab y respondé tres preguntas de control. El avance queda en este navegador; vos declarás el lab hecho. Resolver el control no prueba que corrió un comando. Cambiá idioma o apariencia cuando quieras sin perder tu lugar.'),
+        B('Build intuition, state the rule, experiment, then check your understanding.', 'Construí intuición, formulá la regla, experimentá y comprobá qué entendiste.'),
+      ),
+      F(
+        B('Choose a path and prepare your machine', 'Elegí un camino y prepará tu máquina'),
+        B('Follow the full course in order or study by unit. Know the basics? Start at Time & guarantees or Java with Spring. Bring Docker Engine 25 or newer for start_interval health checks, a terminal and free memory for three brokers plus optional services. No host Java or Maven needed; both run in containers.', 'Seguí todo en orden o por unidad. ¿Conocés lo básico? Empezá en Tiempo y garantías o Java con Spring. Necesitás Docker Engine 25 o superior para los health checks con start_interval, una terminal y memoria libre para tres brokers y servicios opcionales. Java y Maven corren en contenedores; no necesitás instalarlos.'),
+        B('Choose your route; every lab starts from the same kit.', 'Elegí tu recorrido; todos los labs parten del mismo kit.'),
+      ),
+    ],
+    B('Select the browser and Docker planes. Move through the scenes, then move the cycle marker: which parts simulate and which require your terminal?', 'Seleccioná los planos del navegador y Docker. Avanzá las escenas y mové el señalador del circuito: ¿qué partes simulan y cuáles necesitan tu terminal?'),
+    [
+      Q(
+        B('A diagram shows an experiment succeeding. What does that establish?', 'Un diagrama muestra un experimento que sale bien. ¿Qué demuestra?'),
+        [B('The mechanism being illustrated, within the stated assumptions', 'El mecanismo ilustrado, dentro de los supuestos declarados'), B('That your local Kafka cluster passed the experiment', 'Que tu clúster local de Kafka pasó el experimento'), B('That the guarantee holds for every external effect', 'Que la garantía vale para cualquier efecto externo')],
+        0,
+        B('A diagram explains a model. Run the lab to test the mechanism on real Kafka, and name what that experiment does not prove.', 'Un diagrama explica un modelo. Ejecutá el lab para probar el mecanismo en Kafka real y nombrá lo que ese experimento no demuestra.'),
+      ),
+      Q(
+        B('Which topics does a lab preparation step delete?', '¿Qué tópicos borra el paso de preparación de un lab?'),
+        [B('All topics in the course cluster', 'Todos los tópicos del clúster del curso'), B('Only that lesson’s practice topics', 'Solo los tópicos de práctica de esa lección'), B('Only topics that no consumer has read yet', 'Solo los tópicos que ningún consumidor leyó todavía')],
+        1,
+        B('Preparation resets that lesson’s practice topics and known inactive groups; stop its consumers first. It does not clear the whole cluster. Lesson 00 has no preparation step because it creates no topics.', 'La preparación reinicia los tópicos de práctica y grupos inactivos conocidos de esa lección; detené antes sus consumidores. No vacía el clúster entero. La lección 00 no tiene preparación porque no crea tópicos.'),
+      ),
+      Q(
+        B('Where is progress stored, and what does marking a lab done mean?', '¿Dónde se guarda el avance y qué significa marcar un lab como hecho?'),
+        [B('In Kafka; the client verified all your commands', 'En Kafka; el cliente verificó todos tus comandos'), B('In a course account; the checkpoint verified the lab', 'En una cuenta del curso; el control verificó el lab'), B('In this browser; you declare that you ran and understood the lab', 'En este navegador; vos declarás que ejecutaste y entendiste el lab')],
+        2,
+        B('The browser stores your progress locally. The lab mark is your declaration, and checkpoint answers do not detect Docker execution.', 'El navegador guarda tu avance localmente. La marca del lab es tu declaración y las respuestas al control no detectan ejecuciones de Docker.'),
+      ),
+    ],
+    [
+      S(
+        B('Check Docker', 'Verificá Docker'),
+        B('Start Docker with Linux containers. Check Compose, then use docker version to read the Engine version under Server. The kit uses start_interval, which requires Compose 2.20.2 or newer and Engine 25 or newer.', 'Arrancá Docker con contenedores Linux. Verificá Compose y usá docker version para leer la versión del Engine en Server. El kit usa start_interval, que requiere Compose 2.20.2 o superior y Engine 25 o superior.'),
+        'docker compose version\ndocker version',
+        B('Compose v2, at least 2.20.2, and a Server Engine version of 25 or newer. Compose version alone does not report the Engine; if Server is missing, check that Docker is running.', 'Compose v2, al menos 2.20.2, y una versión de Engine en Server de 25 o superior. La versión de Compose sola no informa la del Engine; si falta Server, comprobá que Docker esté funcionando.'),
+      ),
+      S(
+        B('Get the lab kit', 'Conseguí el kit'),
+        B('Use “Download labs” in the course. Extract the ZIP, open a terminal in the extracted directory, then enter labs. That folder contains compose.yaml and the complete client source.', 'Usá «Descargar labs» en el curso. Descomprimí el ZIP, abrí una terminal en el directorio descomprimido y entrá a labs. Esa carpeta contiene compose.yaml y el código completo del cliente.'),
+        'cd labs',
+        B('Your terminal is in the extracted labs folder, beside compose.yaml.', 'Tu terminal está en la carpeta labs descomprimida, junto a compose.yaml.'),
+      ),
+      S(
+        B('Start the cluster', 'Levantá el clúster'),
+        B('Run from labs. Compose starts the services and waits for their health checks. The first run downloads images and takes longer; keep the terminal open until the command finishes.', 'Ejecutá desde labs. Compose levanta los servicios y espera sus health checks. La primera vez descarga imágenes y tarda más; mantené la terminal abierta hasta que termine el comando.'),
+        'docker compose up -d --wait',
+        B('kafka1, kafka2 and kafka3 are healthy. These are three real Kafka brokers.', 'kafka1, kafka2 y kafka3 están healthy. Son tres brokers de Kafka reales.'),
+      ),
+      S(
+        B('Build and try the client', 'Construí y probá el cliente'),
+        B('Run the supplied client’s help command. On first use, Compose builds the missing lab image from the included Dockerfile; that downloads build dependencies. Java and Maven stay in containers. This command lists the experiments without creating topics.', 'Ejecutá la ayuda del cliente incluido. En el primer uso, Compose construye la imagen lab faltante con el Dockerfile incluido; eso descarga dependencias de compilación. Java y Maven quedan en contenedores. Este comando enumera los experimentos sin crear tópicos.'),
+        run('help'),
+        B('“Kafka course lab / Laboratorio Kafka” and a “Commands:” list including cluster, prepare N and seed N. Help checks the client starts; it does not test a broker connection.', '«Kafka course lab / Laboratorio Kafka» y una lista «Commands:» con cluster, prepare N y seed N. La ayuda comprueba que el cliente arranca; no prueba una conexión al broker.'),
+      ),
+    ],
+    'docker',
+  );
 
   // 01 Your first Kafka cluster
   add(
@@ -84,7 +158,7 @@ window.KAFKA_COURSE = (() => {
         B('Build the client once', 'Construí el cliente una vez'),
         B('The supplied Java client exposes small, readable experiments. Its entire source is included. No Java installation is needed on your computer.', 'El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene con todo su código. No necesitás instalar Java en tu computadora.'),
         'docker compose build lab',
-        B('The image kafka-course-lab:1.1 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.1. La primera compilación descarga dependencias de Maven.'),
+        B('The image kafka-course-lab:1.2.0 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.2.0. La primera compilación descarga dependencias de Maven.'),
       ),
       S(
         B('Start three nodes', 'Levantá tres nodos'),
@@ -2051,7 +2125,7 @@ window.KAFKA_COURSE = (() => {
     [
       S(
         B('Build and start the example', 'Construí y arrancá el ejemplo'),
-        B('Finish lesson 01 first. From labs, build the included Spring Boot 3.5.16 / Java 21 project and start it beside the cluster. Its NewTopic bean creates spring-orders. Repeating this step keeps existing events and group progress.', 'Hacé primero la lección 01. Desde labs, construí el proyecto incluido de Spring Boot 3.5.16 / Java 21 y levantalo junto al clúster. El bean NewTopic crea spring-orders. Repetir este paso conserva eventos y avance del grupo.'),
+        B('Finish lesson 00 first. From labs, build the included Spring Boot 3.5.16 / Java 21 project and start it beside the cluster. Its NewTopic bean creates spring-orders. Repeating this step keeps existing events and group progress.', 'Hacé primero la lección 00. Desde labs, construí el proyecto incluido de Spring Boot 3.5.16 / Java 21 y levantalo junto al clúster. El bean NewTopic crea spring-orders. Repetir este paso conserva eventos y avance del grupo.'),
         'docker compose up -d --wait\ndocker compose --profile spring up -d --build --wait spring',
         B('spring is healthy. HTTP is available at localhost:18080; Docker clients use spring:8080.', 'spring está saludable. HTTP está en localhost:18080; los clientes Docker usan spring:8080.'),
       ),
@@ -2095,5 +2169,5 @@ window.KAFKA_COURSE = (() => {
     'spring',
   );
 
-  return { version: '1.1', kafka: '4.1.2', date: '2026-10-17', units, lessons, B };
+  return { version: '1.2.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
 })();

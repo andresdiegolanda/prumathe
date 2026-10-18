@@ -15,11 +15,12 @@ for (const name of ['curriculum', 'visuals', 'reference']) {
 const course = ctx.window.KAFKA_COURSE;
 const visuals = ctx.window.KafkaVisuals;
 const { lessons, units } = course;
-assert.equal(lessons.length, 29);
-assert.equal(units.length, 8);
-assert.equal(new Set(lessons.map((x) => x.slug)).size, 29);
+assert.equal(lessons.length, 30);
+assert.equal(units.length, 9);
+assert.equal(new Set(lessons.map((x) => x.slug)).size, 30);
 
 const supported = new Set([
+  'help',
   'cluster',
   'prepare',
   'seed',
@@ -69,6 +70,8 @@ let frames = 0,
   questions = 0;
 for (const l of lessons) {
   assert.equal(l.id, lessons.indexOf(l));
+  assert.ok(Number.isInteger(l.unit));
+  assert.ok(units[l.unit]);
   bilingual(l.title, l.slug);
   bilingual(l.intro, l.slug);
   bilingual(l.experiment, l.slug + ' experiment');
@@ -93,7 +96,8 @@ for (const l of lessons) {
     bilingual(q.explanation, l.slug + ' explanation');
     assert.equal(q.options.length, 3, l.slug + ' options');
     q.options.forEach((x) => bilingual(x, l.slug + ' option'));
-    assert.equal(new Set(q.options.map((x) => x.en)).size, 3, l.slug + ' repeated option');
+    for (const lang of ['en', 'es'])
+      assert.equal(new Set(q.options.map((x) => x[lang])).size, 3, l.slug + ' repeated option');
     assert.ok(q.correct >= 0 && q.correct < q.options.length);
     questions++;
   }
@@ -112,7 +116,35 @@ for (const l of lessons) {
       }
     }
   }
-  assert.ok(fs.existsSync(path.join(root, 'lessons', l.slug + '.html')));
+  const page = fs.readFileSync(path.join(root, 'lessons', l.slug + '.html'), 'utf8');
+  assert.ok(page.includes('data-lesson="' + l.id + '"'), l.slug + ' incorrect page index');
+}
+
+const unitStarts = [
+  'before-you-start', 'start', 'keys-order', 'rebalances', 'retention',
+  'transactions', 'streams', 'scaling', 'spring-java',
+];
+units.forEach((_, unit) => {
+  const members = lessons.filter((l) => l.unit === unit);
+  assert.equal(members.length, unit === 0 || unit === 8 ? 1 : 4);
+  assert.equal(members[0].slug, unitStarts[unit]);
+});
+assert.equal(lessons[0].slug, 'before-you-start');
+assert.equal(lessons[0].source, 'docker');
+assert.equal(lessons[0].lab.length, 4);
+assert.ok(lessons[0].lab.every((s) => !s.command.includes('prepare ')));
+assert.equal(lessons[1].slug, 'start');
+assert.equal(lessons[29].slug, 'spring-java');
+assert.equal(frames, lessons.length * 3);
+assert.equal(questions, lessons.length * 3);
+assert.equal(steps, 134);
+for (const lang of ['en', 'es']) {
+  const notes = fs.readFileSync(path.join(root, 'downloads/course-notes-' + lang + '.txt'), 'utf8');
+  for (const l of lessons)
+    assert.ok(notes.includes(String(l.id).padStart(2, '0') + '. ' + l.title[lang]));
+}
+for (const entry of ctx.window.KAFKA_REFERENCE.glossary) {
+  assert.ok(Number.isInteger(entry[4]) && entry[4] >= 1 && entry[4] < lessons.length);
 }
 
 // Kafka Java Utils.murmur2, positive form.
@@ -142,7 +174,7 @@ for (const command of supported) {
 // One version, declared in curriculum.js and repeated only where a tool requires it.
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 assert.ok(
-  pkg.version.startsWith(course.version + '.'),
+  pkg.version === course.version,
   'package.json version disagrees with curriculum.js',
 );
 const compose = fs.readFileSync(path.join(root, 'labs/compose.yaml'), 'utf8');
@@ -154,6 +186,22 @@ assert.ok(
   compose.includes(`kafka-course-lab:${course.version}`),
   'compose.yaml lab image tag disagrees with curriculum.js',
 );
+
+assert.ok(
+  compose.includes('image: kafka-course-spring:' + course.version),
+  'compose.yaml Spring image tag disagrees with curriculum.js',
+);
+for (const filename of ['labs/pom.xml', 'labs/spring/pom.xml']) {
+  const pom = fs.readFileSync(path.join(root, filename), 'utf8');
+  const project = pom.replace(/<parent>[\s\S]*?<\/parent>/, '');
+  assert.equal(project.match(/<version>([^<]+)<\/version>/)?.[1], course.version, filename);
+}
+const labPom = fs.readFileSync(path.join(root, 'labs/pom.xml'), 'utf8');
+for (const artifact of ['kafka-clients', 'kafka-streams'])
+  assert.ok(
+    labPom.includes('<artifactId>' + artifact + '</artifactId><version>' + course.kafka + '</version>'),
+    artifact + ' version disagrees with curriculum.js',
+  );
 
 // The no-dash rule also covers the interface strings and the reference data.
 for (const name of ['app.js', 'visuals.js', 'reference.js', 'theme.js']) {

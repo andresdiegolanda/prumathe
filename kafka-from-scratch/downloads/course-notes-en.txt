@@ -1,5 +1,71 @@
 KAFKA FROM SCRATCH. COURSE NOTES
-Apache Kafka 4.1.2 | 2026-10-17 | v1.1
+Apache Kafka 4.1.2 | 2026-10-18 | v1.2.0
+
+00. Before you start
+=================================================================
+See the idea, test it, name its limit.
+
+Two places, two kinds of evidence
+The browser diagrams simulate a mechanism; the Docker lab runs real Kafka. Moving a shape does not contact a broker. Every claim names the boundary within which it holds: “exactly once” always says exactly once for what.
+→ The diagram teaches; the experiment tests.
+
+Follow the learning cycle
+Explore the model and three scenes, run the lab, then answer three checkpoint questions. Progress stays in this browser; you declare the lab done. Passing the checkpoint does not prove a command ran. Change language or appearance whenever you want without losing your place.
+→ Build intuition, state the rule, experiment, then check your understanding.
+
+Choose a path and prepare your machine
+Follow the full course in order or study by unit. Know the basics? Start at Time & guarantees or Java with Spring. Bring Docker Engine 25 or newer for start_interval health checks, a terminal and free memory for three brokers plus optional services. No host Java or Maven needed; both run in containers.
+→ Choose your route; every lab starts from the same kit.
+
+DOCKER ACTIVITY
+1. Check Docker
+Start Docker with Linux containers. Check Compose, then use docker version to read the Engine version under Server. The kit uses start_interval, which requires Compose 2.20.2 or newer and Engine 25 or newer.
+
+docker compose version
+docker version
+
+Observe: Compose v2, at least 2.20.2, and a Server Engine version of 25 or newer. Compose version alone does not report the Engine; if Server is missing, check that Docker is running.
+
+2. Get the lab kit
+Use “Download labs” in the course. Extract the ZIP, open a terminal in the extracted directory, then enter labs. That folder contains compose.yaml and the complete client source.
+
+cd labs
+
+Observe: Your terminal is in the extracted labs folder, beside compose.yaml.
+
+3. Start the cluster
+Run from labs. Compose starts the services and waits for their health checks. The first run downloads images and takes longer; keep the terminal open until the command finishes.
+
+docker compose up -d --wait
+
+Observe: kafka1, kafka2 and kafka3 are healthy. These are three real Kafka brokers.
+
+4. Build and try the client
+Run the supplied client’s help command. On first use, Compose builds the missing lab image from the included Dockerfile; that downloads build dependencies. Java and Maven stay in containers. This command lists the experiments without creating topics.
+
+docker compose run --rm lab help
+
+Observe: “Kafka course lab / Laboratorio Kafka” and a “Commands:” list including cluster, prepare N and seed N. Help checks the client starts; it does not test a broker connection.
+
+CHECKPOINT
+1. A diagram shows an experiment succeeding. What does that establish?
+A. The mechanism being illustrated, within the stated assumptions
+B. That your local Kafka cluster passed the experiment
+C. That the guarantee holds for every external effect
+Answer: A. A diagram explains a model. Run the lab to test the mechanism on real Kafka, and name what that experiment does not prove.
+
+2. Which topics does a lab preparation step delete?
+A. All topics in the course cluster
+B. Only that lesson’s practice topics
+C. Only topics that no consumer has read yet
+Answer: B. Preparation resets that lesson’s practice topics and known inactive groups; stop its consumers first. It does not clear the whole cluster. Lesson 00 has no preparation step because it creates no topics.
+
+3. Where is progress stored, and what does marking a lab done mean?
+A. In Kafka; the client verified all your commands
+B. In a course account; the checkpoint verified the lab
+C. In this browser; you declare that you ran and understood the lab
+Answer: C. The browser stores your progress locally. The lab mark is your declaration, and checkpoint answers do not detect Docker execution.
+
 
 01. Your first Kafka cluster
 =================================================================
@@ -31,7 +97,7 @@ The supplied Java client exposes small, readable experiments. Its entire source 
 
 docker compose build lab
 
-Observe: The image kafka-course-lab:1.1 is built. The first build downloads Maven dependencies.
+Observe: The image kafka-course-lab:1.2.0 is built. The first build downloads Maven dependencies.
 
 3. Start three nodes
 Run from the labs folder. This creates only the course’s named Docker project. Ports 19092, 29092 and 39092 must be free.
@@ -98,7 +164,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 1
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Append three facts
 Produce three fictional café orders with stable keys.
@@ -164,7 +230,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 2
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Send an envelope
 The sample producer attaches event-type and trace-id headers.
@@ -231,7 +297,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 3
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Inspect the topic
 Preparation created a topic with three partitions and three replicas per partition.
@@ -297,7 +363,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 4
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Observe key routing
 The default Java partitioner routes repeated order keys.
@@ -365,7 +431,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 5
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Measure small batches
 Send 2,000 synthetic records with linger 0 and small batches.
@@ -431,7 +497,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 6
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Populate the lanes
 Create sample events on all three partitions.
@@ -497,7 +563,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 7
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Create a backlog
 Publish the sample events.
@@ -572,7 +638,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 8
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start member one
 Leave it running in terminal A.
@@ -640,7 +706,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 9
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Locate the leader
 This lab assigns the single partition replicas in order 1,2,3. Check the actual leader before the failure.
@@ -710,7 +776,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 10
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Write with all replicas
 The topic requires min ISR 3 to demonstrate a failure while keeping controller quorum.
@@ -786,7 +852,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 11
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Inspect the metadata quorum
 Use the native Kafka tool inside a running broker.
@@ -854,7 +920,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 12
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Create short-lived history
 The topic uses retention.ms=10000 and segment.ms=1000. The lab broker checks retention every 5 seconds.
@@ -922,7 +988,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 13
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Write a changing table
 Write A=10, B=20, A=30, then a tombstone for B.
@@ -989,7 +1055,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 14
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Publish the input
 Each event has an event ID to make duplicates recognizable.
@@ -1056,7 +1122,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 15
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Send the same event twice
 The sample uses enable.idempotence=true and two separate send calls.
@@ -1122,7 +1188,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 16
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Commit and abort
 One transaction writes COMMITTED, another writes ABORTED then aborts.
@@ -1191,7 +1257,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 17
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Check the compatible change
 The client tests an Avro v2 reader with a new currency field and default against v1 writer data. Schemas ship with the source.
@@ -1258,7 +1324,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 18
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start a file source
 The optional service runs the official Kafka file connector. Its sample file and offsets live on a dedicated volume.
@@ -1332,7 +1398,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 19
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start PostgreSQL
 The optional database has sample-only credentials and no published host port.
@@ -1407,7 +1473,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 20
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Run the topology
 Keep the process in terminal A. It counts events per key and writes updates to lab20-counts.
@@ -1474,7 +1540,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 21
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start a windowed count
 In terminal A, run a real Streams topology with 10-second windows and 5-second grace.
@@ -1540,7 +1606,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 22
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start the ACL sandbox
 This is a separate single-node broker with no host port. Demo credentials are intentionally public.
@@ -1614,7 +1680,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 23
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Create observable work
 Publish the sample and register a group bookmark at the beginning.
@@ -1689,7 +1755,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 24
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Create a hot key
 Send 90% of events with one key and inspect the partition distribution.
@@ -1757,7 +1823,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 25
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start a destination cluster
 The optional mirror broker is independent and has no host port.
@@ -1831,7 +1897,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 26
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Start the experimental broker
 The optional broker isolates preview configuration from the main course cluster.
@@ -1904,7 +1970,7 @@ In a terminal, enter the extracted labs folder. Start the cluster, then prepare 
 docker compose up -d --wait
 docker compose run --rm lab prepare 27
 
-Observe: Three healthy brokers and READY. Run lesson 01 first if the lab image has not been built.
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
 
 2. Publish a known workload
 Send six orders with stable event IDs. Record the expected total before running the processor.
@@ -1985,7 +2051,7 @@ KafkaConfig declares a NewTopic with three partitions, three replicas and min IS
 
 DOCKER ACTIVITY
 1. Build and start the example
-Finish lesson 01 first. From labs, build the included Spring Boot 3.5.16 / Java 21 project and start it beside the cluster. Its NewTopic bean creates spring-orders. Repeating this step keeps existing events and group progress.
+Finish lesson 00 first. From labs, build the included Spring Boot 3.5.16 / Java 21 project and start it beside the cluster. Its NewTopic bean creates spring-orders. Repeating this step keeps existing events and group progress.
 
 docker compose up -d --wait
 docker compose --profile spring up -d --build --wait spring

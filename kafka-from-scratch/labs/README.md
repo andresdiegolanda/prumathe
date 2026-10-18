@@ -6,17 +6,20 @@ Ejecutá los comandos desde esta carpeta. El curso usa **Apache Kafka 4.1.2**. N
 
 ## First run / Primera ejecución
 
+Course kit 1.2.0. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
+
+Kit del curso 1.2.0. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
+
 ```sh
-docker version
 docker compose version
-docker compose build lab
+docker version
 docker compose up -d --wait
-docker compose run --rm lab cluster
+docker compose run --rm lab help
 ```
 
-Expect three healthy brokers with IDs 1, 2 and 3. Docker must use Linux containers, Engine 25 or newer (the health checks use `start_interval`). Reserve roughly 8 GB for Docker and more for optional services. The first build downloads official images and Maven dependencies; later runs reuse them. The brokers run as root inside their containers so the named volumes never raise permission questions; that is a teaching shortcut, not a production setting.
+Expect Compose v2.20.2 or newer, a Server Engine of 25 or newer, three healthy brokers with IDs 1, 2 and 3, and the client's command list. Docker must use Linux containers; the health checks use `start_interval`. Reserve roughly 8 GB for Docker and more for optional services. The first run downloads official images and Maven dependencies; later runs reuse them. The brokers run as root inside their containers so the named volumes never raise permission questions; that is a teaching shortcut, not a production setting.
 
-Esperá tres brokers saludables con IDs 1, 2 y 3. Docker tiene que usar contenedores Linux, Engine 25 o posterior (los health checks usan `start_interval`). Reservá unos 8 GB y más para servicios opcionales. La primera compilación descarga imágenes y dependencias de Maven; las siguientes las reutilizan. Los brokers corren como root dentro de sus contenedores para que los volúmenes con nombre nunca den problemas de permisos; es un atajo didáctico, no una configuración de producción.
+Esperá Compose v2.20.2 o superior, un Engine 25 o superior en Server, tres brokers saludables con IDs 1, 2 y 3 y la lista de comandos del cliente. Docker tiene que usar contenedores Linux; los health checks usan `start_interval`. Reservá unos 8 GB y más para servicios opcionales. La primera ejecución descarga imágenes y dependencias de Maven; las siguientes las reutilizan. Los brokers corren como root dentro de sus contenedores para que los volúmenes con nombre nunca den problemas de permisos; es un atajo didáctico, no una configuración de producción.
 
 ## Addresses / Direcciones
 
@@ -35,9 +38,9 @@ Lesson 29 uses a separate [complete Spring Boot project](spring/README.md), with
 
 La lección 29 usa un [proyecto Spring Boot completo](spring/README.md), con `KafkaTemplate`, `@KafkaListener` y su tópico `spring-orders`. No usa el comando numerado de preparación del cliente nativo.
 
-The displayed lesson number starts at **01**; the client’s internal ID starts at **0**. The setup page has no data topic. Thus displayed lesson 02 uses `prepare 1` and topic `lab1`; displayed lesson 28 uses `prepare 27`. Copy the commands printed on the page.
+Displayed lessons now run from **00 to 29**. Lessons 00 and 01 create no practice topics. The Java client's topic numbers stay unchanged: lesson 02 uses `prepare 1` and topic `lab1`; displayed lesson 28 uses `prepare 27`. Copy the commands printed on the page.
 
-El número visible empieza en **01** y el ID interno del cliente en **0**. La página de preparación no tiene tópico. Por eso la lección visible 02 usa `prepare 1` y `lab1`; la visible 28 usa `prepare 27`. Copiá los comandos de la página.
+Las lecciones visibles van de **00 a 29**. Las lecciones 00 y 01 no crean tópicos de práctica. Los números de tópicos del cliente Java no cambian: la lección 02 usa `prepare 1` y `lab1`; la visible 28 usa `prepare 27`. Copiá los comandos de la página.
 
 `prepare N` deletes and recreates only `labN`, its `labN-*` outputs, and that lesson’s Streams internal topics where applicable. It resets the lesson’s known inactive groups and refuses to reset them while active. Stop all `watch`, `streams` and `windows` commands before preparing again. Preparation does not erase optional database volumes, Connect source files, the separate mirror cluster or share-group experiments. Repeating `outbox create` explicitly resets the one demo event’s sent flag.
 

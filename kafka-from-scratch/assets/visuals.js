@@ -172,7 +172,68 @@ window.KafkaVisuals = (() => {
     const range = (key, en, es, min, max, value) =>
       controls.push({ kind: 'range', key, label: t(en, es), min, max, value });
     const stages = [C.green, C.blue, C.purple];
-    if (type === 'cluster') {
+    if (type === 'method') {
+      const phase = Math.max(0, Math.min(3, Number(state.phase) || 0));
+      s = heading(
+        t('THE COURSE ANATOMY', 'LA ANATOMÍA DEL CURSO'),
+        t('Understand here. Test in your terminal.', 'Entendé acá. Probá en tu terminal.'),
+      );
+      s += box(
+        35, 100, 330, 105, t('Browser', 'Navegador'),
+        t('Model + 3 scenes: simulation', 'Modelo + 3 escenas: simulación'),
+        C.green, 'browser',
+        t('Select and change the model to build intuition. No browser diagram contacts Kafka.',
+          'Seleccioná y cambiá el modelo para construir intuición. Ningún diagrama contacta Kafka.'),
+      );
+      s += box(
+        395, 100, 330, 105, 'Docker',
+        t('Real Kafka: 3 brokers', 'Kafka real: 3 brokers'),
+        C.orange, 'docker',
+        t('Run commands from the extracted labs folder. Java and Maven run inside containers.',
+          'Ejecutá los comandos desde labs descomprimido. Java y Maven corren en contenedores.'),
+      );
+      s += txt(380, 234,
+        t('A diagram is not a broker connection.', 'Un diagrama no es una conexión al broker.'),
+        13, C.muted, 'middle');
+      const cycle = [
+        [t('Intuition', 'Intuición'), t('Manipulate', 'Manipulá'), C.green,
+          t('Predict a change, then manipulate the model.', 'Predecí un cambio y manipulá el modelo.')],
+        [t('Rule', 'Regla'), t('Name the limit', 'Nombrá el límite'), C.blue,
+          t('Explain the guarantee and its boundary.', 'Explicá la garantía y su límite.')],
+        [t('Experiment', 'Experimento'), t('Run the lab', 'Ejecutá el lab'), C.orange,
+          t('Use your terminal and compare the actual output with your prediction.',
+            'Usá tu terminal y compará la salida real con tu predicción.')],
+        [t('Checkpoint', 'Control'), t('3 questions', '3 preguntas'), C.purple,
+          t('Explain three answers. Progress lives in this browser; you declare the lab done.',
+            'Explicá tres respuestas. El avance vive en este navegador; vos declarás el lab hecho.')],
+      ];
+      cycle.forEach(([label, sub, color, detail], i) => {
+        const x = 35 + i * 180;
+        s += box(x, 265, 150, 66, label, sub, color, 'cycle' + i, detail);
+        if (i < 3) s += arrow(x + 153, 298, x + 176, 298, C.line);
+        if (step === 1 && phase === i)
+          s += '<circle cx="' + (x + 75) + '" cy="347" r="5" fill="' + color + '"/>';
+      });
+      if (step === 0) {
+        s += pill(120, 382, 520,
+          t('The diagram teaches; the experiment tests.', 'El diagrama enseña; el experimento prueba.'),
+          C.mint);
+      } else if (step === 1) {
+        s += txt(380, 389,
+          t('You declare the lab done; the quiz cannot detect commands.',
+            'Vos declarás el lab hecho; el control no detecta comandos.'),
+          13, C.ink, 'middle');
+        range('phase', 'Cycle marker', 'Señalador del circuito', 0, 3, phase);
+      } else {
+        s += pill(35, 374, 210, t('Full course: 00 to 29', 'Completo: 00 a 29'), C.mint);
+        s += pill(265, 374, 210, t('Choose a unit', 'Elegí una unidad'), C.amber);
+        s += pill(495, 374, 230, t('Shortcuts: 13 or 29', 'Atajos: 13 o 29'), C.panelAlt);
+        s += txt(380, 432,
+          t('One kit. A terminal. Free memory for the services.',
+            'Un kit. Una terminal. Memoria libre para los servicios.'),
+          13, C.muted, 'middle');
+      }
+    } else if (type === 'cluster') {
       s = heading(
         t('YOUR LOCAL LAB', 'TU LABORATORIO LOCAL'),
         t('One network. Clear responsibilities.', 'Una red. Responsabilidades claras.'),

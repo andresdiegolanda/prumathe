@@ -1,5 +1,71 @@
 KAFKA DESDE CERO. APUNTES DEL CURSO
-Apache Kafka 4.1.2 | 2026-10-17 | v1.1
+Apache Kafka 4.1.2 | 2026-10-18 | v1.2.0
+
+00. Antes de empezar
+=================================================================
+Mirá la idea, probala y nombrá su límite.
+
+Dos lugares, dos tipos de evidencia
+Los diagramas del navegador simulan un mecanismo; el lab de Docker ejecuta Kafka real. Mover una figura no contacta un broker. Cada afirmación nombra el límite dentro del cual vale: «exactamente una vez» siempre dice exactamente una vez de qué.
+→ El diagrama enseña; el experimento prueba.
+
+Seguí el circuito
+Explorá el modelo y tres escenas, ejecutá el lab y respondé tres preguntas de control. El avance queda en este navegador; vos declarás el lab hecho. Resolver el control no prueba que corrió un comando. Cambiá idioma o apariencia cuando quieras sin perder tu lugar.
+→ Construí intuición, formulá la regla, experimentá y comprobá qué entendiste.
+
+Elegí un camino y prepará tu máquina
+Seguí todo en orden o por unidad. ¿Conocés lo básico? Empezá en Tiempo y garantías o Java con Spring. Necesitás Docker Engine 25 o superior para los health checks con start_interval, una terminal y memoria libre para tres brokers y servicios opcionales. Java y Maven corren en contenedores; no necesitás instalarlos.
+→ Elegí tu recorrido; todos los labs parten del mismo kit.
+
+ACTIVIDAD DOCKER
+1. Verificá Docker
+Arrancá Docker con contenedores Linux. Verificá Compose y usá docker version para leer la versión del Engine en Server. El kit usa start_interval, que requiere Compose 2.20.2 o superior y Engine 25 o superior.
+
+docker compose version
+docker version
+
+Observá: Compose v2, al menos 2.20.2, y una versión de Engine en Server de 25 o superior. La versión de Compose sola no informa la del Engine; si falta Server, comprobá que Docker esté funcionando.
+
+2. Conseguí el kit
+Usá «Descargar labs» en el curso. Descomprimí el ZIP, abrí una terminal en el directorio descomprimido y entrá a labs. Esa carpeta contiene compose.yaml y el código completo del cliente.
+
+cd labs
+
+Observá: Tu terminal está en la carpeta labs descomprimida, junto a compose.yaml.
+
+3. Levantá el clúster
+Ejecutá desde labs. Compose levanta los servicios y espera sus health checks. La primera vez descarga imágenes y tarda más; mantené la terminal abierta hasta que termine el comando.
+
+docker compose up -d --wait
+
+Observá: kafka1, kafka2 y kafka3 están healthy. Son tres brokers de Kafka reales.
+
+4. Construí y probá el cliente
+Ejecutá la ayuda del cliente incluido. En el primer uso, Compose construye la imagen lab faltante con el Dockerfile incluido; eso descarga dependencias de compilación. Java y Maven quedan en contenedores. Este comando enumera los experimentos sin crear tópicos.
+
+docker compose run --rm lab help
+
+Observá: «Kafka course lab / Laboratorio Kafka» y una lista «Commands:» con cluster, prepare N y seed N. La ayuda comprueba que el cliente arranca; no prueba una conexión al broker.
+
+CONTROL
+1. Un diagrama muestra un experimento que sale bien. ¿Qué demuestra?
+A. El mecanismo ilustrado, dentro de los supuestos declarados
+B. Que tu clúster local de Kafka pasó el experimento
+C. Que la garantía vale para cualquier efecto externo
+Respuesta: A. Un diagrama explica un modelo. Ejecutá el lab para probar el mecanismo en Kafka real y nombrá lo que ese experimento no demuestra.
+
+2. ¿Qué tópicos borra el paso de preparación de un lab?
+A. Todos los tópicos del clúster del curso
+B. Solo los tópicos de práctica de esa lección
+C. Solo los tópicos que ningún consumidor leyó todavía
+Respuesta: B. La preparación reinicia los tópicos de práctica y grupos inactivos conocidos de esa lección; detené antes sus consumidores. No vacía el clúster entero. La lección 00 no tiene preparación porque no crea tópicos.
+
+3. ¿Dónde se guarda el avance y qué significa marcar un lab como hecho?
+A. En Kafka; el cliente verificó todos tus comandos
+B. En una cuenta del curso; el control verificó el lab
+C. En este navegador; vos declarás que ejecutaste y entendiste el lab
+Respuesta: C. El navegador guarda tu avance localmente. La marca del lab es tu declaración y las respuestas al control no detectan ejecuciones de Docker.
+
 
 01. Tu primer clúster de Kafka
 =================================================================
@@ -31,7 +97,7 @@ El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene 
 
 docker compose build lab
 
-Observá: Se construye kafka-course-lab:1.1. La primera compilación descarga dependencias de Maven.
+Observá: Se construye kafka-course-lab:1.2.0. La primera compilación descarga dependencias de Maven.
 
 3. Levantá tres nodos
 Ejecutá desde labs. Se crea únicamente el proyecto Docker del curso. Los puertos 19092, 29092 y 39092 tienen que estar libres.
@@ -98,7 +164,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 1
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Agregá tres hechos
 Publicá tres pedidos ficticios del café con claves estables.
@@ -164,7 +230,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 2
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Mandá un sobre
 El productor de ejemplo agrega cabeceras event-type y trace-id.
@@ -231,7 +297,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 3
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Inspeccioná el tópico
 La preparación creó un tópico con tres particiones y tres réplicas por partición.
@@ -297,7 +363,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 4
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Observá el ruteo por clave
 El particionador Java por defecto distribuye claves de pedido repetidas.
@@ -365,7 +431,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 5
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Medí lotes chicos
 Mandá 2.000 mensajes sintéticos con linger 0 y lotes chicos.
@@ -431,7 +497,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 6
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Cargá los carriles
 Creá eventos de ejemplo en las tres particiones.
@@ -497,7 +563,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 7
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Creá trabajo pendiente
 Publicá los eventos de ejemplo.
@@ -572,7 +638,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 8
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá el primer miembro
 Dejalo funcionando en la terminal A.
@@ -640,7 +706,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 9
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Ubicá al líder
 El laboratorio asigna las réplicas de la única partición en orden 1,2,3. Verificá el líder real antes de la falla.
@@ -710,7 +776,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 10
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Escribí con todas las réplicas
 El tópico exige ISR mínimo 3 para mostrar una falla sin perder el quórum de controladores.
@@ -786,7 +852,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 11
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Inspeccioná el quórum
 Usá la herramienta nativa de Kafka dentro de un broker en ejecución.
@@ -854,7 +920,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 12
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Creá historia de vida corta
 El tópico usa retention.ms=10000 y segment.ms=1000. El broker del laboratorio revisa la retención cada 5 segundos.
@@ -922,7 +988,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 13
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Escribí una tabla que cambia
 Escribí A=10, B=20, A=30 y después un tombstone para B.
@@ -989,7 +1055,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 14
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Publicá la entrada
 Cada evento tiene un ID para poder reconocer duplicados.
@@ -1056,7 +1122,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 15
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Mandá el mismo evento dos veces
 La muestra usa enable.idempotence=true y dos llamadas separadas a send.
@@ -1122,7 +1188,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 16
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Confirmá y abortá
 Una transacción escribe COMMITTED; otra escribe ABORTED y aborta.
@@ -1191,7 +1257,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 17
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Verificá el cambio compatible
 El cliente compara un lector Avro v2 que agrega currency con valor por defecto contra datos del escritor v1. Los esquemas vienen en el código.
@@ -1258,7 +1324,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 18
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá un origen de archivo
 El servicio opcional ejecuta el conector oficial de archivos. El archivo de muestra y sus posiciones viven en un volumen propio.
@@ -1332,7 +1398,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 19
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá PostgreSQL
 La base opcional usa credenciales de ejemplo y no publica un puerto hacia tu computadora.
@@ -1407,7 +1473,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 20
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Ejecutá la topología
 Dejá el proceso en la terminal A. Cuenta eventos por clave y escribe actualizaciones en lab20-counts.
@@ -1474,7 +1540,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 21
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá un conteo por ventana
 En A ejecutá una topología Streams real con ventanas de 10 segundos y tolerancia de 5.
@@ -1540,7 +1606,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 22
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá el entorno de ACL
 Es otro broker de un solo nodo, sin puerto publicado. Las credenciales de demo son públicas a propósito.
@@ -1614,7 +1680,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 23
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Creá trabajo observable
 Publicá la muestra y registrá el señalador del grupo al inicio.
@@ -1689,7 +1755,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 24
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Creá una clave caliente
 Mandá el 90% de los eventos con una clave y mirá la distribución.
@@ -1757,7 +1823,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 25
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá un clúster de destino
 El broker opcional mirror es independiente y no publica puerto hacia el host.
@@ -1831,7 +1897,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 26
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Arrancá el broker experimental
 El broker opcional aísla la configuración preview del clúster principal.
@@ -1904,7 +1970,7 @@ En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y 
 docker compose up -d --wait
 docker compose run --rm lab prepare 27
 
-Observá: Tres brokers saludables y READY. Hacé primero la lección 01 si todavía no construiste la imagen del laboratorio.
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
 
 2. Publicá una carga conocida
 Mandá seis pedidos con IDs estables. Anotá el total esperado antes de correr el procesador.
@@ -1985,7 +2051,7 @@ KafkaConfig declara un NewTopic con tres particiones, tres réplicas e ISR míni
 
 ACTIVIDAD DOCKER
 1. Construí y arrancá el ejemplo
-Hacé primero la lección 01. Desde labs, construí el proyecto incluido de Spring Boot 3.5.16 / Java 21 y levantalo junto al clúster. El bean NewTopic crea spring-orders. Repetir este paso conserva eventos y avance del grupo.
+Hacé primero la lección 00. Desde labs, construí el proyecto incluido de Spring Boot 3.5.16 / Java 21 y levantalo junto al clúster. El bean NewTopic crea spring-orders. Repetir este paso conserva eventos y avance del grupo.
 
 docker compose up -d --wait
 docker compose --profile spring up -d --build --wait spring
