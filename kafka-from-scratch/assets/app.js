@@ -4,8 +4,9 @@
     refs = window.KAFKA_REFERENCE,
     $ = (s) => document.querySelector(s);
   const id = document.body.dataset.lesson,
-    home = id === undefined,
-    prefix = home ? '' : '../';
+    about = document.body.dataset.page === 'about',
+    home = id === undefined && !about,
+    prefix = id === undefined ? '' : '../';
   let lang = 'en',
     progress = {},
     currentTab = 'learn',
@@ -17,7 +18,7 @@
     inspected = null,
     glossaryIndex = 0,
     glossarySearch = '',
-    mapUnit = home ? 0 : course.lessons[Number(id)].unit,
+    mapUnit = id === undefined ? 0 : course.lessons[Number(id)].unit,
     lastFocus = null,
     homeUnit = 0;
   try {
@@ -41,16 +42,16 @@
   const THEMES = ['light', 'dark', 'reading', 'projector'];
   let theme = document.documentElement.dataset.theme;
   if (!THEMES.includes(theme)) theme = 'light';
-  const reading = () => theme === 'reading' && !home;
+  const reading = () => theme === 'reading' && id !== undefined;
   const query = new URLSearchParams(location.search);
   if (['en', 'es'].includes(query.get('lang'))) lang = query.get('lang');
-  if (!home) {
+  if (id !== undefined) {
     if (['learn', 'lab', 'check', 'sources'].includes(query.get('view')))
       currentTab = query.get('view');
     frame = Math.max(0, Math.min(2, Number(query.get('step')) || 0));
   }
   if (currentTab === 'lab') surface = 'notes';
-  const lesson = home ? null : course.lessons[Number(id)];
+  const lesson = id === undefined ? null : course.lessons[Number(id)];
   const t = (a, b) => (lang === 'es' ? b : a),
     L = (x) => x?.[lang] || '',
     e = (s) =>
@@ -86,6 +87,9 @@
   function homeLink() {
     return `${prefix}index.html?lang=${lang}&theme=${theme}`;
   }
+  function aboutLink() {
+    return `${prefix}what-kafka-is.html?lang=${lang}&theme=${theme}`;
+  }
   function save() {
     try {
       localStorage.setItem('kafka-course-language', lang);
@@ -107,7 +111,7 @@
     return `<header><a class="brand" href="${homeLink()}" aria-label="${t('Course home', 'Inicio del curso')}">${icon}<span><strong>Kafka from scratch</strong><small>${t('A visual field guide', 'Una guía visual de campo')}</small></span></a><span class="header-meta">${course.lessons.length} ${t('LESSONS', 'LECCIONES')} / APACHE KAFKA ${course.kafka}</span><div class="header-actions"><button class="btn drawer-only" data-action="map">${t('Course', 'Curso')}</button><button class="btn extra" data-action="glossary">${t('Glossary', 'Glosario')} <span aria-hidden="true">↗</span></button><a class="btn extra" href="${prefix}downloads/kafka-labs.zip" download>${t('Download labs', 'Descargar labs')} ↓</a><label class="theme-pick"><span class="sr-only">${t('Skin', 'Apariencia')}</span><select data-theme-pick aria-label="${t('Skin', 'Apariencia')}">${THEMES.map((x) => `<option value="${x}" ${x === theme ? 'selected' : ''}>${themeName(x)}</option>`).join('')}</select></label><div class="language" role="group" aria-label="${t('Language', 'Idioma')}"><button data-lang="en" aria-pressed="${lang === 'en'}" lang="en">EN</button><button data-lang="es" aria-pressed="${lang === 'es'}" lang="es-AR" title="Español rioplatense">ES</button></div><button class="btn extra" data-action="help" aria-label="${t('Help and keyboard shortcuts', 'Ayuda y atajos de teclado')}">?</button></div></header>`;
   }
   function footer() {
-    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${home ? 'KAFKA / FROM SCRATCH' : String(Number(id)).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
+    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${lesson ? String(lesson.id).padStart(2, '0') + ' / ' + course.lessons.length : 'KAFKA / FROM SCRATCH'}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
   }
   function sidebar() {
     const unit = lesson.unit;
@@ -126,7 +130,52 @@
     const next =
       course.lessons.find((l) => !progress[l.slug]?.quiz || !progress[l.slug]?.lab) ||
       course.lessons[0];
-    return `<main class="home" id="main"><section class="home-intro"><span class="eyebrow">${t('FROM YOUR FIRST EVENT TO A RESILIENT SYSTEM', 'DE TU PRIMER EVENTO A UN SISTEMA RESISTENTE')}</span><h1>${t('Learn Kafka.<br>See every<br><em>moving part.</em>', 'Aprendé Kafka.<br>Entendé cada<br><em>pieza.</em>')}</h1><p class="home-lead">${t('Follow an event. Move a bookmark. Break a broker. Build an intuition you can test in a real Docker lab.', 'Seguí un evento. Mové un señalador. Hacé caer un broker. Construí una intuición que puedas probar en un laboratorio Docker real.')}</p><div class="home-actions"><a class="btn primary" href="${link(next)}">${score() ? t('Continue learning', 'Seguí aprendiendo') : t('Start from zero', 'Empezá desde cero')} <span aria-hidden="true">→</span></a><a class="btn" href="${prefix}downloads/kafka-labs.zip" download>${t('Get the lab kit', 'Descargá el kit')} ↓</a></div><div class="home-tag"><span>${course.lessons.length} ${t('VISUAL LESSONS', 'LECCIONES VISUALES')}</span><span>${course.lessons.length} ${t('DOCKER LABS', 'LABS DOCKER')}</span><span>EN / ES</span></div><div class="hero-art" aria-hidden="true">${hero()}</div></section><section class="home-curriculum" aria-label="${t('Course curriculum', 'Programa del curso')}"><div class="eyebrow"><span>${t('THE LEARNING PATH', 'EL RECORRIDO')}</span><span>00 ${t('to', 'a')} ${String(course.lessons.at(-1).id).padStart(2, '0')}</span></div>${course.units.map((u, i) => `<a class="unit-row ${i === homeUnit ? 'mobile-active' : ''}" href="${link(course.lessons.find((l) => l.unit === i))}"><span class="num">${String(i).padStart(2, '0')}</span><span><strong>${e(L(u))}</strong><small>${(() => { const group = course.lessons.filter((l) => l.unit === i); return group.length === 1 ? e(L(group[0].intro)) : e(L(group[0].title)) + ' → ' + e(L(group.at(-1).title)); })()}</small></span><span class="unit-arrow" aria-hidden="true">↗</span></a>`).join('')}<div class="home-mobile-pager"><button class="btn" data-home-prev aria-label="${t('Previous unit', 'Unidad anterior')}">←</button><span>${t('Unit', 'Unidad')} ${String(homeUnit).padStart(2, '0')} / ${String(course.units.length - 1).padStart(2, '0')}</span><button class="btn" data-home-next aria-label="${t('Next unit', 'Siguiente unidad')}">→</button></div><p class="home-footnote">${t('No account. No external scripts. Open locally or host anywhere.<br>Docker is required for the labs, not for exploring the visual models.', 'Sin cuenta ni scripts externos. Abrilo localmente o publicalo donde quieras.<br>Docker es necesario para los laboratorios, no para explorar los modelos.')}</p></section></main>`;
+    return `<main class="home" id="main"><section class="home-intro"><span class="eyebrow">${t('FROM YOUR FIRST EVENT TO A RESILIENT SYSTEM', 'DE TU PRIMER EVENTO A UN SISTEMA RESISTENTE')}</span><h1>${t('Learn Kafka.<br>See every<br><em>moving part.</em>', 'Aprendé Kafka.<br>Entendé cada<br><em>pieza.</em>')}</h1><p class="home-lead">${t('Follow an event. Move a bookmark. Break a broker. Build an intuition you can test in a real Docker lab.', 'Seguí un evento. Mové un señalador. Hacé caer un broker. Construí una intuición que puedas probar en un laboratorio Docker real.')}</p><div class="home-actions"><a class="btn primary" href="${link(next)}">${score() ? t('Continue learning', 'Seguí aprendiendo') : t('Start from zero', 'Empezá desde cero')} <span aria-hidden="true">→</span></a><a class="btn" href="${aboutLink()}">${t('What Kafka is', '¿Qué es Kafka?')}</a><a class="btn" href="${prefix}downloads/kafka-labs.zip" download>${t('Get the lab kit', 'Descargá el kit')} ↓</a></div><div class="home-tag"><span>${course.lessons.length} ${t('VISUAL LESSONS', 'LECCIONES VISUALES')}</span><span>${course.lessons.length} ${t('DOCKER LABS', 'LABS DOCKER')}</span><span>EN / ES</span></div><div class="hero-art" aria-hidden="true">${hero()}</div></section><section class="home-curriculum" aria-label="${t('Course curriculum', 'Programa del curso')}"><div class="eyebrow"><span>${t('THE LEARNING PATH', 'EL RECORRIDO')}</span><span>00 ${t('to', 'a')} ${String(course.lessons.at(-1).id).padStart(2, '0')}</span></div>${course.units.map((u, i) => `<a class="unit-row ${i === homeUnit ? 'mobile-active' : ''}" href="${link(course.lessons.find((l) => l.unit === i))}"><span class="num">${String(i).padStart(2, '0')}</span><span><strong>${e(L(u))}</strong><small>${(() => { const group = course.lessons.filter((l) => l.unit === i); return group.length === 1 ? e(L(group[0].intro)) : e(L(group[0].title)) + ' → ' + e(L(group.at(-1).title)); })()}</small></span><span class="unit-arrow" aria-hidden="true">↗</span></a>`).join('')}<div class="home-mobile-pager"><button class="btn" data-home-prev aria-label="${t('Previous unit', 'Unidad anterior')}">←</button><span>${t('Unit', 'Unidad')} ${String(homeUnit).padStart(2, '0')} / ${String(course.units.length - 1).padStart(2, '0')}</span><button class="btn" data-home-next aria-label="${t('Next unit', 'Siguiente unidad')}">→</button></div><p class="home-footnote">${t('No account. No external scripts. Open locally or host anywhere.<br>Docker is required for the labs, not for exploring the visual models.', 'Sin cuenta ni scripts externos. Abrilo localmente o publicalo donde quieras.<br>Docker es necesario para los laboratorios, no para explorar los modelos.')}</p></section></main>`;
+  }
+  /* The "What Kafka is" page: one scrolling document built from assets/about.js, with the log
+     model of lesson 02 as its only interactive piece. */
+  let aboutModel = null;
+  function aboutView() {
+    const A = window.KAFKA_ABOUT;
+    aboutModel = KafkaVisuals.render('log', 0, {}, lang, theme);
+    const P = KafkaVisuals.palette(theme);
+    const points = A.origin.timeline;
+    const stepX = 640 / (points.length - 1);
+    const timeline = `<svg viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${t('Timeline', 'Línea de tiempo')}"><path d="M40 52H680" stroke="${P.line}" stroke-width="2"/>${points
+      .map(
+        (p, i) =>
+          `<circle cx="${40 + i * stepX}" cy="52" r="7" fill="${i === points.length - 1 ? P.orange : P.green}"/><text x="${40 + i * stepX}" y="28" text-anchor="middle" font-family="Consolas,monospace" font-size="14" fill="${P.ink}">${p.year}</text><text x="${40 + i * stepX}" y="86" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="12" fill="${P.muted}">${e(L(p.label))}</text>`,
+      )
+      .join('')}</svg>`;
+    const section = (title, body, cls = '') =>
+      `<section class="about-section ${cls}"><h2>${e(L(title))}</h2>${body}</section>`;
+    const paras = (list) => list.map((p) => `<p>${e(L(p))}</p>`).join('');
+    const what = section(
+      A.what.title,
+      `${paras(A.what.text)}<div class="principle"><span class="eyebrow">${t('TAKE THIS WITH YOU', 'QUEDATE CON ESTO')}</span>${e(L(A.what.rule))}</div><div class="about-model"><div class="diagram" id="diagram">${aboutModel.svg}</div><p class="model-note">${e(L(A.what.modelNote))}</p></div>`,
+    );
+    const origin = section(
+      A.origin.title,
+      `${paras(A.origin.text)}<div class="about-timeline">${timeline}</div><ol class="about-milestones">${points.map((p) => `<li><strong>${p.year} · ${e(L(p.label))}</strong>${e(L(p.text))}</li>`).join('')}</ol>`,
+    );
+    const fits = section(
+      A.fits.title,
+      `<p>${e(L(A.fits.intro))}</p><div class="about-grid">${A.fits.items.map((x) => `<article><h3>${e(L(x.title))}</h3><p>${e(L(x.text))}</p></article>`).join('')}</div>`,
+    );
+    const misfits = section(
+      A.misfits.title,
+      `<p>${e(L(A.misfits.intro))}</p><div class="about-table" role="table">${A.misfits.headers.map((h) => `<div class="head" role="columnheader">${e(L(h))}</div>`).join('')}${A.misfits.items.map((x) => `<div class="case" role="cell">${e(L(x.title))}</div><div class="why" role="cell">${e(L(x.why))}</div><div class="instead" role="cell" data-label="${e(L(A.misfits.headers[2]))}">${e(L(x.instead))}</div>`).join('')}</div>`,
+    );
+    const decide = section(
+      A.decide.title,
+      `<ol class="about-questions">${A.decide.questions.map((q) => `<li>${e(L(q))}</li>`).join('')}</ol><p>${e(L(A.decide.closing))}</p><div class="home-actions"><a class="btn primary" href="${link(course.lessons[0])}">${e(L(A.decide.start))} <span aria-hidden="true">→</span></a><a class="btn" href="${homeLink()}">${e(L(A.decide.back))}</a></div>`,
+    );
+    const sources = section(
+      A.sources.title,
+      `<p>${e(L(A.sources.intro))} ${dateText()}.</p><ul>${A.sources.items.map(([name, url]) => `<li><a href="${url}" target="_blank" rel="noopener noreferrer">${e(name)} ↗</a></li>`).join('')}</ul>`,
+      'about-sources',
+    );
+    return `<main class="about" id="main"><div class="about-inner"><span class="eyebrow">${e(L(A.eyebrow))}</span><h1>${e(L(A.title))}</h1><p class="about-lead">${e(L(A.lead))}</p>${what}${origin}${fits}${misfits}${decide}${sources}</div></main>`;
   }
   function hero() {
     const P = KafkaVisuals.palette(theme);
@@ -226,23 +275,25 @@
   }
   function sourcesView() {
     const source = refs.sources[lesson.source];
-    return `<section class="source-card"><span class="eyebrow">${t('PRIMARY REFERENCE', 'REFERENCIA PRIMARIA')}</span><h2>${t('Follow the idea to its source.', 'Seguí la idea hasta su fuente.')}</h2><p>${t(`Course baseline: Apache Kafka ${course.kafka}. Official references were checked on ${dateText()}. The lessons are written independently; the diagrams are teaching models, not captured production traces.`, `Base del curso: Apache Kafka ${course.kafka}. Referencias oficiales verificadas el ${dateText()}. Las lecciones son originales; los diagramas son modelos didácticos, no trazas de producción.`)}</p><a href="${source[1]}" target="_blank" rel="noopener noreferrer">${e(source[0])} ↗</a></section><section class="source-card"><h2>${t('Read the experiment itself.', 'Leé el experimento por dentro.')}</h2><p>${t('Every activity uses the included Compose configuration and readable Java client. Keep the version pins when reproducing results. The source is the place to inspect the actual API calls, timing limits and recovery behavior. Lab.java dispatches each command to a small class next to it (Topics, Producing, Consuming, Transactions, Integrations, Security, Clusters); the complete source is in the lab kit.', 'Cada actividad usa la configuración Compose incluida y un cliente Java legible. Conservá las versiones fijadas para reproducir resultados. En el código podés inspeccionar las llamadas reales, límites de tiempo y recuperación. Lab.java deriva cada comando a una clase chica que está al lado (Topics, Producing, Consuming, Transactions, Integrations, Security, Clusters); el código completo viene en el kit.')}</p>${lesson.visual === 'spring' ? `<a href="${prefix}labs/spring/src/main/java/course/spring/OrderProducer.java" download>OrderProducer.java ↓</a> &nbsp; <a href="${prefix}labs/spring/src/main/java/course/spring/OrderConsumer.java" download>OrderConsumer.java ↓</a>` : `<a href="${prefix}labs/src/main/java/course/Lab.java" download>Lab.java ↓</a>`} &nbsp; <a href="${prefix}labs/compose.yaml" download>compose.yaml ↓</a> &nbsp; <a href="${prefix}downloads/kafka-labs.zip" download>${t('Complete lab kit', 'Kit completo')} ↓</a></section><section class="source-card"><h2>${t('Make it stick.', 'Hacé que te quede.')}</h2><p>${t('Predict the outcome before each command. Keep a small lab notebook: prediction, observed result, explanation, and what the experiment does not prove. Repeat the activity after a day without reading the steps first.', 'Predecí el resultado antes de cada comando. Llevá un cuaderno breve: predicción, resultado observado, explicación y qué no prueba el experimento. Repetí la actividad al día siguiente sin leer primero los pasos.')}</p><button class="btn" data-action="glossary">${t('Explore the visual glossary', 'Explorá el glosario visual')} →</button></section>`;
+    return `<section class="source-card"><span class="eyebrow">${t('PRIMARY REFERENCE', 'REFERENCIA PRIMARIA')}</span><h2>${t('Follow the idea to its source.', 'Seguí la idea hasta su fuente.')}</h2><p>${t(`Course baseline: Apache Kafka ${course.kafka}. Official references were checked on ${dateText()}. The lessons are written independently; the diagrams are teaching models, not captured production traces.`, `Base del curso: Apache Kafka ${course.kafka}. Referencias oficiales verificadas el ${dateText()}. Las lecciones son originales; los diagramas son modelos didácticos, no trazas de producción.`)}</p><a href="${source[1]}" target="_blank" rel="noopener noreferrer">${e(source[0])} ↗</a></section><section class="source-card"><h2>${t('Read the experiment itself.', 'Leé el experimento por dentro.')}</h2><p>${t('Every activity uses the included Compose configuration and readable Java client. Keep the version pins when reproducing results. The source is the place to inspect the actual API calls, timing limits and recovery behavior. Lab.java dispatches each command to a small class next to it (Topics, Producing, Consuming, Transactions, Integrations, Security, Clusters); the complete source is in the lab kit.', 'Cada actividad usa la configuración Compose incluida y un cliente Java legible. Conservá las versiones fijadas para reproducir resultados. En el código podés inspeccionar las llamadas reales, límites de tiempo y recuperación. Lab.java deriva cada comando a una clase chica que está al lado (Topics, Producing, Consuming, Transactions, Integrations, Security, Clusters); el código completo viene en el kit.')}</p>${lesson.visual === 'spring' ? `<a href="${prefix}labs/spring/src/main/java/course/spring/OrderProducer.java" download>OrderProducer.java ↓</a> &nbsp; <a href="${prefix}labs/spring/src/main/java/course/spring/OrderConsumer.java" download>OrderConsumer.java ↓</a>` : `<a href="${prefix}labs/src/main/java/course/Lab.java" download>Lab.java ↓</a>`} &nbsp; <a href="${prefix}labs/compose.yaml" download>compose.yaml ↓</a> &nbsp; <a href="${prefix}downloads/kafka-labs.zip" download>${t('Complete lab kit', 'Kit completo')} ↓</a></section><section class="source-card"><h2>${t('Make it stick.', 'Hacé que te quede.')}</h2><p>${t('Predict the outcome before each command. Keep a small lab notebook: prediction, observed result, explanation, and what the experiment does not prove. Repeat the activity after a day without reading the steps first.', 'Predecí el resultado antes de cada comando. Llevá un cuaderno breve: predicción, resultado observado, explicación y qué no prueba el experimento. Repetí la actividad al día siguiente sin leer primero los pasos.')}</p><button class="btn" data-action="glossary">${t('Explore the visual glossary', 'Explorá el glosario visual')} →</button></section>${lesson.id === 0 ? `<section class="source-card"><h2>${t('Not sure what Kafka is yet?', '¿Todavía no sabés qué es Kafka?')}</h2><p>${t('Five minutes on what it is, where it came from, where it fits and where it does not, before the first lesson.', 'Cinco minutos sobre qué es, de dónde salió, dónde encaja y dónde no, antes de la primera lección.')}</p><a href="${aboutLink()}">${t('What Kafka is', 'Qué es Kafka')} →</a></section>` : ''}`;
   }
   function render() {
     document.documentElement.lang = lang === 'es' ? 'es-AR' : 'en';
     document.documentElement.dataset.theme = theme;
-    document.title = home
-      ? t('Kafka from scratch. A visual field guide', 'Kafka desde cero. Una guía visual')
-      : L(lesson.title) + ' · Kafka from scratch';
+    document.title = about
+      ? L(window.KAFKA_ABOUT.title) + ' · Kafka from scratch'
+      : home
+        ? t('Kafka from scratch. A visual field guide', 'Kafka desde cero. Una guía visual')
+        : L(lesson.title) + ' · Kafka from scratch';
     const scrolled = window.scrollY;
     $('#app').innerHTML =
-      `<a class="skip-link" href="#main">${t('Skip to lesson', 'Ir a la lección')}</a><div class="shell">${header()}${home ? homeView() : mainView()}${footer()}</div><dialog class="dialog" id="dialog"></dialog><div class="sr-only" aria-live="polite" id="announce"></div>`;
+      `<a class="skip-link" href="#main">${t('Skip to lesson', 'Ir a la lección')}</a><div class="shell">${header()}${about ? aboutView() : home ? homeView() : mainView()}${footer()}</div><dialog class="dialog" id="dialog"></dialog><div class="sr-only" aria-live="polite" id="announce"></div>`;
     bind();
     // The reading skin scrolls the document; a re-render must not send the reader back to the top.
     if (theme === 'reading' && scrolled) window.scrollTo(0, scrolled);
   }
   function updateURL() {
-    if (home) return;
+    if (!lesson) return;
     const u = new URL(location.href);
     u.searchParams.set('lang', lang);
     u.searchParams.set('theme', theme);
@@ -372,7 +423,7 @@
     if (focused) document.querySelector(`[data-sim-action="${focused}"]`)?.focus();
   }
   function inspect(key, model = null, area = null) {
-    const v = model || KafkaVisuals.render(lesson.visual, frame, sim, lang, theme),
+    const v = model || aboutModel || KafkaVisuals.render(lesson.visual, frame, sim, lang, theme),
       text = v.details[key];
     if (!text) return;
     const target = area || $('#dialog[open] .expanded-model') || $('#diagram');
@@ -552,7 +603,7 @@
         .map(([a, b]) => `<div class="help-row"><span>${a}</span><kbd>${b}</kbd></div>`)
         .join(
           '',
-        )}<p>${t('Progress is self-reported for labs. Completing a checkpoint does not prove that a Docker command ran. No account or telemetry is used. Diagrams work offline; downloading Docker images needs internet the first time.', 'El avance de laboratorios lo declarás vos. Resolver un control no prueba que se ejecutó un comando Docker. No hay cuenta ni telemetría. Los diagramas funcionan sin internet; la primera descarga de imágenes Docker necesita conexión.')}</p><a class="btn primary" href="${prefix}downloads/kafka-labs.zip" download>${t('Download the complete lab kit', 'Descargá el kit completo')} ↓</a>`,
+        )}<p>${t('Progress is self-reported for labs. Completing a checkpoint does not prove that a Docker command ran. No account or telemetry is used. Diagrams work offline; downloading Docker images needs internet the first time.', 'El avance de laboratorios lo declarás vos. Resolver un control no prueba que se ejecutó un comando Docker. No hay cuenta ni telemetría. Los diagramas funcionan sin internet; la primera descarga de imágenes Docker necesita conexión.')}</p><p>${t('New to Kafka? Read', '¿Nuevo en Kafka? Leé')} <a href="${aboutLink()}">${t('What Kafka is', 'Qué es Kafka')}</a>${t(' first: five minutes on what it is, where it came from and where it fits.', ' primero: cinco minutos sobre qué es, de dónde salió y dónde encaja.')}</p><a class="btn primary" href="${prefix}downloads/kafka-labs.zip" download>${t('Download the complete lab kit', 'Descargá el kit completo')} ↓</a>`,
     );
   }
   document.addEventListener('keydown', (ev) => {
@@ -576,7 +627,7 @@
     if (ev.key.toLowerCase() === 'g') openGlossary();
     else if (ev.key.toLowerCase() === 'm') openMap();
     else if (
-      !home &&
+      lesson &&
       ['learn', 'lab'].includes(currentTab) &&
       ['ArrowRight', 'ArrowLeft'].includes(ev.key)
     ) {

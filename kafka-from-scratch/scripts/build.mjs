@@ -1,5 +1,6 @@
-/* Generates everything derived from assets/curriculum.js: one HTML shell per lesson, the home
-   page, the bilingual text notes, the lab ZIP and dist/ for static hosting. Run `npm run build`
+/* Generates everything derived from assets/curriculum.js and assets/about.js: one HTML shell
+   per lesson, the home page, the "What Kafka is" page, the bilingual text notes, the lab ZIP
+   and dist/ for static hosting. Run `npm run build`
    after any content change; `npm run check` then verifies the result. */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,31 +10,41 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/curriculum.js'), 'utf8'), context);
+vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/about.js'), 'utf8'), context);
 const course = context.window.KAFKA_COURSE;
+const about = context.window.KAFKA_ABOUT;
 const esc = (s) =>
   s.replace(
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
 
-/** The page shell. Content, language and skin are resolved by the scripts in the browser. */
-const html = (lesson) => {
+/** The page shell. Content, language and skin are resolved by the scripts in the browser.
+    `page` is 'about' for the "What Kafka is" page, which also loads assets/about.js. */
+const html = (lesson, page = null) => {
   const p = lesson ? '../' : '';
   const title = lesson
     ? `${lesson.title.en} · Kafka from scratch`
-    : 'Kafka from scratch. A visual field guide';
+    : page === 'about'
+      ? `${about.title.en} · Kafka from scratch`
+      : 'Kafka from scratch. A visual field guide';
   const description = lesson
     ? `${lesson.intro.en} Interactive visual explanations, a step-by-step Docker lab, and Rioplatense Spanish translation.`
-    : `Learn Apache Kafka from zero through ${course.lessons.length} interactive visual lessons and Docker activities. English and Rioplatense Spanish. Works offline.`;
+    : page === 'about'
+      ? `${about.lead.en} English and Rioplatense Spanish.`
+      : `Learn Apache Kafka from zero through ${course.lessons.length} interactive visual lessons and Docker activities. English and Rioplatense Spanish. Works offline.`;
+  const bodyAttr = lesson ? ` data-lesson="${lesson.id}"` : page ? ` data-page="${page}"` : '';
+  const extraScript = page === 'about' ? `<script src="${p}assets/about.js"></script>` : '';
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#21664e"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="icon" href="${p}assets/favicon.svg" type="image/svg+xml"><script src="${p}assets/theme.js"></script><link rel="stylesheet" href="${p}assets/course.css"></head>
-<body${lesson ? ` data-lesson="${lesson.id}"` : ''}><div id="app"></div><noscript><main class="noscript"><h1>${esc(title)}</h1><p>This interactive course needs JavaScript. All scripts are included locally. Read the complete course notes instead.</p><p>Este curso interactivo necesita JavaScript. Todos los scripts están incluidos localmente. También podés leer los apuntes completos.</p><p><a href="${p}downloads/course-notes-en.txt">English notes</a> · <a href="${p}downloads/course-notes-es.txt">Apuntes en español</a></p></main></noscript><script src="${p}assets/curriculum.js"></script><script src="${p}assets/reference.js"></script><script src="${p}assets/visuals.js"></script><script src="${p}assets/app.js"></script></body></html>
+<body${bodyAttr}><div id="app"></div><noscript><main class="noscript"><h1>${esc(title)}</h1><p>This interactive course needs JavaScript. All scripts are included locally. Read the complete course notes instead.</p><p>Este curso interactivo necesita JavaScript. Todos los scripts están incluidos localmente. También podés leer los apuntes completos.</p><p><a href="${p}downloads/course-notes-en.txt">English notes</a> · <a href="${p}downloads/course-notes-es.txt">Apuntes en español</a></p></main></noscript><script src="${p}assets/curriculum.js"></script><script src="${p}assets/reference.js"></script><script src="${p}assets/visuals.js"></script>${extraScript}<script src="${p}assets/app.js"></script></body></html>
 `;
 };
 
 fs.mkdirSync(path.join(root, 'lessons'), { recursive: true });
 fs.mkdirSync(path.join(root, 'downloads'), { recursive: true });
 fs.writeFileSync(path.join(root, 'index.html'), html());
+fs.writeFileSync(path.join(root, 'what-kafka-is.html'), html(null, 'about'));
 for (const l of course.lessons) {
   fs.writeFileSync(path.join(root, 'lessons', l.slug + '.html'), html(l));
 }
@@ -44,6 +55,18 @@ for (const lang of ['en', 'es']) {
   let text =
     lang === 'en' ? 'KAFKA FROM SCRATCH. COURSE NOTES\n' : 'KAFKA DESDE CERO. APUNTES DEL CURSO\n';
   text += `Apache Kafka ${course.kafka} | ${course.date} | v${course.version}\n\n`;
+  // The "What Kafka is" page opens the notes, as it opens the course.
+  text += `${about.title[lang].toUpperCase()}\n${'='.repeat(65)}\n${about.lead[lang]}\n\n`;
+  for (const part of [about.what, about.origin]) {
+    text += `${part.title[lang]}\n${part.text.map((x) => x[lang]).join('\n')}\n`;
+    if (part.rule) text += `→ ${part.rule[lang]}\n`;
+    if (part.timeline)
+      text += part.timeline.map((m) => `${m.year} ${m.label[lang]}: ${m.text[lang]}`).join('\n') + '\n';
+    text += '\n';
+  }
+  text += `${about.fits.title[lang]}\n${about.fits.intro[lang]}\n${about.fits.items.map((x) => `- ${x.title[lang]}: ${x.text[lang]}`).join('\n')}\n\n`;
+  text += `${about.misfits.title[lang]}\n${about.misfits.intro[lang]}\n${about.misfits.items.map((x) => `- ${x.title[lang]}: ${x.why[lang]} ${about.misfits.headers[2][lang]}: ${x.instead[lang]}`).join('\n')}\n\n`;
+  text += `${about.decide.title[lang]}\n${about.decide.questions.map((q, i) => `${i + 1}. ${q[lang]}`).join('\n')}\n${about.decide.closing[lang]}\n\n\n`;
   for (const l of course.lessons) {
     text += `${String(l.id).padStart(2, '0')}. ${l.title[lang]}\n${'='.repeat(65)}\n${l.intro[lang]}\n\n`;
     for (const f of l.frames) text += `${f.title[lang]}\n${f.text[lang]}\n→ ${f.rule[lang]}\n\n`;
@@ -122,7 +145,7 @@ fs.writeFileSync(path.join(root, 'downloads/kafka-labs.zip'), Buffer.concat([...
 /** dist/ is the static site as Cloudflare Pages serves it. */
 const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });
-for (const entry of ['index.html', 'assets', 'lessons', 'downloads', '_headers', '404.html']) {
+for (const entry of ['index.html', 'what-kafka-is.html', 'assets', 'lessons', 'downloads', '_headers', '404.html']) {
   if (fs.existsSync(path.join(root, entry))) {
     fs.cpSync(path.join(root, entry), path.join(dist, entry), { recursive: true });
   }

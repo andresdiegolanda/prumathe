@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ctx = { window: {}, TextEncoder };
-for (const name of ['curriculum', 'visuals', 'reference']) {
+for (const name of ['curriculum', 'visuals', 'reference', 'about']) {
   vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', name + '.js'), 'utf8'), ctx);
 }
 const course = ctx.window.KAFKA_COURSE;
@@ -152,8 +152,28 @@ const murmur = visuals.murmur2;
 assert.equal(murmur(''), 275646681);
 assert.equal(murmur('hello'), 2132663229);
 
+// The "What Kafka is" page: every string bilingual and without dashes, sources with URLs, and
+// the log model it embeds renders in every skin.
+const about = ctx.window.KAFKA_ABOUT;
+(function walkAbout(node, where) {
+  if (node && typeof node === 'object' && 'en' in node && 'es' in node) {
+    bilingual(node, where);
+    return;
+  }
+  if (Array.isArray(node)) node.forEach((x, i) => walkAbout(x, where + '[' + i + ']'));
+  else if (node && typeof node === 'object')
+    for (const [k, v] of Object.entries(node)) walkAbout(v, where + '.' + k);
+})(about, 'about');
+assert.equal(about.origin.timeline.length, 6);
+assert.equal(about.misfits.headers.length, 3);
+for (const [name, url] of about.sources.items) assert.ok(name && /^https:\/\//.test(url), 'about source ' + name);
+for (const theme of visuals.themes)
+  for (const lang of ['en', 'es']) assert.ok(visuals.render('log', 0, {}, lang, theme).svg.includes('<svg'));
+const aboutPage = fs.readFileSync(path.join(root, 'what-kafka-is.html'), 'utf8');
+assert.ok(aboutPage.includes('data-page="about"') && aboutPage.includes('assets/about.js'));
+
 // Every local reference in the generated pages points to a real file.
-for (const filename of ['index.html', ...lessons.map((l) => 'lessons/' + l.slug + '.html')]) {
+for (const filename of ['index.html', 'what-kafka-is.html', ...lessons.map((l) => 'lessons/' + l.slug + '.html')]) {
   const text = fs.readFileSync(path.join(root, filename), 'utf8');
   for (const [, url] of text.matchAll(/(?:src|href)="([^"?#]+)[^"]*"/g)) {
     if (url.startsWith('http') || url.startsWith('#')) continue;
@@ -204,11 +224,11 @@ for (const artifact of ['kafka-clients', 'kafka-streams'])
   );
 
 // The no-dash rule also covers the interface strings and the reference data.
-for (const name of ['app.js', 'visuals.js', 'reference.js', 'theme.js']) {
+for (const name of ['app.js', 'visuals.js', 'reference.js', 'theme.js', 'about.js']) {
   const text = fs.readFileSync(path.join(root, 'assets', name), 'utf8');
   assert.ok(!DASHES.test(text), name + ' contains an en or em dash');
 }
 
 console.log(
-  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage and version consistency.`,
+  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage and version consistency.`,
 );

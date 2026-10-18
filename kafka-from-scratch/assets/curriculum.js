@@ -158,7 +158,7 @@ window.KAFKA_COURSE = (() => {
         B('Build the client once', 'Construí el cliente una vez'),
         B('The supplied Java client exposes small, readable experiments. Its entire source is included. No Java installation is needed on your computer.', 'El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene con todo su código. No necesitás instalar Java en tu computadora.'),
         'docker compose build lab',
-        B('The image kafka-course-lab:1.2.0 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.2.0. La primera compilación descarga dependencias de Maven.'),
+        B('The image kafka-course-lab:1.3.0 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.3.0. La primera compilación descarga dependencias de Maven.'),
       ),
       S(
         B('Start three nodes', 'Levantá tres nodos'),
@@ -2169,5 +2169,5 @@ window.KAFKA_COURSE = (() => {
     'spring',
   );
 
-  return { version: '1.2.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
+  return { version: '1.3.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
 })();

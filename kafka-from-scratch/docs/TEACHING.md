@@ -18,6 +18,12 @@ The method model has three scenes and uses only the active palette. Its two plan
 
 El modelo del método tiene tres escenas y usa solo la paleta activa. Sus dos planos distinguen simulación en el navegador de ejecución en Docker; su circuito conecta intuición, regla, experimento y control.
 
+## The "What Kafka is" page / La página "Qué es Kafka"
+
+`what-kafka-is.html` is a reading page outside the lesson count: what Kafka is, where it came from, where it fits and where it does not, and how to decide. Its text lives in `assets/about.js`, bilingual like the curriculum; `scripts/build.mjs` generates the page and opens the course notes with it; `scripts/check.mjs` verifies every string in both languages, the sources and the embedded log model. It is reached from the home page button, from the help dialog and from the references of lesson 00. The "where it does not fit" table is the course’s judgment and says so in its own text; the product facts (origin, dates, use cases, defaults) come from the sources listed at the end of the page. When you change a fact, change its source too.
+
+`what-kafka-is.html` es una página de lectura fuera de la numeración: qué es Kafka, de dónde salió, dónde encaja y dónde no, y cómo decidir. Su texto vive en `assets/about.js`, bilingüe como el currículo; `scripts/build.mjs` genera la página y abre los apuntes con ella; `scripts/check.mjs` verifica cada cadena en los dos idiomas, las fuentes y el modelo de log que incluye. Se llega desde el botón de la portada, desde el diálogo de ayuda y desde las referencias de la lección 00. La tabla "dónde no encaja" es criterio del curso y lo dice en su propio texto; los hechos de producto (origen, fechas, casos de uso, valores por defecto) salen de las fuentes listadas al final de la página. Cuando cambies un hecho, cambiá también su fuente.
+
 ## Session structure / Estructura de sesión
 
 Work through one unit at a time. Ask the learner to record four lines for each activity: prediction, observation, explanation, limit. Have them teach one concept back without using the wording from the page. On a later day, rerun an experiment before rereading the explanation. The Projector skin (header picker) enlarges the interface for a shared screen and hides the sidebar; the Reading skin is the one to hand out for self-study away from a terminal.

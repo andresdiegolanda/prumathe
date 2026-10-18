@@ -19,7 +19,7 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## En curso
 
-- [ ] **Volver a correr las suites Docker sobre la 1.2.0**: el cliente Java se separó en clases, cambiaron los dos Dockerfile y los health checks; hasta que `core`, `failures`, `integrations` y `spring` pasen sobre `kafka-course-lab:1.2.0`, la evidencia de plataforma de [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md) es la de la 1.0.0. En la laptop, con Docker levantado, desde `kafka-from-scratch/labs`: `docker compose build lab`, `docker compose up -d --wait`, y desde la raíz del curso las cuatro suites en orden. **Andrés**
+- [ ] **Volver a correr las suites Docker sobre la 1.3.0**: el cliente Java se separó en clases, cambiaron los dos Dockerfile y los health checks; hasta que `core`, `failures`, `integrations` y `spring` pasen sobre `kafka-course-lab:1.3.0`, la evidencia de plataforma de [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md) es la de la 1.0.0. En la laptop, con Docker levantado, desde `kafka-from-scratch/labs`: `docker compose build lab`, `docker compose up -d --wait`, y desde la raíz del curso las cuatro suites en orden. **Andrés**
 - [ ] **Primera versión del repositorio en GitHub**: README, CHANGELOG, tablero, la revisión y la 1.1.0 del curso listos; falta crear el repositorio remoto, el primer commit y el push. **Andrés**
 
 ## Hecho

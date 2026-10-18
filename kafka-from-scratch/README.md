@@ -7,6 +7,7 @@ Un curso visual independiente en **inglés y español rioplatense**. Abrí `inde
 ## What is included / Qué incluye
 
 - 30 individual HTML lessons in 9 ordered units; 90 visual teaching scenes.
+- A five minute “What Kafka is” page: what it is, where it came from, where it fits and where it does not, with its sources.
 - Interactive SVG models, clickable objects, keyboard navigation and an expandable canvas.
 - 30 Docker activities with 134 individually paginated steps, copyable commands and expected observations.
 - 90 checkpoint questions, three per lesson, each with an explanation; a 46-term visual glossary.
@@ -23,7 +24,7 @@ Cada lección combina modelo visual, explicación, laboratorio y control. El esp
 
 1. Open `index.html` / Abrí `index.html`.
 2. Choose EN or ES, and a skin if you want one / Elegí EN o ES, y una apariencia si querés.
-3. Start with [lesson 00, Before you start](lessons/before-you-start.html?lang=en) / Empezá por la [lección 00, Antes de empezar](lessons/before-you-start.html?lang=es).
+3. New to Kafka? Read [What Kafka is](what-kafka-is.html?lang=en) first. Then start with [lesson 00, Before you start](lessons/before-you-start.html?lang=en) / ¿Nuevo en Kafka? Leé primero [Qué es Kafka](what-kafka-is.html?lang=es). Después empezá por la [lección 00, Antes de empezar](lessons/before-you-start.html?lang=es).
 4. Predict the outcome, manipulate the visual model, then run the Docker activity / Predecí el resultado, probá el modelo y después ejecutá la actividad Docker.
 5. Explain your checkpoint answers aloud / Explicá en voz alta tus respuestas al control.
 
@@ -83,9 +84,9 @@ Reservá varias sesiones. Repetí experimentos y anotá predicciones en vez de c
 
 ## Versions / Versiones
 
-Course 1.2.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 27 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned.
+Course 1.3.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 27 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned.
 
-Curso 1.2.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 27 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado.
+Curso 1.3.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 27 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado.
 
 ## Develop and publish / Editá y publicá
 

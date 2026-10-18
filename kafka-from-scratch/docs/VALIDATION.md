@@ -4,6 +4,28 @@ Two layers of evidence: what the Docker suites proved on the platform, and what 
 
 Dos capas de evidencia: lo que las suites Docker probaron sobre la plataforma, y lo que las verificaciones estáticas y las pasadas de navegador probaron sobre el sitio. Cada entrada dice cuándo corrió y contra qué versión, y las verificaciones no ejecutadas figuran como tales.
 
+## 1.3.0, 18 October 2026 / 1.3.0, 18 de octubre de 2026
+
+New page `what-kafka-is.html`, outside the lesson count: what Kafka is, where it came from, where it fits and where it does not, and how to decide; reached from the home page, the help dialog and the references of lesson 00, and opening the course notes. Course version and both local image tags move to 1.3.0; labs, lessons and Kafka 4.1.2 are unchanged.
+
+Página nueva `what-kafka-is.html`, fuera de la numeración: qué es Kafka, de dónde salió, dónde encaja y dónde no, y cómo decidir; se llega desde la portada, el diálogo de ayuda y las referencias de la lección 00, y abre los apuntes. La versión del curso y las dos etiquetas de imagen locales pasan a 1.3.0; labs, lecciones y Kafka 4.1.2 no cambian.
+
+### Executed / Ejecutado
+
+- Build and static check: PASS, including every string of the page in both languages without dashes, its sources with URLs, the embedded log model in the four skins and the local links of the new page.
+- Browser: the page in Classic, Dark, Reading and Projector, in both languages, at 1280 px and at 390 px; the home page with its new button; no console errors.
+- Sources opened on 18 October 2026: the Apache Kafka introduction and use cases pages; the LinkedIn announcement of 11 January 2011; the Apache Incubator record (entered 4 July 2011, graduated 23 October 2012); the LinkedIn Engineering article of 16 December 2013; the Apache Kafka downloads page (3.3.1 released 3 October 2022 with KIP-833, 4.0.0 released 18 March 2025); the 4.0.0 announcement (first major release without ZooKeeper, KIP-848 generally available, early access to KIP-932); the 4.2.0 announcement of 17 February 2026 (share groups production ready); the 0.11.0.0 release notes (KIP-98 transactions) and the Apache release registry entry for 0.11.0.0 (released 28 June 2017, https://releases.apache.org/api/cle/release/kafka/0.11.0.0). Confluent names Jay Kreps, Jun Rao and Neha Narkhede as co-founders on its site; the page gives no founding year because no official page states it.
+
+- Construcción y control estático: PASS, incluidas todas las cadenas de la página en los dos idiomas sin guiones, sus fuentes con URL, el modelo de log incluido en las cuatro apariencias y los enlaces locales de la página nueva.
+- Navegador: la página en Clásico, Oscuro, Lectura y Proyector, en los dos idiomas, a 1280 px y a 390 px; la portada con su botón nuevo; sin errores de consola.
+- Fuentes abiertas el 18 de octubre de 2026: las páginas de introducción y casos de uso de Apache Kafka; el anuncio de LinkedIn del 11 de enero de 2011; el registro de la incubadora de Apache (entró el 4 de julio de 2011, graduó el 23 de octubre de 2012); el artículo de LinkedIn Engineering del 16 de diciembre de 2013; la página de descargas de Apache Kafka (3.3.1 publicada el 3 de octubre de 2022 con KIP-833, 4.0.0 publicada el 18 de marzo de 2025); el anuncio de 4.0.0 (primera versión mayor sin ZooKeeper, KIP-848 disponible en general, acceso anticipado a KIP-932); el anuncio de 4.2.0 del 17 de febrero de 2026 (share groups production ready); las notas de la versión 0.11.0.0 (transacciones, KIP-98) y el registro de versiones de Apache para 0.11.0.0 (publicada el 28 de junio de 2017, https://releases.apache.org/api/cle/release/kafka/0.11.0.0). Confluent nombra en su sitio a Jay Kreps, Jun Rao y Neha Narkhede como cofundadores; la página no da año de fundación porque ninguna página oficial lo afirma.
+
+### Not executed / No ejecutado
+
+The Docker suites were not rerun; the lab content did not change in 1.3.0, only the image tags. Everything pending for 1.2.0 below remains pending.
+
+Las suites Docker no se repitieron; el contenido del lab no cambió en 1.3.0, solo las etiquetas de imagen. Todo lo pendiente de la 1.2.0 sigue pendiente.
+
 ## 1.2.0, 18 October 2026 / 1.2.0, 18 de octubre de 2026
 
 Lesson 00 adds the course method and Docker setup in a new initial unit. The course now has 30 lessons, 9 units, 90 scenes, 134 lab steps and 90 checkpoint questions. Existing lesson numbers and Java lab arguments are preserved. Course versions and both local image tags are 1.2.0; Kafka stays at 4.1.2.

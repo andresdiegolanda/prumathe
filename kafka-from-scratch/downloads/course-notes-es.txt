@@ -1,5 +1,51 @@
 KAFKA DESDE CERO. APUNTES DEL CURSO
-Apache Kafka 4.1.2 | 2026-10-18 | v1.2.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.3.0
+
+QUÉ ES KAFKA
+=================================================================
+Qué es, de dónde salió, dónde encaja y dónde no. Se lee una vez; el resto lo hacen las lecciones.
+
+Un log que muchos leen a su ritmo
+Kafka es una plataforma de event streaming: un servicio que guarda eventos en orden, los conserva el tiempo que decidas y deja que cualquier cantidad de programas los lea, cada uno a su ritmo. La unidad es el registro: una clave, un valor y una marca de tiempo, agregados al final de una partición de un tópico y nunca modificados.
+Esa es la diferencia con una cola. En una cola el mensaje se consume y desaparece; en Kafka leer mueve un señalador, el offset, y el evento queda. Dos equipos pueden leer la misma historia por motivos distintos, un sistema nuevo puede empezar desde el principio y un error se corrige reprocesando.
+→ Un mensaje se consume; un evento se lee.
+
+De dónde salió
+Kafka nació en LinkedIn para absorber el flujo de eventos de actividad de su sitio, vistas de página y búsquedas entre otros, que los brokers de mensajes de la época no soportaban a ese volumen sin frenarse ni perder la capacidad de crecer en horizontal. La apuesta de diseño fue poner el log ordenado, de solo agregar, en el centro de la arquitectura, en lugar de conectar cada sistema con todos los demás.
+LinkedIn lo liberó como open source en enero de 2011; entró a la incubadora de Apache en julio de 2011 y fue proyecto Apache de primer nivel en octubre de 2012. Sus creadores, Jay Kreps, Neha Narkhede y Jun Rao, fundaron después Confluent, la empresa construida alrededor de Kafka. Desde entonces, los cambios que más pesan en cómo se usa son los de la línea de tiempo.
+2011 Open source: LinkedIn publica Kafka en enero; incubadora de Apache en julio.
+2012 Proyecto Apache: Proyecto de primer nivel desde octubre.
+2017 Transacciones: Versión 0.11: productor idempotente y transacciones, la base del procesamiento exactly once.
+2022 KRaft: La versión 3.3 marca KRaft, el quórum de metadatos sin ZooKeeper, como production ready.
+2025 Kafka 4.0: Primera versión mayor sin ZooKeeper; el nuevo protocolo de rebalanceo de consumidores queda disponible en general; acceso anticipado a las colas (share groups).
+2026 Share groups: La versión 4.2 deja los share groups production ready: adquisición y confirmación por registro, el patrón de cola dentro de Kafka.
+
+Dónde encaja
+La documentación oficial enumera sus casos de uso. Estos son los que vas a encontrar en sistemas orientados a eventos e integración empresarial.
+- Integración entre sistemas que no deben conocerse: Un productor publica un hecho una vez; cualquier cantidad de consumidores se suscribe, hoy o el año que viene, sin que el productor cambie.
+- Historia reproducible: Reprocesar después de un error, auditar qué pasó y en qué orden, alimentar un sistema nuevo con el pasado.
+- Ingesta de alto volumen: Seguimiento de actividad, métricas y agregación de logs: muchos escritores, caudal sostenido, consumidores que se atrasan sin perder datos.
+- Captura de cambios y outbox: Convertir cambios de una base en eventos a los que otros sistemas reaccionan, con la atomicidad que el cambio de negocio necesita.
+- Procesamiento de flujos: Transformar, unir y agregar eventos a medida que llegan, con estado que sobrevive a los reinicios (Kafka Streams).
+- Event sourcing y log de confirmación: Registrar los cambios de estado como una secuencia ordenada de eventos y reconstruir el estado desde ahí; replicar estado entre los nodos de un sistema distribuido.
+
+Dónde no encaja
+Esta parte es criterio del curso, no documentación oficial. Cada fila dice qué usar en su lugar.
+- Petición y respuesta: Quien necesita una respuesta ahora no gana nada con un log durable en el medio y paga con latencia y complejidad. Usá en su lugar: Una API HTTP o gRPC.
+- Colas de tareas con prioridades, retrasos o descarte por mensaje: Una partición es un log ordenado: sin prioridad, sin entrega programada, sin borrar un mensaje. Los share groups agregan confirmación por registro, no prioridad ni retraso. Usá en su lugar: Una cola de tareas como RabbitMQ o SQS, o una tabla con un worker.
+- Una base de datos para consultar: Kafka guarda y entrega; no busca, no indexa ni responde «cuál es el valor actual de x» sin un consumidor que arme esa vista. Usá en su lugar: Una base relacional o de documentos, alimentada desde Kafka si querés.
+- Contenidos grandes: Imágenes, PDF y videos inflan el log y la red para cada consumidor; el límite por defecto de un registro ronda 1 MB por algo. Usá en su lugar: Almacenamiento de objetos para los bytes y un evento con la referencia.
+- Orden global entre claves distintas: El orden se garantiza dentro de una partición. Una sola partición da orden global y nada de paralelismo; varias dan paralelismo y orden solo por clave. Usá en su lugar: Diseñar alrededor de las claves, o un único escritor con un número de secuencia si el volumen lo permite.
+- Un sistema chico: Dos servicios y unos miles de eventos por día no pagan un clúster que alguien tiene que operar, actualizar y vigilar. Usá en su lugar: Una tabla, un outbox transaccional o la cola que ya te da tu nube; Kafka después, si crece el volumen o la cantidad de consumidores.
+
+Cómo decidir
+1. ¿Más de un consumidor va a necesitar el mismo hecho, ahora o después?
+2. ¿Vas a necesitar volver atrás: reprocesar, auditar, reconstruir?
+3. ¿Importa el orden por clave?
+4. ¿El volumen, o la cantidad de productores y consumidores, justifica un clúster?
+5. ¿Quién lo va a operar, y sabe que no se opera solo?
+Tres síes y estás en el lugar correcto. La lección 00 muestra cómo funciona el curso y deja Docker listo.
+
 
 00. Antes de empezar
 =================================================================
@@ -97,7 +143,7 @@ El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene 
 
 docker compose build lab
 
-Observá: Se construye kafka-course-lab:1.2.0. La primera compilación descarga dependencias de Maven.
+Observá: Se construye kafka-course-lab:1.3.0. La primera compilación descarga dependencias de Maven.
 
 3. Levantá tres nodos
 Ejecutá desde labs. Se crea únicamente el proyecto Docker del curso. Los puertos 19092, 29092 y 39092 tienen que estar libres.

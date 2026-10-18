@@ -1,5 +1,51 @@
 KAFKA FROM SCRATCH. COURSE NOTES
-Apache Kafka 4.1.2 | 2026-10-18 | v1.2.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.3.0
+
+WHAT KAFKA IS
+=================================================================
+What it is, where it came from, where it fits and where it does not. Read it once; the lessons do the rest.
+
+A log that many read at their own pace
+Kafka is an event streaming platform: a service that stores events in order, keeps them for as long as you decide, and lets any number of programs read them, each at its own pace. The unit is the record: a key, a value and a timestamp, appended to a partition of a topic and never modified.
+That is the difference from a queue. In a queue a message is consumed and disappears; in Kafka reading moves a bookmark, the offset, and the event stays. Two teams can read the same history for different reasons, a new system can start from the beginning, and a bug can be fixed by reprocessing.
+→ A message is consumed; an event is read.
+
+Where it came from
+Kafka was built at LinkedIn to absorb the stream of activity events from its website, page views and searches among them, which the message brokers of the time could not take at that volume without slowing down or losing the ability to scale out. The design bet was to put the ordered, append-only log at the center of the architecture instead of connecting every system to every other one.
+LinkedIn released it as open source in January 2011; it entered the Apache Incubator in July 2011 and became a top level Apache project in October 2012. Its creators, Jay Kreps, Neha Narkhede and Jun Rao, later founded Confluent, the company built around it. Since then the changes that matter most to how it is used are the ones on the timeline.
+2011 Open source: LinkedIn publishes Kafka in January; Apache Incubator in July.
+2012 Apache project: Top level project since October.
+2017 Transactions: Version 0.11: idempotent producer and transactions, the basis of exactly once processing.
+2022 KRaft: Version 3.3 marks KRaft, the metadata quorum without ZooKeeper, as production ready.
+2025 Kafka 4.0: First major release without ZooKeeper; the new consumer rebalance protocol is generally available; early access to queues (share groups).
+2026 Share groups: Version 4.2 makes share groups production ready: acquisition and acknowledgment per record, the queue pattern inside Kafka.
+
+Where it fits
+The official documentation lists its use cases. These are the ones you will meet in event driven systems and enterprise integration.
+- Integration between systems that must not know each other: A producer publishes a fact once; any number of consumers subscribe, today or next year, without the producer changing.
+- Replayable history: Reprocess after a bug, audit what happened and in what order, feed a new system with the past.
+- High volume ingestion: Activity tracking, metrics and log aggregation: many writers, sustained throughput, consumers that fall behind without losing data.
+- Change data capture and outbox: Turn database changes into events other systems can react to, with the atomicity the business change needs.
+- Stream processing: Transform, join and aggregate events as they arrive, with state that survives restarts (Kafka Streams).
+- Event sourcing and commit log: Record state changes as an ordered sequence of events and rebuild state from it; replicate state between the nodes of a distributed system.
+
+Where it does not fit
+This part is the course’s judgment, not official documentation. Each row says what to use instead.
+- Request and response: A caller that needs an answer now gains nothing from a durable log in between and pays with latency and complexity. Use instead: An HTTP or gRPC API.
+- Task queues with priorities, delays or per message discard: A partition is an ordered log: no priority, no scheduled delivery, no deleting one message. Share groups add acknowledgment per record, not priority or delay. Use instead: A task queue such as RabbitMQ or SQS, or a table with a worker.
+- A database to query: Kafka stores and delivers; it does not search, index or answer “what is the current value of x” without a consumer that builds that view. Use instead: A relational or document database, fed from Kafka if you want.
+- Large payloads: Images, PDFs and videos inflate the log and the network for every consumer; the default record limit is about 1 MB for a reason. Use instead: Object storage for the bytes and an event with the reference.
+- Global order across different keys: Order is guaranteed within a partition. One partition gives global order and no parallelism; several give parallelism and order per key only. Use instead: Design around keys, or a single writer with a sequence number if the volume allows it.
+- A small system: Two services and a few thousand events a day do not pay for a cluster that someone has to operate, upgrade and watch. Use instead: A table, a transactional outbox or the queue your cloud already gives you; Kafka later, if the volume or the number of consumers grows.
+
+How to decide
+1. Will more than one consumer need the same fact, now or later?
+2. Will you need to go back: replay, audit, rebuild?
+3. Does order per key matter?
+4. Does the volume, or the number of producers and consumers, justify a cluster?
+5. Who will operate it, and do they know it will not run itself?
+Three yes answers and you are in the right place. Lesson 00 shows how the course works and leaves Docker ready.
+
 
 00. Before you start
 =================================================================
@@ -97,7 +143,7 @@ The supplied Java client exposes small, readable experiments. Its entire source 
 
 docker compose build lab
 
-Observe: The image kafka-course-lab:1.2.0 is built. The first build downloads Maven dependencies.
+Observe: The image kafka-course-lab:1.3.0 is built. The first build downloads Maven dependencies.
 
 3. Start three nodes
 Run from the labs folder. This creates only the course’s named Docker project. Ports 19092, 29092 and 39092 must be free.
