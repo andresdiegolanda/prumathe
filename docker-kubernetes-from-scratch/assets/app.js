@@ -517,7 +517,7 @@
   }
   function dialog(title, body) {
     const d = $('#dialog');
-    d.classList.remove('wide-dialog');
+    d.classList.remove('wide-dialog', 'glossary-dialog');
     if (!d.open) lastFocus = document.activeElement;
     d.innerHTML = `<div class="dialog-head"><h2>${e(title)}</h2><button class="btn" data-close aria-label="${t('Close', 'Cerrar')}">×</button></div><div class="dialog-body">${body}</div>`;
     d.querySelector('[data-close]').onclick = () => d.close();
@@ -547,6 +547,7 @@
       t('Visual glossary', 'Glosario visual'),
       `<label class="sr-only" for="glossary-search">${t('Search glossary', 'Buscá en el glosario')}</label><input type="search" id="glossary-search" placeholder="${t('Find a concept…', 'Buscá un concepto…')}" value="${e(glossarySearch)}">${g ? `<span class="eyebrow">${glossaryIndex + 1} / ${entries.length}</span><h3 class="glossary-term">${e(g[lang === 'es' ? 1 : 0])}</h3><p>${e(g[lang === 'es' ? 3 : 2])}</p><div class="glossary-art">${model.svg}</div><a href="${link(course.lessons[g[4]])}">${t('See it in lesson', 'Miralo en la lección')} ${String(course.lessons[g[4]].id).padStart(2, '0')}: ${e(L(course.lessons[g[4]].title))} →</a><div class="dialog-footer"><button class="btn" id="gloss-prev" ${glossaryIndex === 0 ? 'disabled' : ''}>← ${t('Previous', 'Anterior')}</button><button class="btn" id="gloss-next" ${glossaryIndex === entries.length - 1 ? 'disabled' : ''}>${t('Next', 'Siguiente')} →</button></div>` : `<p>${t('No matching concept. Try another term.', 'No hay coincidencias. Probá con otro término.')}</p>`}`,
     );
+    $('#dialog').classList.add('glossary-dialog');
     if (model) bindObjects(model, $('.glossary-art'));
     const input = $('#glossary-search');
     input.oninput = () => {

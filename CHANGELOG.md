@@ -2,6 +2,13 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-10-19]
+
+### Corregido
+
+- Glosario visual legible en los tres cursos: [`kafka-from-scratch/`](kafka-from-scratch/) 1.4.1, [`docker-kubernetes-from-scratch/`](docker-kubernetes-from-scratch/) 1.3.1 y [`github-from-scratch/`](github-from-scratch/) 1.3.1. El modelo de cada término se dibujaba en una caja de 130 px de alto (cerca del 28 % de su tamaño) y sus rótulos no se leían; ahora el glosario abre en un diálogo de 880 px y el dibujo toma su propia proporción, tan alto como lo permite la pantalla sin desplazar el diálogo (`assets/course.css` con un tope por apariencia, `assets/app.js` con la clase del diálogo). Las etiquetas de imagen, `package.json` y los dos `pom.xml` de Kafka pasan a 1.4.1 por convención. Medidas por tamaño de pantalla, apariencia e idioma en el `docs/VALIDATION.md` de cada curso. [`README.md`](README.md) con las versiones nuevas; [`tablero.md`](tablero.md): las suites de Kafka referidas a la 1.4.1.
+- La pestaña Control se desplaza en los tres cursos, en las mismas versiones. El panel tenía margen automático vertical y tomaba el alto de su contenido en lugar del de su fila; con la página fija, la última pregunta y los botones de cierre quedaban fuera de la ventana, más a medida que se abrían las explicaciones. Ahora los márgenes automáticos son solo laterales (`assets/course.css`). Antes y después, lección por lección y por tamaño de pantalla, en el `docs/VALIDATION.md` de cada curso.
+
 ## [2026-10-18]
 
 ### Agregado

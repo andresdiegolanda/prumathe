@@ -600,6 +600,8 @@ header {
   margin-top: 12px;
   color: var(--muted);
 }
+/* Auto margins only on the sides: a vertical auto margin would size the panel to its content
+   instead of the row it sits in, and the checkpoint could neither scroll nor show its last question. */
 .quiz-wrap,
 .reference-wrap {
   display: flex;
@@ -608,7 +610,7 @@ header {
   padding: 24px 0 0;
   max-width: 1000px;
   width: 100%;
-  margin: auto;
+  margin: 0 auto;
 }
 .quiz-layout {
   display: grid;
@@ -899,8 +901,13 @@ header {
   background: var(--white);
   margin-bottom: 20px;
 }
+/* The glossary shows the model of a lesson: a wider dialog and the drawing at its own proportion,
+   as tall as the viewport allows once the term, the definition and the buttons fit, so its labels
+   stay readable and the dialog does not need scrolling. */
+.glossary-dialog {
+  width: min(880px, calc(100vw - 32px));
+}
 .glossary-art {
-  height: 130px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--feedback-bg);
@@ -908,10 +915,19 @@ header {
   align-items: center;
   justify-content: center;
   margin: 15px 0;
+  padding: 6px;
 }
 .glossary-art svg {
-  height: 100%;
+  display: block;
   width: 100%;
+  height: auto;
+  max-height: clamp(240px, calc(100dvh - 470px), 460px);
+}
+html[data-theme='reading'] .glossary-art svg {
+  max-height: clamp(240px, calc(100dvh - 515px), 460px);
+}
+html[data-theme='projector'] .glossary-art svg {
+  max-height: clamp(240px, calc(100dvh - 530px), 460px);
 }
 .glossary-term {
   font: 1.875rem var(--serif);

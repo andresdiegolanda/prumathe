@@ -1,5 +1,5 @@
 KAFKA FROM SCRATCH. COURSE NOTES
-Apache Kafka 4.1.2 | 2026-10-18 | v1.4.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.4.1
 
 WHAT KAFKA IS
 =================================================================
@@ -143,7 +143,7 @@ The supplied Java client exposes small, readable experiments. Its entire source 
 
 docker compose build lab
 
-Observe: The image kafka-course-lab:1.4.0 is built. The first build downloads Maven dependencies.
+Observe: The image kafka-course-lab:1.4.1 is built. The first build downloads Maven dependencies.
 
 3. Start three nodes
 Run from the labs folder. This creates only the course’s named Docker project. Ports 19092, 29092 and 39092 must be free.

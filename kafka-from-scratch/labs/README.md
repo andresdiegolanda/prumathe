@@ -6,9 +6,9 @@ Ejecutá los comandos desde esta carpeta. El curso usa **Apache Kafka 4.1.2**. N
 
 ## First run / Primera ejecución
 
-Course kit 1.4.0. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
+Course kit 1.4.1. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
 
-Kit del curso 1.4.0. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
+Kit del curso 1.4.1. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
 
 ```sh
 docker compose version

@@ -47,9 +47,9 @@ GitHub activities need an account, your own practice repository and appropriate 
 
 ## Edición y evidencia / Editing and evidence
 
-Versión del curso: **1.3.0**, 18/10/2026. Referencias oficiales revisadas en esa fecha. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
+Versión del curso: **1.3.1**, 19/10/2026. Referencias oficiales revisadas el 18/10/2026. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
 
-Course version: **1.3.0**, 18 October 2026. Official references were reviewed on that date. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
+Course version: **1.3.1**, 19 October 2026. Official references were reviewed on 18 October 2026. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
 
 ```text
 npm run build

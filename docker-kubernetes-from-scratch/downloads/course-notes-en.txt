@@ -1,5 +1,5 @@
 DOCKER & KUBERNETES FROM SCRATCH. COURSE NOTES
-Kubernetes 1.37.0 | 2026-10-18 | v1.3.0
+Kubernetes 1.37.0 | 2026-10-18 | v1.3.1
 
 WHAT DOCKER AND KUBERNETES ARE
 =================================================================
