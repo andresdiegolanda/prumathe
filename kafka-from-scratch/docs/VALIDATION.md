@@ -12,7 +12,9 @@ Executed on Linux, against a three-node KRaft cluster of Kafka 4.1.2 with the br
 
 Executed on the course laptop (Windows 11, Docker Desktop 4.55.0, Compose v2.40.3): `docker compose build lab` built `kafka-course-lab:1.5.0`, and `docker compose up -d visor` started the viewer without naming its profile. It read the running course cluster (3 brokers, 38 topics, 9 groups) every 500 ms using about 170 MiB, and that state rendered in the browser without errors.
 
-Not executed: the `visor` suite of `scripts/test-labs.mjs`, and the `core` and `failures` suites with the viewer open. They reset the practice topics of the cluster in use. Until they run, the claim that the lab commands print the same with the viewer open rests on what the viewer does (no group.id, no commits, Admin calls that only describe and list) and on the group and topic listings above.
+Executed on the same laptop the same day, with the viewer open and in this order: the `core` suite (86 operations), `failures` (25 operations) and `visor` (12 operations: the page, read-only HTTP, brokers and controller, records with headers, group bookmarks, no groups or topics of its own, broker failure, leader change and recovery). All three passed against `kafka-course-lab:1.5.0`, so the lab commands print what the lessons expect with the viewer open; the viewer was started again afterwards. Once, while `failures` had a node stopped, a reading showed the cluster as not answering and the following ones recovered by themselves; how long it lasted was not measured.
+
+Then, on the same laptop and with the viewer still open, `integrations` (50 operations, starting and stopping the optional services it uses) and `spring` (10 operations, after building `kafka-course-spring:1.5.0`) passed as well. All five Docker suites have therefore passed on 1.5.0.
 
 Visor en vivo: el servicio `visor` de `labs/compose.yaml` (la misma imagen `kafka-course-lab` con el comando `visor`, publicado en 127.0.0.1:18090), las clases Java `Visor` y `ClusterWatch` y la página en `labs/src/main/resources/visor/`. La lección 01 suma el paso que lo abre (135 pasos en total) y cada lección con tópico de práctica dice, en su pestaña de laboratorio, qué `labN` seguir. Las etiquetas de imagen, `package.json` y los dos `pom.xml` pasan a 1.5.0.
 
@@ -20,7 +22,9 @@ Ejecutado en Linux, contra un clúster KRaft de tres nodos con Kafka 4.1.2 y la 
 
 Ejecutado en la laptop del curso (Windows 11, Docker Desktop 4.55.0, Compose v2.40.3): `docker compose build lab` construyó `kafka-course-lab:1.5.0`, y `docker compose up -d visor` levantó el visor sin nombrar su perfil. Leyó el clúster del curso en marcha (3 brokers, 38 tópicos, 9 grupos) cada 500 ms con unos 170 MiB, y ese estado se dibujó en el navegador sin errores.
 
-No ejecutado: la suite `visor` de `scripts/test-labs.mjs`, ni las suites `core` y `failures` con el visor abierto. Reinician los tópicos de práctica del clúster en uso. Hasta que corran, la afirmación de que los comandos del laboratorio imprimen lo mismo con el visor abierto se apoya en lo que hace el visor (sin group.id, sin commits, llamadas de la Admin API que solo describen y listan) y en los listados de grupos y tópicos de arriba.
+Ejecutado en la misma laptop el mismo día, con el visor abierto y en este orden: la suite `core` (86 operaciones), `failures` (25 operaciones) y `visor` (12 operaciones: la página, HTTP de solo lectura, brokers y controlador, registros con encabezados, señaladores de grupo, ningún grupo ni tópico propio, caída de un broker, cambio de líder y recuperación). Las tres pasaron sobre `kafka-course-lab:1.5.0`, así que los comandos del laboratorio imprimen lo que esperan las lecciones con el visor abierto; después se volvió a levantar el visor. Una vez, mientras `failures` tenía un nodo detenido, una lectura mostró el clúster sin respuesta y las siguientes se recuperaron solas; no se midió cuánto duró.
+
+Después, en la misma laptop y con el visor todavía abierto, pasaron también `integrations` (50 operaciones, levantando y deteniendo los servicios opcionales que usa) y `spring` (10 operaciones, después de construir `kafka-course-spring:1.5.0`). Las cinco suites Docker pasaron entonces sobre la 1.5.0.
 
 ## 1.4.1, 19 October 2026 / 1.4.1, 19 de octubre de 2026
 
