@@ -158,7 +158,7 @@ window.KAFKA_COURSE = (() => {
         B('Build the client once', 'Construí el cliente una vez'),
         B('The supplied Java client exposes small, readable experiments. Its entire source is included. No Java installation is needed on your computer.', 'El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene con todo su código. No necesitás instalar Java en tu computadora.'),
         'docker compose build lab',
-        B('The image kafka-course-lab:1.4.1 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.4.1. La primera compilación descarga dependencias de Maven.'),
+        B('The image kafka-course-lab:1.5.0 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.5.0. La primera compilación descarga dependencias de Maven.'),
       ),
       S(
         B('Start three nodes', 'Levantá tres nodos'),
@@ -173,10 +173,16 @@ window.KAFKA_COURSE = (() => {
         B('Three broker IDs: 1, 2 and 3. This is your first real response from Kafka.', 'Tres IDs de broker: 1, 2 y 3. Es tu primera respuesta real de Kafka.'),
       ),
       S(
+        B('Open the live viewer', 'Abrí el visor en vivo'),
+        B('The viewer is a page that reads the cluster every half second and draws brokers, topics, partitions, records and groups as the lessons change them. It only reads: the lab commands print the same with it open. Leave it open in a browser tab for the rest of the course.', 'El visor es una página que lee el clúster cada medio segundo y dibuja brokers, tópicos, particiones, registros y grupos a medida que las lecciones los cambian. Solo lee: los comandos del lab imprimen lo mismo con el visor abierto. Dejalo abierto en una pestaña durante el resto del curso.'),
+        'docker compose up -d visor',
+        B('Open http://localhost:18090: three brokers, the active controller and no lesson topic yet. Port 18090 must be free.', 'Abrí http://localhost:18090: tres brokers, el controlador activo y todavía ningún tópico de lección. El puerto 18090 tiene que estar libre.'),
+      ),
+      S(
         B('Pause safely', 'Pausá sin perder datos'),
         B('Stop when you finish; volumes keep the data. Start again with up -d --wait. Use down --volumes only when you deliberately want to erase all course data.', 'Al terminar, detené los servicios; los volúmenes conservan los datos. Volvé con up -d --wait. Usá down --volumes solo cuando quieras borrar todos los datos del curso.'),
         'docker compose stop\ndocker compose up -d --wait',
-        B('The same cluster returns. Keep it running for the next lesson.', 'Vuelve el mismo clúster. Dejalo funcionando para la siguiente lección.'),
+        B('The same cluster returns. While it is stopped the viewer says the cluster does not answer, then draws it again. Keep both running for the next lesson; docker compose stop visor closes the viewer.', 'Vuelve el mismo clúster. Mientras está detenido, el visor dice que el clúster no responde y después lo vuelve a dibujar. Dejá los dos funcionando para la siguiente lección; docker compose stop visor cierra el visor.'),
       ),
     ],
     'quickstart',
@@ -2169,5 +2175,5 @@ window.KAFKA_COURSE = (() => {
     'spring',
   );
 
-  return { version: '1.4.1', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
+  return { version: '1.5.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
 })();

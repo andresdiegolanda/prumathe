@@ -65,16 +65,28 @@ services:
   lab:
     profiles: [tools]
     build: .
-    image: kafka-course-lab:1.4.1
+    image: kafka-course-lab:1.5.0
     environment:
       BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9092,kafka3:9092
     stdin_open: true
     init: true
 
+  # The live viewer (lesson 01): http://localhost:18090. Same image as lab; it only reads the
+  # cluster. Started by naming it, docker compose up -d visor; stopped with docker compose stop visor.
+  visor:
+    profiles: [visor]
+    build: .
+    image: kafka-course-lab:1.5.0
+    command: ["visor"]
+    environment:
+      BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9092,kafka3:9092
+    ports: ["127.0.0.1:18090:18090"]
+    init: true
+
   spring:
     profiles: [spring]
     build: ./spring
-    image: kafka-course-spring:1.4.1
+    image: kafka-course-spring:1.5.0
     environment:
       BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9092,kafka3:9092
     ports: ["127.0.0.1:18080:8080"]

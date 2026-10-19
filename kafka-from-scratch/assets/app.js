@@ -230,7 +230,14 @@
   }
   function labView() {
     const s = lesson.lab[labStep];
-    return `<div class="frame-label"><span>${t('STEP', 'PASO')} ${labStep + 1} / ${lesson.lab.length}</span><span>DOCKER / CLI</span></div><h2>${e(L(s.title))}</h2><p>${e(L(s.text))}</p><div class="lab-command"><div class="command-title"><span>TERMINAL</span><button data-action="copy">${t('Copy', 'Copiar')} ⧉</button></div><pre><code>${e(s.command)}</code></pre></div><div class="expected"><strong>${t('What to observe', 'Qué observar')}</strong>${e(L(s.expected))}</div><div class="scene-navigation"><button class="btn" data-action="prev" ${labStep === 0 ? 'disabled' : ''}>← ${t('Back', 'Atrás')}</button><button class="btn primary" data-action="next">${labStep === lesson.lab.length - 1 ? t('I ran & understood it', 'Lo ejecuté y entendí') : t('Next step', 'Siguiente paso')} →</button></div>`;
+    return `<div class="frame-label"><span>${t('STEP', 'PASO')} ${labStep + 1} / ${lesson.lab.length}</span><span>DOCKER / CLI</span></div><h2>${e(L(s.title))}</h2><p>${e(L(s.text))}</p><div class="lab-command"><div class="command-title"><span>TERMINAL</span><button data-action="copy">${t('Copy', 'Copiar')} ⧉</button></div><pre><code>${e(s.command)}</code></pre></div><div class="expected"><strong>${t('What to observe', 'Qué observar')}</strong>${e(L(s.expected))}</div>${visorNote()}<div class="scene-navigation"><button class="btn" data-action="prev" ${labStep === 0 ? 'disabled' : ''}>← ${t('Back', 'Atrás')}</button><button class="btn primary" data-action="next">${labStep === lesson.lab.length - 1 ? t('I ran & understood it', 'Lo ejecuté y entendí') : t('Next step', 'Siguiente paso')} →</button></div>`;
+  }
+  /* Lessons with a practice topic point at it in the live viewer of lesson 01. */
+  function visorNote() {
+    const m = lesson.lab.map((s) => /lab prepare (\d+)/.exec(s.command || '')).find(Boolean);
+    return m
+      ? `<p class="lab-context">${t('Live viewer: with http://localhost:18090 open (lesson 01), follow ', 'Visor en vivo: con http://localhost:18090 abierto (lección 01), seguí ')}<strong>lab${m[1]}</strong>${t(' while you run these steps.', ' mientras corrés estos pasos.')}</p>`
+      : '';
   }
   function quizQuestion(q, qi) {
     const chosen = answers[qi],

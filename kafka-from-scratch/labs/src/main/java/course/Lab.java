@@ -13,7 +13,7 @@ import static course.Kafka.topic;
  * Producing} (seed, put, benchmark, duplicate, compact-seed, skew, window-seed), {@link Consuming}
  * (read, consume, watch, reset, lag, table, dedup), {@link Transactions} (delivery, transactions,
  * eos, verify), {@link Integrations} (schema, connect-status, outbox, streams, windows), {@link
- * Security} (acl) and {@link Clusters} (mirror, share).
+ * Security} (acl) and {@link Clusters} (mirror, share). {@link Visor} serves the live viewer.
  */
 public final class Lab {
   private Lab() {}
@@ -36,7 +36,7 @@ public final class Lab {
             + " duplicate N, dedup N, transactions N, eos N [abort], verify 27,"
             + " schema compatible|incompatible, connect-status, outbox create|crash|relay,"
             + " streams 20, windows 21, window-seed 21, acl setup|writer|reader, skew N, mirror,"
-            + " share.\n"
+            + " share, visor.\n"
             + "Run prepare only after stopping this lesson's consumers. It resets only that"
             + " lesson's topics.");
   }
@@ -82,6 +82,7 @@ public final class Lab {
         case "mirror" -> Clusters.mirror();
         case "share" -> Clusters.share();
         case "create-extra" -> Topics.createExtra(number(args));
+        case "visor" -> Visor.run();
         default -> throw new IllegalArgumentException("Unknown command: " + cmd);
       }
     } catch (Exception ex) {

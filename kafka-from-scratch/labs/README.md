@@ -6,9 +6,9 @@ Ejecutá los comandos desde esta carpeta. El curso usa **Apache Kafka 4.1.2**. N
 
 ## First run / Primera ejecución
 
-Course kit 1.4.1. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
+Course kit 1.5.0. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
 
-Kit del curso 1.4.1. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
+Kit del curso 1.5.0. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
 
 ```sh
 docker compose version
@@ -28,9 +28,19 @@ Esperá Compose v2.20.2 o superior, un Engine 25 o superior en Server, tres brok
 | Lab container / Contenedor lab | `kafka1:9092,kafka2:9092,kafka3:9092` |
 | Host computer / Tu computadora | `localhost:19092,localhost:29092,localhost:39092` |
 
-Host ports bind to `127.0.0.1`. The optional Spring HTTP app uses port 18080; other optional services have no published ports. Bootstrap discovers metadata; advertised listeners must then be reachable from the client. The three main nodes combine broker and controller roles for teaching. Their data is in named volumes. Do not use the Compose configuration as a production deployment.
+Host ports bind to `127.0.0.1`. The live viewer uses port 18090 and the optional Spring HTTP app port 18080; other optional services have no published ports. Bootstrap discovers metadata; advertised listeners must then be reachable from the client. The three main nodes combine broker and controller roles for teaching. Their data is in named volumes. Do not use the Compose configuration as a production deployment.
 
-Los puertos de host se ligan a `127.0.0.1`. La app HTTP opcional de Spring usa el puerto 18080; los demás servicios opcionales no publican puertos. Bootstrap descubre metadatos; después el cliente necesita llegar a los listeners anunciados. Los nodos combinan roles para enseñar y guardan datos en volúmenes con nombre. Esta configuración no es un despliegue productivo.
+Los puertos de host se ligan a `127.0.0.1`. El visor en vivo usa el puerto 18090 y la app HTTP opcional de Spring el 18080; los demás servicios opcionales no publican puertos. Bootstrap descubre metadatos; después el cliente necesita llegar a los listeners anunciados. Los nodos combinan roles para enseñar y guardan datos en volúmenes con nombre. Esta configuración no es un despliegue productivo.
+
+## Live viewer / Visor en vivo
+
+```sh
+docker compose up -d visor
+```
+
+Open http://localhost:18090. The viewer is a page that reads the three-broker cluster every half second and draws brokers, the active controller, topics, partitions with their replicas and in-sync replicas, the last seven records of each partition and the bookmark of each consumer group, plus a feed of what changed. Hovering a record shows its key, value, timestamp and headers; clicking any object explains what it is, what it is for and which lesson commands act on it. It runs from the same `kafka-course-lab` image, with no other dependency, and it only reads: Admin API calls that describe and list, and a consumer without `group.id` assigned by hand, so it creates no topic or group and commits no offset. The separate clusters of the security, mirror and share group lessons do not appear in it. Stop it with `docker compose stop visor`.
+
+Abrí http://localhost:18090. El visor es una página que lee el clúster de tres brokers cada medio segundo y dibuja los brokers, el controlador activo, los tópicos, las particiones con sus réplicas y su ISR, los últimos siete registros de cada partición y el señalador de cada grupo de consumidores, más un registro de lo que cambió. Al pasar el mouse por un registro muestra su clave, su valor, su timestamp y sus encabezados; al hacer clic en cualquier objeto explica qué es, para qué sirve y qué comandos de las lecciones actúan sobre él. Corre con la misma imagen `kafka-course-lab`, sin otra dependencia, y solo lee: llamadas de la Admin API que describen y listan, y un consumidor sin `group.id` asignado a mano, así que no crea tópicos ni grupos ni guarda offsets. Los clústeres aparte de las lecciones de seguridad, espejo y share groups no aparecen. Se detiene con `docker compose stop visor`.
 
 ## Lesson IDs / IDs de lección
 
@@ -95,19 +105,19 @@ El código del cliente está en `src/main/java/course/`: `Lab.java` deriva cada 
 Stop without deleting data / Detené sin borrar datos:
 
 ```sh
-docker compose --profile connect --profile database --profile security --profile mirror --profile share --profile spring stop
+docker compose --profile visor --profile connect --profile database --profile security --profile mirror --profile share --profile spring stop
 ```
 
 Remove the course containers and network but keep named volumes / Quitá contenedores y red conservando volúmenes:
 
 ```sh
-docker compose --profile connect --profile database --profile security --profile mirror --profile share --profile spring down
+docker compose --profile visor --profile connect --profile database --profile security --profile mirror --profile share --profile spring down
 ```
 
 **Only when you want to erase all course data**, including outbox, Connect offsets and optional brokers / **Solo cuando quieras borrar todos los datos del curso**:
 
 ```sh
-docker compose --profile connect --profile database --profile security --profile mirror --profile share --profile spring down --volumes
+docker compose --profile visor --profile connect --profile database --profile security --profile mirror --profile share --profile spring down --volumes
 ```
 
 Never substitute a system-wide prune command. These commands are scoped to this named Compose project.

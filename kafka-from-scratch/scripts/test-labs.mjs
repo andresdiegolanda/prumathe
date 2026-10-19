@@ -71,5 +71,30 @@ else if(suite==='integrations'){
     docker(['logs','--tail','20','spring'],{match:/RECEIVED key=order-42/});
     console.log('PASS typed JSON, Kafka key, broker acknowledgment, duplicate sends, no outstanding group work, restart offsets, post-restart consumption and invalid input');
   }finally{docker(['--profile','spring','stop','spring']);}
-}else throw new Error('Suite must be core, failures, integrations or spring');
+}else if(suite==='visor'){
+  // The live viewer: it serves its page, only reads, follows records and bookmarks, and shows a broker failure.
+  const state=async()=>{const r=await fetch('http://127.0.0.1:18090/api/state');if(!r.ok)throw new Error('HTTP '+r.status);return r.json();};
+  async function until(predicate,ms=60000){const end=Date.now()+ms;let s;do{try{s=await state();if(predicate(s))return s;}catch(err){s=String(err);}await pause(1000);}while(Date.now()<end);throw new Error('Viewer condition not reached: '+JSON.stringify(s).slice(0,600));}
+  const topic=(s,name)=>s.topics.find(x=>x.name===name);
+  docker(['up','-d','visor'],{timeout:600000});
+  try{
+    await until(s=>s.ok&&s.brokers.filter(b=>b.up).length===3&&s.controller>0);
+    const page=await (await fetch('http://127.0.0.1:18090/')).text();if(!page.includes('visor.js'))throw new Error('Viewer page missing');
+    if((await fetch('http://127.0.0.1:18090/api/state',{method:'POST'})).status!==405)throw new Error('Viewer accepted a POST');
+    lab('prepare',6);lab('seed',6);
+    await until(s=>{const t=topic(s,'lab6');return t&&t.partitions.length===3&&t.partitions.every(p=>p.end===2&&p.records.length===2&&p.records[0].h.length===2);});
+    expect(['consume',6,'kitchen'],/PROCESSED 6/);
+    await until(s=>{const g=s.groups.find(x=>x.id==='kitchen');return g&&g.offsets.length===3&&g.offsets.every(o=>o[2]===2)&&s.events.some(e=>e.code==='commit'&&e.group==='kitchen');});
+    const groups=docker(['exec','kafka1','/opt/kafka/bin/kafka-consumer-groups.sh','--bootstrap-server','kafka1:9092','--list']);if(/visor/i.test(groups))throw new Error('The viewer created a consumer group');
+    const topics=docker(['exec','kafka1','/opt/kafka/bin/kafka-topics.sh','--bootstrap-server','kafka1:9092','--list']);if(/visor/i.test(topics))throw new Error('The viewer created a topic');
+    lab('prepare',9);lab('seed',9);
+    try{docker(['stop','kafka1']);
+      await until(s=>!s.brokers.find(b=>b.id===1).up&&s.events.some(e=>e.code==='brokerDown'&&e.broker===1));
+      await until(s=>{const p=topic(s,'lab9').partitions[0];return p.leader>1&&!p.isr.includes(1);});
+      expect(['read',9],/RECORDS 3/);
+    }finally{docker(['up','-d','--wait'],{timeout:180000});}
+    await until(s=>s.brokers.every(b=>b.up)&&topic(s,'lab9').partitions[0].isr.length===3,120000);
+    console.log('PASS viewer page, read-only HTTP, brokers and controller, records with headers, group bookmarks, no groups or topics of its own, broker failure, leader change and recovery');
+  }finally{docker(['stop','visor']);}
+}else throw new Error('Suite must be core, failures, integrations, spring or visor');
 console.log(`SUITE ${suite} PASSED (${log.length} operations). Evidence: .qa/labs-${suite}.json`);

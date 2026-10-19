@@ -137,7 +137,7 @@ assert.equal(lessons[1].slug, 'start');
 assert.equal(lessons[29].slug, 'spring-java');
 assert.equal(frames, lessons.length * 3);
 assert.equal(questions, lessons.length * 3);
-assert.equal(steps, 134);
+assert.equal(steps, 135);
 for (const lang of ['en', 'es']) {
   const notes = fs.readFileSync(path.join(root, 'downloads/course-notes-' + lang + '.txt'), 'utf8');
   for (const l of lessons)
@@ -235,6 +235,28 @@ assert.ok(forum && forum.repo && forum.category && forum.term === 'kafka-from-sc
 if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
 assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
 assert.ok(fs.readFileSync(path.join(root, 'lessons', lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
+// The live viewer: its page parses, its lesson table follows the curriculum, the Compose service
+// publishes it only on 127.0.0.1 with the course image, and the Java dispatcher starts it.
+const visorDir = path.join(root, 'labs/src/main/resources/visor');
+const visorJs = fs.readFileSync(path.join(visorDir, 'visor.js'), 'utf8');
+new vm.Script(visorJs, { filename: 'visor.js' });
+for (const name of ['index.html', 'visor.css', 'visor.js', 'favicon.svg']) {
+  const text = fs.readFileSync(path.join(visorDir, name), 'utf8');
+  assert.ok(!DASHES.test(text), 'visor ' + name + ' contains an en or em dash');
+}
+const visorTable = JSON.parse(visorJs.match(/const LESSONS = (\{.*?\});/)[1]);
+const expectedTable = {};
+for (const l of lessons)
+  for (const s of l.lab) {
+    const m = /lab prepare (\d+)/.exec(s.command || '');
+    if (m) expectedTable[m[1]] = [String(l.id).padStart(2, '0'), l.title.en, l.title.es];
+  }
+assert.deepEqual(visorTable, expectedTable, 'visor.js LESSONS disagrees with the curriculum');
+assert.ok(/\n  visor:\n[\s\S]*?ports: \["127\.0\.0\.1:18090:18090"\]/.test(compose), 'compose.yaml visor service');
+assert.ok(/\n  visor:\n[\s\S]*?image: kafka-course-lab:/.test(compose) && !compose.match(/kafka-course-lab:[\d.]+/g).some((x) => x !== 'kafka-course-lab:' + course.version), 'visor image tag disagrees with curriculum.js');
+assert.ok(java.includes('case "visor" -> Visor.run();'), 'Java dispatcher starts the viewer');
+assert.ok(lessons[1].lab.some((s) => s.command === 'docker compose up -d visor'), 'lesson 01 opens the viewer');
+
 console.log(
-  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage and version consistency.`,
+  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage, the live viewer and version consistency.`,
 );

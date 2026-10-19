@@ -1,5 +1,5 @@
 KAFKA DESDE CERO. APUNTES DEL CURSO
-Apache Kafka 4.1.2 | 2026-10-18 | v1.4.1
+Apache Kafka 4.1.2 | 2026-10-18 | v1.5.0
 
 QUÉ ES KAFKA
 =================================================================
@@ -143,7 +143,7 @@ El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene 
 
 docker compose build lab
 
-Observá: Se construye kafka-course-lab:1.4.1. La primera compilación descarga dependencias de Maven.
+Observá: Se construye kafka-course-lab:1.5.0. La primera compilación descarga dependencias de Maven.
 
 3. Levantá tres nodos
 Ejecutá desde labs. Se crea únicamente el proyecto Docker del curso. Los puertos 19092, 29092 y 39092 tienen que estar libres.
@@ -159,13 +159,20 @@ docker compose run --rm lab cluster
 
 Observá: Tres IDs de broker: 1, 2 y 3. Es tu primera respuesta real de Kafka.
 
-5. Pausá sin perder datos
+5. Abrí el visor en vivo
+El visor es una página que lee el clúster cada medio segundo y dibuja brokers, tópicos, particiones, registros y grupos a medida que las lecciones los cambian. Solo lee: los comandos del lab imprimen lo mismo con el visor abierto. Dejalo abierto en una pestaña durante el resto del curso.
+
+docker compose up -d visor
+
+Observá: Abrí http://localhost:18090: tres brokers, el controlador activo y todavía ningún tópico de lección. El puerto 18090 tiene que estar libre.
+
+6. Pausá sin perder datos
 Al terminar, detené los servicios; los volúmenes conservan los datos. Volvé con up -d --wait. Usá down --volumes solo cuando quieras borrar todos los datos del curso.
 
 docker compose stop
 docker compose up -d --wait
 
-Observá: Vuelve el mismo clúster. Dejalo funcionando para la siguiente lección.
+Observá: Vuelve el mismo clúster. Mientras está detenido, el visor dice que el clúster no responde y después lo vuelve a dibujar. Dejá los dos funcionando para la siguiente lección; docker compose stop visor cierra el visor.
 
 CONTROL
 1. Un cliente corre dentro de Docker. ¿Qué dirección usa?
