@@ -2,6 +2,14 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-10-20]
+
+### Agregado
+
+- Visor en vivo en [`docker-kubernetes-from-scratch/`](docker-kubernetes-from-scratch/) 1.4.0: servicio `visor` de `labs/compose.yaml` con perfil, publicado solo en 127.0.0.1:18091, con imagen propia `prumathe-visor` sobre la misma base Python fijada que la app (`labs/visor/`: `visor.py`, `docker_watch.py`, `kube_watch.py` y la página en `static/`). Lee cada medio segundo dos planos: Docker por el socket (imágenes, contenedores con health check, puertos, redes, montajes y límites, contenedores de menos de un segundo, volumen, redes y log de la app) y, desde la lección 13, el clúster por la red `kind` con el kubeconfig del curso en solo lectura (nodos, Deployment con ReplicaSets y Pods, Pods sin dueño, Services con EndpointSlices, ConfigMaps, Secrets solo por nombre, PVC y permisos de `dk-lab`), más un registro de eventos. El panel de detalle explica cada objeto y ofrece los comandos de las lecciones. Solo hace GET; si un plano no responde, conserva la última lectura y la marca como vieja. La lección 01 lo levanta y la 13 lo conecta al clúster (102 pasos); cada lección dice qué seguir en él (`assets/curriculum.js`, `assets/app.js`, apuntes). `check.mjs` verifica servicio, base, tablas de lecciones y comandos del visor, GET y CSP; `test-labs.mjs` suma la suite `visor`. README, `labs/README.md`, `docs/TEACHING.md` y `docs/VALIDATION.md` al día.
+- Visor en vivo en [`github-from-scratch/`](github-from-scratch/) 1.4.0: `node lab.mjs visor` sirve en 127.0.0.1:18092 una página que lee los repositorios de `labs/runs/` (historia con ramas, HEAD, remotos y tags; los tres lugares de cada archivo; remotos entre repositorios; registro de eventos) con comandos de Git que solo consultan y sin tomar el lock del index (`labs/visor.mjs`, `labs/visor/`). `lab.mjs` suma `--step`, que frena antes de cada operación y deja `progress.json` en la corrida. La lección 00 abre el visor (81 pasos) y cada lección dice qué mirar en él. `check.mjs` lo verifica; `scripts/test-visor.mjs` (`npm run test:visor`, también en `release` y en los workflows) prueba HTTP, lectura sin efectos y tres experimentos con `--step`. README, `labs/README.md`, `docs/TEACHING.md` y `docs/VALIDATION.md` al día.
+- [`README.md`](README.md) con las versiones 1.4.0, los pasos y el workflow de GitHub; [`site/`](site/) con 102 pasos en Docker y Kubernetes; [`tablero.md`](tablero.md): card hecha y card para probar los dos visores en Linux y macOS.
+
 ## [2026-10-19]
 
 ### Agregado

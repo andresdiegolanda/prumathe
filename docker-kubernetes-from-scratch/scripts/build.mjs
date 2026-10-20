@@ -68,6 +68,7 @@ for (const lang of ['en', 'es']) {
     text += `${String(l.id).padStart(2, '0')}. ${l.title[lang]}\n${'='.repeat(65)}\n${l.intro[lang]}\n\n`;
     for (const f of l.frames) text += `${f.title[lang]}\n${f.text[lang]}\n→ ${f.rule[lang]}\n\n`;
     text += lang === 'en' ? 'LAB\n' : 'LABORATORIO\n';
+    if (l.visor) text += (lang === 'en' ? 'Live viewer (http://127.0.0.1:18091): ' : 'Visor en vivo (http://127.0.0.1:18091): ') + l.visor[lang] + '\n\n';
     for (const [i, s] of l.lab.entries()) {
       text += `${i + 1}. ${s.title[lang]}\n${s.text[lang]}\n\n${s.command}\n\n${lang === 'en' ? 'Observe' : 'Observá'}: ${s.expected[lang]}\n\n`;
     }

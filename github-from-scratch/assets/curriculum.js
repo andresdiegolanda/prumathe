@@ -247,5 +247,32 @@ window.GITHUB_COURSE = (() => {
     S(B('Integrate with a reason', 'Integrá con un motivo'), B('Choose merge, squash or rebase and write why. In your practice repository, integrate only when its actual requirements are satisfied; inspect main afterward. Case study: draw the resulting graph and content.', 'Elegí merge, squash o rebase y escribí por qué. En tu repositorio de práctica integrá cuando se cumplan sus requisitos reales; inspeccioná main después. Caso de estudio: dibujá grafo y contenido resultantes.'), B('The final content meets the issue criteria, with the chosen ancestry.', 'El contenido final cumple los criterios del issue con la ascendencia elegida.')),
     S(B('Teach the decision back', 'Explicá la decisión a otra persona'), B('Write a short delivery note with version, change, evidence, untested limits and how to reverse it. Score yourself using the rubric in labs/CAPSTONE.md. Mark each piece as observed, executed or simulated.', 'Escribí una nota de entrega con versión, cambio, evidencia, límites sin probar y cómo revertirlo. Evaluá tu trabajo con la rúbrica de labs/CAPSTONE.md. Marcá cada evidencia como observada, ejecutada o simulada.'), B('Another person can reconstruct your reasoning without a command transcript.', 'Otra persona puede reconstruir tu razonamiento sin una transcripción de comandos.')),
   ], 'flow', 'github');
-  return { version: '1.3.1', date: '2026-10-18', git: '2.51.0', units, lessons };
+
+  // The live viewer (labs/visor.mjs): lesson 00 opens it, and every lesson says what to follow there.
+  lessons[0].lab.unshift(S(B('Open the live viewer', 'Abrí el visor en vivo'), B('In a second terminal, in labs, start the viewer and open http://127.0.0.1:18092 in your browser. Leave both open for the whole course: the page shows the repositories each experiment creates and follows the one that changed last. Ctrl+C in that terminal closes it.', 'En una segunda terminal, en labs, levantá el visor y abrí http://127.0.0.1:18092 en el navegador. Dejá las dos abiertas todo el curso: la página muestra los repositorios que crea cada experimento y sigue al que cambió último. Ctrl+C en esa terminal lo cierra.'), B('VISOR http://127.0.0.1:18092 in the terminal, and a page waiting for the first experiment. It only reads labs/runs.', 'VISOR http://127.0.0.1:18092 en la terminal y una página que espera el primer experimento. Solo lee labs/runs.'), 'node lab.mjs visor'));
+  const online = B('This activity happens on GitHub; the viewer shows only local repositories.', 'Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.');
+  const VISOR = {
+    'before-you-start': B('A new run with one repository: one commit on main and no remote.', 'Una corrida nueva con un repositorio: un commit en main y ningún remoto.'),
+    'git-and-github': B('Two commits on main and an empty list of remotes: recording needed no other copy.', 'Dos commits en main y la lista de remotos vacía: registrar no necesitó otra copia.'),
+    commits: B('Select each commit: guide.txt says 09:00 in the parent and 10:00 in the child, and the arrow points to the parent.', 'Elegí cada commit: guide.txt dice 09:00 en el padre y 10:00 en el hijo, y la flecha apunta al padre.'),
+    staging: B('Run it with --step and stop before the second commit: HEAD 09:00, index 10:00 and the file 11:00, three places at once.', 'Correlo con --step y frená antes del segundo commit: HEAD 09:00, index 10:00 y el archivo 11:00, tres lugares a la vez.'),
+    branches: B('hours starts on the same commit as main and advances alone; HEAD changes branch when you switch back, and the file returns to 09:00.', 'hours nace en el mismo commit que main y avanza sola; HEAD cambia de rama al volver y el archivo vuelve a 09:00.'),
+    merging: B('In the fast-forward repository, main jumps to the tip of hours with no new commit; in the other one, the merge commit has two parents.', 'En el repositorio del fast-forward, main salta a la punta de hours sin commit nuevo; en el otro, el commit de merge tiene dos padres.'),
+    conflicts: B('Run it with --step and stop after the merge: the index keeps base, ours and theirs, and the file has the markers until the agreement is recorded.', 'Correlo con --step y frená después del merge: el index guarda base, nuestra y suya, y el archivo tiene las marcas hasta que se registra el acuerdo.'),
+    remotes: B('Look at the run map: the remote main advances and Bruno’s origin/main stays behind, marked as stale.', 'Mirá el mapa de la corrida: el main del remoto avanza y el origin/main de Bruno queda atrás, marcado como viejo.'),
+    sync: B('Run it with --step: fetch moves Bruno’s origin/main and not his main; the rejected push leaves the remote where it was.', 'Correlo con --step: fetch mueve el origin/main de Bruno y no su main; el push rechazado deja el remoto donde estaba.'),
+    forks: B('The push reaches fork.git and original.git stays intact; the clone has origin and upstream pointing to different repositories.', 'El push llega a fork.git y original.git queda intacto; el clon tiene origin y upstream hacia repositorios distintos.'),
+    issues: online,
+    'pull-requests': online,
+    reviews: online,
+    'integration-strategies': B('Compare the three clones: the same final files and different histories (two parents, one combined commit, two replayed commits).', 'Compará los tres clones: los mismos archivos finales y historias distintas (dos padres, un commit combinado, dos commits reaplicados).'),
+    undo: B('revert adds a commit after the mistake; reset --soft moves soft-reset-example back and leaves the change in the index. The reflog of HEAD shows each move.', 'revert agrega un commit después del error; reset --soft lleva soft-reset-example hacia atrás y deja el cambio en el index. El reflog de HEAD muestra cada movimiento.'),
+    actions: online,
+    rules: online,
+    releases: B('v1.0 stays on its commit while main advances; it is an annotated tag.', 'v1.0 queda en su commit mientras main avanza; es un tag anotado.'),
+    secrets: B('practice.env is no longer in HEAD, the index or the folder; the history shows the commit that added it, and that commit still contains it.', 'practice.env ya no está en HEAD, en el index ni en la carpeta; la historia muestra el commit que lo agregó, y ese commit todavía lo contiene.'),
+    capstone: online,
+  };
+  for (const l of lessons) l.visor = VISOR[l.slug];
+  return { version: '1.4.0', date: '2026-10-20', git: '2.51.0', units, lessons };
 })();

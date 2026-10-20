@@ -1,5 +1,5 @@
 GITHUB FROM SCRATCH. COURSE NOTES
-Git + GitHub | 2026-10-18 | v1.3.1
+Git + GitHub | 2026-10-20 | v1.4.0
 
 WHAT GIT AND GITHUB ARE
 =================================================================
@@ -64,28 +64,36 @@ Read the three scenes, change the model, predict an experiment and explain three
 → Progress records your declaration, not automatic verification.
 
 ACTIVITY / EVIDENCE: Git local
-1. Predict before looking
+Live viewer (http://127.0.0.1:18092): A new run with one repository: one commit on main and no remote.
+1. Open the live viewer
+In a second terminal, in labs, start the viewer and open http://127.0.0.1:18092 in your browser. Leave both open for the whole course: the page shows the repositories each experiment creates and follows the one that changed last. Ctrl+C in that terminal closes it.
+
+node lab.mjs visor
+
+Observe: VISOR http://127.0.0.1:18092 in the terminal, and a page waiting for the first experiment. It only reads labs/runs.
+
+2. Predict before looking
 Can a real repository exist entirely on your computer?
 
 
 
 Observe: Write your prediction and the reason. An incorrect prediction is useful evidence.
 
-2. Run the experiment
+3. Run the experiment
 Extract the kit and open a terminal in labs. The helper runs real Git in a new folder under labs/runs and prints every operation. It needs Git and Node.js. Read the action before its syntax; you do not need to memorize it.
 
 node lab.mjs setup
 
 Observe: A new experiment path, Git output and PASS lines. A failure stops the experiment; keep the output to investigate.
 
-3. Compare with your prediction
+4. Compare with your prediction
 Find the Git and Node versions, the new experiment folder and the initial commit. No remote was configured.
 
 
 
 Observe: Point to concrete output or file contents. PASS is not a substitute for your explanation.
 
-4. Explain the boundary
+5. Explain the boundary
 Explain why installing Git is separate from creating a GitHub account.
 
 
@@ -130,6 +138,7 @@ Ana records new library hours on her laptop. Bruno still sees the old version in
 → Always name the copy you are talking about.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Two commits on main and an empty list of remotes: recording needed no other copy.
 1. Predict before looking
 Will a new commit require an internet connection or a remote?
 
@@ -196,6 +205,7 @@ A reason helps the next reader
 → One intelligible decision is a useful unit of history.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Select each commit: guide.txt says 09:00 in the parent and 10:00 in the child, and the arrow points to the parent.
 1. Predict before looking
 After changing the hours, will the previous commit show the old or new hours?
 
@@ -263,6 +273,7 @@ The ordinary diff compares your working files with the index. The staged diff co
 → Ask which two states the comparison uses.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Run it with --step and stop before the second commit: HEAD 09:00, index 10:00 and the file 11:00, three places at once.
 1. Predict before looking
 The experiment prepares 10:00 and then saves 11:00. Predict the recorded hours.
 
@@ -329,6 +340,7 @@ main is a convention, not a built-in quality guarantee. A branch named productio
 → The name communicates intent; policy enforces it.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): hours starts on the same commit as main and advances alone; HEAD changes branch when you switch back, and the file returns to 09:00.
 1. Predict before looking
 Will main move when the helper records an hours change on another branch?
 
@@ -395,6 +407,7 @@ Ana changes the opening hour to 10:00. Bruno advertises a workshop at 09:30 in a
 → No textual conflict does not mean no problem.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): In the fast-forward repository, main jumps to the tip of hours with no new commit; in the other one, the merge commit has two parents.
 1. Predict before looking
 One branch edits hours, the other adds contact.txt. Predict the result and number of parents.
 
@@ -461,6 +474,7 @@ After deciding on 10:30, replace the conflict markers with the agreed text, prep
 → Resolution is a new decision with its own evidence.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Run it with --step and stop after the merge: the index keeps base, ours and theirs, and the file has the markers until the agreement is recorded.
 1. Predict before looking
 Both branches replace the same hours line. Predict where automatic integration will stop.
 
@@ -527,6 +541,7 @@ origin/main is normally a local remote-tracking reference: your last recorded vi
 → A remote-tracking reference is knowledge, not a live window.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Look at the run map: the remote main advances and Bruno’s origin/main stays behind, marked as stale.
 1. Predict before looking
 Two clones share one local remote. Will Bruno see Ana’s published change before fetching?
 
@@ -593,6 +608,7 @@ A normal push proposes updating a remote reference with your history. If the rem
 → A rejection can preserve someone else’s work.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Run it with --step: fetch moves Bruno’s origin/main and not his main; the rejected push leaves the remote where it was.
 1. Predict before looking
 Predict Bruno’s file after fetch and after integration. Then predict a stale push.
 
@@ -660,6 +676,7 @@ You can clone your fork and configure origin to point to it, with upstream point
 → Draw the repositories before drawing branches inside them.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): The push reaches fork.git and original.git stays intact; the clone has origin and upstream pointing to different repositories.
 1. Predict before looking
 The helper models an original, a separate fork-like repository and a clone. Which tip changes when publishing to the second repository?
 
@@ -726,6 +743,7 @@ Record the affected guide, expected hours, a small acceptance checklist and who 
 → Track the decision and the evidence supporting it.
 
 ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+Live viewer (http://127.0.0.1:18092): This activity happens on GitHub; the viewer shows only local repositories.
 1. Prepare a practice repository
 Online: create a repository you own named faro-practice with a README, choosing its visibility consciously. Visibility matters later: with GitHub Free, rulesets exist only in public repositories. Use only invented data. On main, edit the README so it says Open at 09:00, like the guide in the local experiments. Case study without an account: draw that repository on paper and label all later steps as a case study.
 
@@ -792,6 +810,7 @@ State the problem, what changes, how you checked it and which issue motivated it
 → Reviewability is part of the work.
 
 ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+Live viewer (http://127.0.0.1:18092): This activity happens on GitHub; the viewer shows only local repositories.
 1. Start from the problem
 Use faro-practice from lesson 10. In GitHub, create winter-hours from main. Paper case: draw both names at the same commit.
 
@@ -858,6 +877,7 @@ A later commit can change what was reviewed. Whether an approval remains valid f
 → An approval has context, including the version reviewed.
 
 ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+Live viewer (http://127.0.0.1:18092): This activity happens on GitHub; the viewer shows only local repositories.
 1. Prepare the review
 Use the open proposal from lesson 11. Write two questions: are the hours supported, and are other notices consistent? Paper case: review the same hypothetical diff.
 
@@ -925,6 +945,7 @@ Rebase replays changes onto a new base, producing new commits when ancestry chan
 → Equal final files do not imply equal ancestry.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): Compare the three clones: the same final files and different histories (two parents, one combined commit, two replayed commits).
 1. Predict before looking
 The same feature is integrated three ways in separate repositories. Predict whether final files and parent counts will match.
 
@@ -992,6 +1013,7 @@ Reset can move the current branch and, depending on mode, change the index and w
 → Protect unrecorded work before changing references or files.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): revert adds a commit after the mistake; reset --soft moves soft-reset-example back and leaves the change in the index. The reflog of HEAD shows each move.
 1. Predict before looking
 After reverting the hours change, will the old content and the old history both be restored exactly?
 
@@ -1060,6 +1082,7 @@ A workflow executes code with permissions and possibly secrets. Keep permissions
 → Automation is code plus authority, not just a green badge.
 
 ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+Live viewer (http://127.0.0.1:18092): This activity happens on GitHub; the viewer shows only local repositories.
 1. Read the included example
 Open labs/examples/hours.yml and hours.test.mjs in the kit. Predict the result for README with 09:00. Online practice needs Actions enabled and available usage on your account; inspect that before running.
 
@@ -1127,6 +1150,7 @@ Bypass permissions, rule activation and branch patterns affect enforcement. A co
 → State the target, requirement and exceptions together.
 
 ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+Live viewer (http://127.0.0.1:18092): This activity happens on GitHub; the viewer shows only local repositories.
 1. Describe your intended policy
 For faro-practice, write: main needs a PR and a successful hours check. Add independent approval only if you have a second collaborator. Case study: use the same policy on paper.
 
@@ -1193,6 +1217,7 @@ A deployment puts a chosen artifact into an environment. Publishing a release do
 → Source version, downloadable artifact and running system are distinct.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): v1.0 stays on its commit while main advances; it is an annotated tag.
 1. Predict before looking
 Create v1.0 and then a new main commit. Predict whether the two names still identify the same point.
 
@@ -1260,6 +1285,7 @@ If a real credential is exposed, revoke or rotate it first. Then follow the host
 → Stop the authority of the secret before cleaning its traces.
 
 ACTIVITY / EVIDENCE: Git local
+Live viewer (http://127.0.0.1:18092): practice.env is no longer in HEAD, the index or the folder; the history shows the commit that added it, and that commit still contains it.
 1. Predict before looking
 A fake marker is recorded, ignored and then deleted. Will an earlier commit still show it?
 
@@ -1327,6 +1353,7 @@ Choose an integration strategy, verify the resulting guide and name a version if
 → Completion means an explainable result, not a sequence of clicks.
 
 ACTIVITY / EVIDENCE: GitHub / case study / caso de estudio
+Live viewer (http://127.0.0.1:18092): This activity happens on GitHub; the viewer shows only local repositories.
 1. Define the change
 In faro-practice, open a new issue for 10:00 opening with a consistent workshop notice. Create a proposal branch and record the guide and notice as purposeful commits. Close the earlier practice PRs with a note, or merge the 10:00 one as part of this delivery. Without an account, draw the same histories and write a case-study proposal.
 

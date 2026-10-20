@@ -1,5 +1,5 @@
 DOCKER & KUBERNETES FROM SCRATCH. COURSE NOTES
-Kubernetes 1.37.0 | 2026-10-18 | v1.3.1
+Kubernetes 1.37.0 | 2026-10-20 | v1.4.0
 
 WHAT DOCKER AND KUBERNETES ARE
 =================================================================
@@ -131,28 +131,37 @@ Run id and inspect the process list inside the image. Our app uses UID 10001, no
 → Name the boundary you actually observed.
 
 LAB
-1. Inspect the runtime user
+Live viewer (http://127.0.0.1:18091): Each docker run --rm appears in the log and disappears, with its exit code; the image keeps its ID.
+
+1. Open the live viewer
+The viewer is a small page that shows, while you practise, what the course creates in Docker and, from lesson 13, in the cluster. It runs in its own container of the course project and only reads. Start it and open http://127.0.0.1:18091 in your browser; leave it open for the whole course.
+
+docker compose up -d --wait visor
+
+Observe: The first time, Compose builds prumathe-visor from the base image already downloaded. The page then shows prumathe-signal:1.0.0 and, if it is still running, the app container of lesson 00.
+
+2. Inspect the runtime user
 Run a short command instead of the default server command. --rm removes this temporary container after exit.
 
 docker run --rm prumathe-signal:1.0.0 id
 
 Observe: UID 10001, not root.
 
-2. See isolated processes
+3. See isolated processes
 Run ps inside a new container. The process list is the container view, not a list of every host application.
 
 docker run --rm prumathe-signal:1.0.0 ps
 
 Observe: A small process list containing ps; host applications are absent.
 
-3. Write to a temporary layer
+4. Write to a temporary layer
 Create a marker inside this container. The shell and marker disappear when this --rm container exits.
 
 docker run --rm prumathe-signal:1.0.0 sh -c 'echo isolated > /tmp/marker; cat /tmp/marker'
 
 Observe: isolated is printed.
 
-4. Start from the image again
+5. Start from the image again
 Check the same path in another new container. test asserts absence and prints PASS only when the assertion holds.
 
 docker run --rm prumathe-signal:1.0.0 sh -c 'test ! -f /tmp/marker && echo PASS'
@@ -196,6 +205,8 @@ Stopping preserves the container writable layer. Removing the container removes 
 → Stop preserves; remove discards the container layer.
 
 LAB
+Live viewer (http://127.0.0.1:18091): Follow dk-life: created, running, exited (0) and running again; once removed it disappears and the image stays.
+
 1. Create the named process
 Use the course-only name dk-life. If repeating after interruption, remove just dk-life with docker rm -f dk-life before this step.
 
@@ -266,6 +277,8 @@ docker image history shows build history; image inspect shows configuration and 
 → Inspect content and identity separately from names.
 
 LAB
+Live viewer (http://127.0.0.1:18091): Select prumathe-signal:1.0.0: its layers and its ID do not change after the containers that write to /tmp.
+
 1. Read image defaults
 Inspect the configured user and command without starting a process.
 
@@ -331,6 +344,8 @@ USER selects the runtime user. CMD supplies the default command; exec form avoid
 → Build configuration is not runtime configuration.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The cached build keeps the same image ID; the 1.1.0 build adds another image with another ID.
+
 1. Build from explicit context
 The final argument app selects the context directory. Inspect app/Dockerfile and app/.dockerignore before running.
 
@@ -397,6 +412,8 @@ docker compose down preserves named volumes by default; down -v removes project 
 → Know the deletion boundary before cleaning up.
 
 LAB
+Live viewer (http://127.0.0.1:18091): app gets a new container ID when it is recreated, and signal-data stays mounted at /data.
+
 1. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
 
@@ -463,6 +480,8 @@ A shared Docker network permits communication; it does not authenticate applicat
 → Diagnose name, connection, then response.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The project network with app and its IP, and the toolbox joining and leaving it.
+
 1. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
 
@@ -528,6 +547,8 @@ Check the port mapping, then request the published URL and the internal URL. A p
 → Trace the route before changing the binding.
 
 LAB
+Live viewer (http://127.0.0.1:18091): Select app: 8080/tcp published only on 127.0.0.1:18080.
+
 1. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
 
@@ -593,12 +614,14 @@ config renders the resolved configuration; ps shows state; logs shows output; do
 → Use a tool within its operating boundary.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The toolbox appears only while it runs; restarting app shows in the log without changing its ID.
+
 1. Read the resolved model
 Compose validates and renders configuration without starting containers. Only a fake secret is used.
 
 docker compose config
 
-Observe: app, the signal-data volume, the demo_token secret and the 127.0.0.1:18080 port mapping. toolbox does not appear: its tools profile is inactive.
+Observe: app, the signal-data volume, the demo_token secret and the 127.0.0.1:18080 port mapping. toolbox and visor do not appear: their tools and visor profiles are inactive.
 
 2. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
@@ -614,7 +637,7 @@ docker compose run --rm --no-deps toolbox
 docker compose ps
 docker compose logs --tail 5 app
 
-Observe: A healthy app and HTTP request logs.
+Observe: A healthy app and HTTP request logs. If the viewer is open, ps lists it too.
 
 4. Exercise a local restart
 Restart the service, then wait for its health before checking the response again.
@@ -662,6 +685,8 @@ Editing an environment source does not rewrite an already running process enviro
 → Know when the application reads each setting.
 
 LAB
+Live viewer (http://127.0.0.1:18091): MESSAGE stays hello-compose and the secret appears mounted, without its content; the container with -e MESSAGE goes through the log.
+
 1. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
 
@@ -727,6 +752,8 @@ Remove the failure file and wait for the health check to recover. Docker health 
 → A detector and a recovery mechanism are separate.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The limits, and health turning unhealthy with its failing streak while the process keeps running; then healthy again.
+
 1. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
 
@@ -795,6 +822,8 @@ An image in Docker on your laptop is not automatically in a Kubernetes node runt
 → Delivery is an explicit step.
 
 LAB
+Live viewer (http://127.0.0.1:18091): practice appears with the same ID as 1.0.0; removing it takes away only the alias.
+
 1. Give an image another name
 Create a local alias. This does not publish to a registry.
 
@@ -863,6 +892,8 @@ An emergency exec edit disappears when the container is replaced. Reproduce the 
 → A live patch is not a durable release.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The last log lines of app, and the execs that create and remove /tmp/not-ready.
+
 1. Start the practice service
 From labs, after lesson 00. This starts only the course Compose project.
 
@@ -931,6 +962,8 @@ A kubeconfig contains connection and authentication information; a context selec
 → Check the destination before any mutation.
 
 LAB
+Live viewer (http://127.0.0.1:18091): After step 5, the two nodes appear as containers in the Docker plane and as Nodes in the Kubernetes plane.
+
 1. Verify cluster tools
 Install kind 0.33.0 and kubectl 1.37.x first using the official instructions linked in labs/README.md. They must be on PATH.
 
@@ -962,6 +995,14 @@ kubectl --kubeconfig kubeconfig --context kind-prumathe-dk get nodes
 kubectl --kubeconfig kubeconfig --context kind-prumathe-dk apply -f k8s/namespace.yaml
 
 Observe: Two Ready nodes at v1.37.0 and namespace dk-lab.
+
+5. Connect the viewer to the cluster
+The cluster lives on its own Docker network, kind, which did not exist before this lesson. A container can be on several networks (lesson 06): connect the viewer to this one so it reaches the API server. It reads with the credentials of the kubeconfig file you just created, from the labs folder it mounts read-only.
+
+docker compose up -d --wait visor
+docker network connect kind prumathe-dk-visor-1
+
+Observe: The Kubernetes plane of the viewer shows two Ready nodes and the dk-lab namespace. If the viewer was already connected, Docker says so and nothing changes.
 
 CHECKPOINT
 1. Who receives kubectl requests?
@@ -1000,6 +1041,8 @@ The kubelet can restart a container according to its restart policy. Deleting th
 → Container restart and Pod replacement are different.
 
 LAB
+Live viewer (http://127.0.0.1:18091): solo, with no owner, its UID, node and IP; once deleted it does not come back.
+
 1. Create a standalone Pod
 Complete lesson 13 first. Submit the single Pod manifest.
 
@@ -1068,6 +1111,8 @@ An imperative scale changes live desired state. Applying a manifest that still d
 → Live state and versioned intent can diverge.
 
 LAB
+Live viewer (http://127.0.0.1:18091): Desired against ready for the Deployment (3 and 2 until it converges) and back to 2 when you apply the file again.
+
 1. Restore the declared baseline
 Complete lesson 13 first. Apply the course manifest in dk-lab and wait for its rollout. This restores the image and replica count declared in the file.
 
@@ -1137,6 +1182,8 @@ Scaling changes desired count. Nodes still need resources to run those Pods. Two
 → Count alone is not availability architecture.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The chain Deployment, ReplicaSet, Pods; deleted Pods come back with new names and UIDs.
+
 1. Restore the declared baseline
 Complete lesson 13 first. Apply the course manifest in dk-lab and wait for its rollout. This restores the image and replica count declared in the file.
 
@@ -1206,6 +1253,8 @@ Our Service type is ClusterIP, reachable within the cluster. For local debugging
 → A Service does not automatically publish to the internet.
 
 LAB
+Live viewer (http://127.0.0.1:18091): Port 80 to 8080 and, in the EndpointSlice, one ready endpoint per Pod.
+
 1. Restore the declared baseline
 Complete lesson 13 first. Apply the course manifest in dk-lab and wait for its rollout. This restores the image and replica count declared in the file.
 
@@ -1272,6 +1321,8 @@ ConfigMap and Secret volumes can receive eventual updates, with exceptions such 
 → Delivery and consumption are separate steps.
 
 LAB
+Live viewer (http://127.0.0.1:18091): signal-settings with its value, demo-token by name only; a new ReplicaSet when the variable is imported and another when it is removed.
+
 1. Restore the declared baseline
 Complete lesson 13 first. Apply the course manifest in dk-lab and wait for its rollout. This restores the image and replica count declared in the file.
 
@@ -1343,6 +1394,8 @@ This provisioned volume lives in the local kind environment. Deleting the cluste
 → Persistence must name its failure boundary.
 
 LAB
+Live viewer (http://127.0.0.1:18091): notebook Bound; writer is replaced and the claim is the same.
+
 1. Provision a claim and writer
 Complete lesson 13 first. The local provisioner binds storage when the Pod is scheduled.
 
@@ -1412,6 +1465,8 @@ A startup probe holds readiness and liveness probing until it succeeds. Its fail
 → Use separate signals for separate recovery decisions.
 
 LAB
+Live viewer (http://127.0.0.1:18091): probe turns Ready false with the process alive, and its endpoint stops being ready.
+
 1. Prepare a dedicated probe Pod
 Complete lesson 13 first. A named Pod and Service isolate this experiment from Deployment scale transitions.
 
@@ -1483,6 +1538,8 @@ The no-room Pod requests 1000 CPUs, deliberately more than this learning cluster
 → Pending is a state to explain, not a reason to restart blindly.
 
 LAB
+Live viewer (http://127.0.0.1:18091): no-room stays Pending with its FailedScheduling; select a node to see the control-plane taint.
+
 1. Inspect declared budgets
 The app requests 50m CPU and 32Mi memory per replica, with higher limits.
 
@@ -1551,6 +1608,8 @@ rollout undo restores a previous Pod template revision. It does not undo databas
 → Rollback restores a template, not the whole world.
 
 LAB
+Live viewer (http://127.0.0.1:18091): The ReplicaSet of 1.1.0 grows while the one of 1.0.0 shrinks; undo reverses it with a new revision.
+
 1. Restore the declared baseline
 Complete lesson 13 first. Apply the course manifest in dk-lab and wait for its rollout. This restores the image and replica count declared in the file.
 
@@ -1622,6 +1681,8 @@ auth can-i asks whether an action is authorized. The lab administrator impersona
 → An authorization check tests one action for one identity.
 
 LAB
+Live viewer (http://127.0.0.1:18091): observer, its RoleBinding and the rules of pod-reader, with no delete and no secrets.
+
 1. Create a read-only identity
 Apply ServiceAccount, Role and RoleBinding inside dk-lab. No cluster-wide role is granted.
 
@@ -1687,6 +1748,8 @@ Before a real deployment, decide image distribution, TLS and external routing, c
 → A learning cluster teaches mechanisms, not a production checklist completed.
 
 LAB
+Live viewer (http://127.0.0.1:18091): New Pods and ready endpoints again; in the Docker plane, the nodes are still the same containers.
+
 1. Restore the declared baseline
 Complete lesson 13 first. Apply the course manifest in dk-lab and wait for its rollout. This restores the image and replica count declared in the file.
 

@@ -1,7 +1,7 @@
 /* Canonical bilingual content. Generated HTML and notes are built from this file. */
 window.DK_COURSE = {
-  "version": "1.3.1",
-  "date": "2026-10-18",
+  "version": "1.4.0",
+  "date": "2026-10-20",
   "kubernetes": "1.37.0",
   "kind": "0.33.0",
   "units": [
@@ -383,6 +383,22 @@ window.DK_COURSE = {
       "lab": [
         {
           "title": {
+            "en": "Open the live viewer",
+            "es": "Abrí el visor en vivo"
+          },
+          "text": {
+            "en": "The viewer is a small page that shows, while you practise, what the course creates in Docker and, from lesson 13, in the cluster. It runs in its own container of the course project and only reads. Start it and open http://127.0.0.1:18091 in your browser; leave it open for the whole course.",
+            "es": "El visor es una página chica que muestra, mientras practicás, lo que el curso crea en Docker y, desde la lección 13, en el clúster. Corre en su propio contenedor del proyecto del curso y solo lee. Levantalo y abrí http://127.0.0.1:18091 en el navegador; dejalo abierto todo el curso."
+          },
+          "command": "docker compose up -d --wait visor",
+          "expected": {
+            "en": "The first time, Compose builds prumathe-visor from the base image already downloaded. The page then shows prumathe-signal:1.0.0 and, if it is still running, the app container of lesson 00.",
+            "es": "La primera vez, Compose construye prumathe-visor desde la imagen base ya descargada. Después la página muestra prumathe-signal:1.0.0 y, si sigue levantado, el contenedor app de la lección 00."
+          },
+          "checks": []
+        },
+        {
+          "title": {
             "en": "Inspect the runtime user",
             "es": "Inspeccioná el usuario"
           },
@@ -465,6 +481,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Stop one process. Does the other container stop? Inspect the shared kernel.",
         "es": "Detené un proceso. ¿Se detiene el otro contenedor? Inspeccioná el kernel compartido."
+      },
+      "visor": {
+        "en": "Each docker run --rm appears in the log and disappears, with its exit code; the image keeps its ID.",
+        "es": "Cada docker run --rm aparece y desaparece en el registro, con su código de salida; la imagen conserva su ID."
       }
     },
     {
@@ -683,6 +703,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Move from running to stopped to removed. Which state keeps the writable layer?",
         "es": "Pasá de running a stopped y removed. ¿Qué estado conserva la capa escribible?"
+      },
+      "visor": {
+        "en": "Follow dk-life: created, running, exited (0) and running again; once removed it disappears and the image stays.",
+        "es": "Seguí a dk-life: created, running, exited (0) y otra vez running; al borrarlo desaparece y la imagen queda."
       }
     },
     {
@@ -901,6 +925,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Change the writable layer. Which image layers remain shared?",
         "es": "Cambiá la capa escribible. ¿Qué capas de imagen siguen compartidas?"
+      },
+      "visor": {
+        "en": "Select prumathe-signal:1.0.0: its layers and its ID do not change after the containers that write to /tmp.",
+        "es": "Elegí prumathe-signal:1.0.0: sus capas y su ID no cambian después de los contenedores que escriben en /tmp."
       }
     },
     {
@@ -1115,6 +1143,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Move the changed input. Which later steps lose their cached result?",
         "es": "Mové el insumo que cambió. ¿Qué pasos posteriores pierden la caché?"
+      },
+      "visor": {
+        "en": "The cached build keeps the same image ID; the 1.1.0 build adds another image with another ID.",
+        "es": "El build con caché deja el mismo ID; el de 1.1.0 agrega otra imagen con otro ID."
       }
     },
     {
@@ -1328,6 +1360,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Replace the container. Follow the marker stored in the volume.",
         "es": "Reemplazá el contenedor. Seguí la marca del volumen."
+      },
+      "visor": {
+        "en": "app gets a new container ID when it is recreated, and signal-data stays mounted at /data.",
+        "es": "app cambia de ID de contenedor al recrearse y signal-data sigue montado en /data."
       }
     },
     {
@@ -1542,6 +1578,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Disconnect the peer. Why does a service name only help inside its network?",
         "es": "Desconectá el cliente. ¿Por qué el nombre de servicio ayuda solo dentro de su red?"
+      },
+      "visor": {
+        "en": "The project network with app and its IP, and the toolbox joining and leaving it.",
+        "es": "La red del proyecto con app y su IP, y el toolbox que entra y sale."
       }
     },
     {
@@ -1760,6 +1800,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Switch the host binding. Trace host port 18080 to container port 8080.",
         "es": "Cambiá el enlace del host. Seguí 18080 del host hasta 8080 del contenedor."
+      },
+      "visor": {
+        "en": "Select app: 8080/tcp published only on 127.0.0.1:18080.",
+        "es": "Elegí app: 8080/tcp publicado solo en 127.0.0.1:18080."
       }
     },
     {
@@ -1909,8 +1953,8 @@ window.DK_COURSE = {
           },
           "command": "docker compose config",
           "expected": {
-            "en": "app, the signal-data volume, the demo_token secret and the 127.0.0.1:18080 port mapping. toolbox does not appear: its tools profile is inactive.",
-            "es": "app, el volumen signal-data, el secreto demo_token y el puerto 127.0.0.1:18080. toolbox no aparece: su perfil tools está inactivo."
+            "en": "app, the signal-data volume, the demo_token secret and the 127.0.0.1:18080 port mapping. toolbox and visor do not appear: their tools and visor profiles are inactive.",
+            "es": "app, el volumen signal-data, el secreto demo_token y el puerto 127.0.0.1:18080. toolbox y visor no aparecen: sus perfiles, tools y visor, están inactivos."
           },
           "checks": [
             {
@@ -1945,8 +1989,8 @@ window.DK_COURSE = {
           },
           "command": "docker compose run --rm --no-deps toolbox\ndocker compose ps\ndocker compose logs --tail 5 app",
           "expected": {
-            "en": "A healthy app and HTTP request logs.",
-            "es": "App healthy y logs de pedidos HTTP."
+            "en": "A healthy app and HTTP request logs. If the viewer is open, ps lists it too.",
+            "es": "App healthy y logs de pedidos HTTP. Si el visor está abierto, ps también lo lista."
           },
           "checks": [
             {
@@ -1978,6 +2022,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Stop app while keeping its volume. Which parts of the Compose model still exist?",
         "es": "Detené app conservando el volumen. ¿Qué partes del modelo siguen existiendo?"
+      },
+      "visor": {
+        "en": "The toolbox appears only while it runs; restarting app shows in the log without changing its ID.",
+        "es": "El toolbox aparece solo mientras corre; el reinicio de app queda en el registro sin cambiar su ID."
       }
     },
     {
@@ -2196,6 +2244,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Change the configured value, then restart the model process. When does it read the new value?",
         "es": "Cambiá el valor configurado y reiniciá el proceso del modelo. ¿Cuándo lee el nuevo valor?"
+      },
+      "visor": {
+        "en": "MESSAGE stays hello-compose and the secret appears mounted, without its content; the container with -e MESSAGE goes through the log.",
+        "es": "MESSAGE sigue en hello-compose y el secreto aparece montado, sin su contenido; el contenedor con -e MESSAGE pasa por el registro."
       }
     },
     {
@@ -2419,6 +2471,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Fail the Docker health check. Does the model process stop automatically?",
         "es": "Fallá el health check Docker. ¿El proceso se detiene automáticamente?"
+      },
+      "visor": {
+        "en": "The limits, and health turning unhealthy with its failing streak while the process keeps running; then healthy again.",
+        "es": "Los límites, y la salud que pasa a unhealthy con su racha de fallas mientras el proceso sigue corriendo; después, otra vez healthy."
       }
     },
     {
@@ -2637,6 +2693,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Move a tag to a new artifact. Does the old content identity change?",
         "es": "Mové un tag a otro artefacto. ¿Cambia la identidad del contenido anterior?"
+      },
+      "visor": {
+        "en": "practice appears with the same ID as 1.0.0; removing it takes away only the alias.",
+        "es": "practice aparece con el mismo ID que 1.0.0; al borrarlo se va solo el alias."
       }
     },
     {
@@ -2855,6 +2915,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Choose the failed layer. Which observation distinguishes it from the next one?",
         "es": "Elegí la capa que falla. ¿Qué observación la distingue de la siguiente?"
+      },
+      "visor": {
+        "en": "The last log lines of app, and the execs that create and remove /tmp/not-ready.",
+        "es": "Las últimas líneas de log de app y los exec que crean y quitan /tmp/not-ready."
       }
     },
     {
@@ -3060,11 +3124,31 @@ window.DK_COURSE = {
               "contains": "v1.37.0"
             }
           ]
+        },
+        {
+          "title": {
+            "en": "Connect the viewer to the cluster",
+            "es": "Conectá el visor al clúster"
+          },
+          "text": {
+            "en": "The cluster lives on its own Docker network, kind, which did not exist before this lesson. A container can be on several networks (lesson 06): connect the viewer to this one so it reaches the API server. It reads with the credentials of the kubeconfig file you just created, from the labs folder it mounts read-only.",
+            "es": "El clúster vive en su propia red de Docker, kind, que no existía antes de esta lección. Un contenedor puede estar en varias redes (lección 06): conectá el visor a esta para que llegue al API server. Lee con las credenciales del archivo kubeconfig que acabás de crear, desde la carpeta labs que monta como solo lectura."
+          },
+          "command": "docker compose up -d --wait visor\ndocker network connect kind prumathe-dk-visor-1",
+          "expected": {
+            "en": "The Kubernetes plane of the viewer shows two Ready nodes and the dk-lab namespace. If the viewer was already connected, Docker says so and nothing changes.",
+            "es": "El plano Kubernetes del visor muestra dos nodos Ready y el namespace dk-lab. Si el visor ya estaba conectado, Docker lo dice y no cambia nada."
+          },
+          "checks": []
         }
       ],
       "experiment": {
         "en": "Change the desired Pod count and inspect the control plane and worker responsibilities.",
         "es": "Cambiá la cantidad de Pods e inspeccioná responsabilidades del control y worker."
+      },
+      "visor": {
+        "en": "After step 5, the two nodes appear as containers in the Docker plane and as Nodes in the Kubernetes plane.",
+        "es": "Después del paso 5, los dos nodos aparecen como contenedores en el plano Docker y como Nodes en el plano Kubernetes."
       }
     },
     {
@@ -3275,6 +3359,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Replace the Pod. Which containers share its network address?",
         "es": "Reemplazá el Pod. ¿Qué contenedores comparten su dirección?"
+      },
+      "visor": {
+        "en": "solo, with no owner, its UID, node and IP; once deleted it does not come back.",
+        "es": "solo, sin dueño, con su UID, nodo e IP; al borrarlo no vuelve."
       }
     },
     {
@@ -3489,6 +3577,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Change desired count, then simulate a missing instance. Read the difference the controller must close.",
         "es": "Cambiá la cantidad deseada y simulá una instancia faltante. Leé la diferencia que debe cerrar el controlador."
+      },
+      "visor": {
+        "en": "Desired against ready for the Deployment (3 and 2 until it converges) and back to 2 when you apply the file again.",
+        "es": "Deseado contra listo del Deployment (3 y 2 hasta converger) y la vuelta a 2 al aplicar el archivo de nuevo."
       }
     },
     {
@@ -3699,6 +3791,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Remove the instances while leaving the template. Compare the missing and restored states.",
         "es": "Quitá las instancias conservando la plantilla. Compará estado faltante y restaurado."
+      },
+      "visor": {
+        "en": "The chain Deployment, ReplicaSet, Pods; deleted Pods come back with new names and UIDs.",
+        "es": "La cadena Deployment, ReplicaSet, Pods; los Pods borrados vuelven con nombre y UID nuevos."
       }
     },
     {
@@ -3917,6 +4013,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Reduce ready endpoints to zero. Does the Service name disappear?",
         "es": "Reducí endpoints listos a cero. ¿Desaparece el nombre del Service?"
+      },
+      "visor": {
+        "en": "Port 80 to 8080 and, in the EndpointSlice, one ready endpoint per Pod.",
+        "es": "El puerto 80 hacia 8080 y, en el EndpointSlice, un endpoint listo por Pod."
       }
     },
     {
@@ -4127,6 +4227,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Change a ConfigMap value. Compare stored configuration with the running process environment.",
         "es": "Cambiá un valor de ConfigMap. Compará configuración guardada y entorno del proceso activo."
+      },
+      "visor": {
+        "en": "signal-settings with its value, demo-token by name only; a new ReplicaSet when the variable is imported and another when it is removed.",
+        "es": "signal-settings con su valor, demo-token solo por nombre; un ReplicaSet nuevo al importar la variable y otro al quitarla."
       }
     },
     {
@@ -4341,6 +4445,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Replace the writer Pod but retain the claim. Where does the marker live?",
         "es": "Reemplazá writer conservando el claim. ¿Dónde vive la marca?"
+      },
+      "visor": {
+        "en": "notebook Bound; writer is replaced and the claim is the same.",
+        "es": "notebook Bound; writer se reemplaza y el claim es el mismo."
       }
     },
     {
@@ -4563,6 +4671,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Choose readiness or liveness failure. Which changes routing and which requests a restart?",
         "es": "Elegí falla de readiness o liveness. ¿Cuál cambia tráfico y cuál pide reinicio?"
+      },
+      "visor": {
+        "en": "probe turns Ready false with the process alive, and its endpoint stops being ready.",
+        "es": "probe pasa a Ready false con el proceso vivo y su endpoint deja de estar listo."
       }
     },
     {
@@ -4782,6 +4894,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Raise the request above available capacity. Why does the Pod stay Pending?",
         "es": "Subí el request sobre la capacidad disponible. ¿Por qué queda Pending?"
+      },
+      "visor": {
+        "en": "no-room stays Pending with its FailedScheduling; select a node to see the control-plane taint.",
+        "es": "no-room queda en Pending con su FailedScheduling; elegí un nodo para ver el taint del nodo de control."
       }
     },
     {
@@ -4996,6 +5112,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Advance the rollout. Count old and new replicas at each stage.",
         "es": "Avanzá el rollout. Contá réplicas viejas y nuevas en cada etapa."
+      },
+      "visor": {
+        "en": "The ReplicaSet of 1.1.0 grows while the one of 1.0.0 shrinks; undo reverses it with a new revision.",
+        "es": "El ReplicaSet de 1.1.0 crece mientras el de 1.0.0 baja; el undo lo invierte con una revisión nueva."
       }
     },
     {
@@ -5216,6 +5336,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Select an API verb. Which requests does the Role permit for observer?",
         "es": "Elegí un verbo de API. ¿Qué pedidos permite el Role de observer?"
+      },
+      "visor": {
+        "en": "observer, its RoleBinding and the rules of pod-reader, with no delete and no secrets.",
+        "es": "observer, su RoleBinding y las reglas de pod-reader, sin delete ni secrets."
       }
     },
     {
@@ -5433,6 +5557,10 @@ window.DK_COURSE = {
       "experiment": {
         "en": "Break and recover the application instances. Which checks need to pass again?",
         "es": "Rompé y recuperá las instancias. ¿Qué comprobaciones tienen que volver a pasar?"
+      },
+      "visor": {
+        "en": "New Pods and ready endpoints again; in the Docker plane, the nodes are still the same containers.",
+        "es": "Pods nuevos y endpoints listos otra vez; en el plano Docker, los nodos siguen siendo los mismos contenedores."
       }
     }
   ]

@@ -1,8 +1,8 @@
 # Docker and Kubernetes kit / Kit de Docker y Kubernetes
 
-Version 1.3.1. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. The `sh` shell used by some commands runs inside the Linux container.
+Version 1.4.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. The `sh` shell used by some commands runs inside the Linux container.
 
-Versión 1.3.1. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. El shell `sh` de algunos comandos corre dentro del contenedor Linux.
+Versión 1.4.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. El shell `sh` de algunos comandos corre dentro del contenedor Linux.
 
 ## Tools and first run / Herramientas y primera ejecución
 
@@ -30,6 +30,32 @@ Create the cluster once. If it already exists, keep using the course's own clust
 
 Creá el clúster una sola vez. Si ya existe, seguí usando el propio del curso. Si perdiste solo su archivo de acceso, recuperalo con `kind export kubeconfig --name prumathe-dk --kubeconfig kubeconfig`. No mezcles ese archivo con tu configuración habitual ni lo publiques: contiene credenciales. El ZIP y el build lo excluyen. Cada comando nombra su contexto explícitamente. El namespace de práctica es `dk-lab`.
 
+## Live viewer / Visor en vivo
+
+```text
+docker compose up -d --wait visor
+```
+
+Open http://127.0.0.1:18091. The viewer is a page that reads, every half second, what the course creates and draws it in two planes. Docker: the course images with their IDs, tags and the pinned base; the containers with their state, health check, ports, networks, mounts and limits; the containers that live less than a second; the volume, the networks and the last lines of the app log. Kubernetes, from lesson 13: the nodes, the Deployment with its ReplicaSets and Pods, the Pods without an owner, the Services with their EndpointSlices, and the ConfigMaps, Secrets, claims and permissions of `dk-lab`. A feed names every change. Clicking any object explains what it is, what it is for, what it shows now and which lesson commands act on it. It shows only what belongs to the course: the containers of other projects are counted, not shown.
+
+Abrí http://127.0.0.1:18091. El visor es una página que lee cada medio segundo lo que crea el curso y lo dibuja en dos planos. Docker: las imágenes del curso con su ID, sus tags y la base fijada; los contenedores con su estado, health check, puertos, redes, montajes y límites; los contenedores que viven menos de un segundo; el volumen, las redes y las últimas líneas del log de la app. Kubernetes, desde la lección 13: los nodos, el Deployment con sus ReplicaSets y Pods, los Pods sin dueño, los Services con sus EndpointSlices, y los ConfigMaps, Secrets, claims y permisos de `dk-lab`. Un registro nombra cada cambio. Al hacer clic en cualquier objeto explica qué es, para qué sirve, qué muestra ahora y qué comandos de las lecciones actúan sobre él. Muestra solo lo del curso: los contenedores de otros proyectos se cuentan, no se muestran.
+
+It runs from its own small image, `prumathe-visor`, built on the same pinned Python base as the app and published only on 127.0.0.1. It reads Docker through the Docker socket and the cluster with the `kubeconfig` that lesson 13 creates in this folder, which it mounts read-only. To reach the cluster it has to join the `kind` network; lesson 13 does it:
+
+Corre con su propia imagen chica, `prumathe-visor`, sobre la misma base Python fijada que la app y publicada solo en 127.0.0.1. Lee Docker por el socket de Docker y el clúster con el `kubeconfig` que la lección 13 crea en esta carpeta, que monta en solo lectura. Para llegar al clúster tiene que sumarse a la red `kind`; la lección 13 lo hace:
+
+```text
+docker network connect kind prumathe-dk-visor-1
+```
+
+The attachment survives stopping and starting the viewer, not recreating its container: if the Kubernetes plane says the viewer is not connected, run that command again. Over the kind network the viewer reaches the API server by the name of the control-plane node, so a local product that intercepts TLS on loopback does not affect it.
+
+La conexión sobrevive a parar y arrancar el visor, no a recrear su contenedor: si el plano Kubernetes dice que el visor no está conectado, repetí ese comando. Por la red kind el visor llega al API server por el nombre del nodo de control, así que un producto local que intercepta TLS en loopback no lo afecta.
+
+The socket and the kubeconfig would allow anything. The viewer only makes GET requests, to a closed list of paths, and it lists Secrets by name only, without their data. It changes nothing in Docker or in the cluster; what it adds is its own: its image, its network and the `visor` service, which `docker compose ps` lists too. On Linux with Docker Engine the socket usually belongs to the `docker` group: if the viewer says it cannot open the socket, start it with that group, `DOCKER_GID=$(getent group docker | cut -d: -f3) docker compose up -d --wait visor`. That route has not been run on Linux yet. Stop the viewer with `docker compose stop visor`.
+
+El socket y el kubeconfig permitirían cualquier cosa. El visor solo hace pedidos GET, a una lista cerrada de rutas, y lista los Secrets solo por nombre, sin sus datos. No cambia nada en Docker ni en el clúster; lo que agrega es propio: su imagen, su red y el servicio `visor`, que `docker compose ps` también lista. En Linux con Docker Engine el socket suele ser del grupo `docker`: si el visor dice que no puede abrir el socket, levantalo con ese grupo, `DOCKER_GID=$(getent group docker | cut -d: -f3) docker compose up -d --wait visor`. Esa vía todavía no se corrió en Linux. El visor se detiene con `docker compose stop visor`.
+
 ## What is included / Qué incluye
 
 | File / Archivo | Role / Función |
@@ -37,7 +63,8 @@ Creá el clúster una sola vez. Si ya existe, seguí usando el propio del curso.
 | `app/server.py` | Signal service: JSON with version, message and host. `/health` and `/ready` accept deliberate failures through files in `/tmp`. Handles SIGTERM and exits at once. / Servicio Signal: JSON con versión, mensaje y host. `/health` y `/ready` admiten fallas didácticas mediante archivos en `/tmp`. Atiende SIGTERM y termina enseguida. |
 | `app/probe.py` | Client that requires an HTTP status and a text. Optional arguments allow up to 60 attempts; the course uses 30 for endpoint convergence, one second between failures and a 5 second timeout per request. / Cliente que exige estado HTTP y texto. Los argumentos opcionales permiten hasta 60 intentos; el curso usa 30 para convergencia de endpoints, con un segundo entre fallas y timeout de 5 segundos por pedido. |
 | `app/Dockerfile` | Base Python 3.14.8 on Alpine 3.24 pinned by digest; user 10001; port 8080; health check. / Base Python 3.14.8 sobre Alpine 3.24 fijada por digest; usuario 10001; puerto 8080; health check. |
-| `compose.yaml` | Project `prumathe-dk`, local port 18080, volume, limits and optional toolbox. / Proyecto `prumathe-dk`, puerto local 18080, volumen, límites y toolbox opcional. |
+| `compose.yaml` | Project `prumathe-dk`, local port 18080, volume, limits, optional toolbox and the live viewer on 18091. / Proyecto `prumathe-dk`, puerto local 18080, volumen, límites, toolbox opcional y el visor en vivo en 18091. |
+| `visor/` | Live viewer: its server in Python with the standard library only, the readers of Docker and Kubernetes, and the page. / Visor en vivo: su servidor en Python solo con la biblioteca estándar, los lectores de Docker y Kubernetes, y la página. |
 | `demo-token.txt` | Fake practice token, never a real credential. / Token falso de práctica, nunca una credencial real. |
 | `kind.yaml` | One control-plane node and one worker on the same host. / Un nodo de control y un worker sobre el mismo host. |
 | `k8s/base.yaml` | Deployment with two replicas, probes, resources and a ClusterIP Service. / Deployment de dos réplicas, sondas, recursos y Service ClusterIP. |

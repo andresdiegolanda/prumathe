@@ -16,7 +16,8 @@ Open [index.html](index.html?lang=en) or start with [Before you start](lessons/b
 - 60 preguntas sobre predicción, explicación y límites, con distractores plausibles y devolución. / 60 questions about prediction, explanation and limits, with plausible distractors and feedback.
 - 14 experimentos locales con Git real y 41 aserciones. / 14 local experiments using real Git with 41 assertions.
 - 6 actividades de GitHub, cada una con alternativa de caso de estudio sin cuenta. / 6 GitHub activities, each with an account-free case-study alternative.
-- 80 pasos de actividad, cuaderno de predicción y rúbrica final. / 80 activity steps, a prediction worksheet and a final rubric.
+- 81 pasos de actividad, cuaderno de predicción y rúbrica final. / 81 activity steps, a prediction worksheet and a final rubric.
+- Un visor en vivo en http://127.0.0.1:18092 (lección 00, `node lab.mjs visor`): la historia, las ramas, HEAD y los tres lugares de cada archivo de los repositorios de un experimento, dibujados mientras el experimento avanza; con `--step`, el experimento frena antes de cada operación. / A live viewer at http://127.0.0.1:18092 (lesson 00, `node lab.mjs visor`): the history, branches, HEAD and the three places of each file in the repositories of an experiment, drawn as the experiment runs; with `--step`, the experiment stops before each operation.
 - Glosario visual de 37 términos, apuntes completos en ambos idiomas y kit ZIP. / A 37-term visual glossary, complete notes in both languages and a ZIP kit.
 - Apariencias Clásico, Oscuro, Lectura y Proyector; navegación por teclado y avance local. / Classic, Dark, Reading and Projector skins; keyboard navigation and local progress.
 
@@ -37,9 +38,9 @@ The fictional Faro library guide connects the lessons. Schedule changes let you 
 
 ## Experimentos / Experiments
 
-El kit local necesita Git 2.32 o posterior y Node.js 22 o posterior. Desde `labs`, ejecutá el experimento de la lección, por ejemplo `node lab.mjs staging`. No instala dependencias ni usa red. Crea repositorios nuevos en `labs/runs/` y conserva los anteriores. Leé [labs/README.md](labs/README.md) para preparación, mapa de experimentos y límites.
+El kit local necesita Git 2.32 o posterior y Node.js 22 o posterior. Desde `labs`, ejecutá el experimento de la lección, por ejemplo `node lab.mjs staging`. No instala dependencias ni usa red. Crea repositorios nuevos en `labs/runs/` y conserva los anteriores. Con `node lab.mjs visor` en otra terminal y el experimento corrido con `--step`, cada operación se ve en http://127.0.0.1:18092 antes y después de ejecutarse. Leé [labs/README.md](labs/README.md) para preparación, mapa de experimentos, visor y límites.
 
-The local kit needs Git 2.32 or later and Node.js 22 or later. From `labs`, run the lesson experiment, for example `node lab.mjs staging`. It installs no dependencies and uses no network. It creates new repositories in `labs/runs/` and retains previous runs. See [labs/README.md](labs/README.md) for setup, the experiment map and limits.
+The local kit needs Git 2.32 or later and Node.js 22 or later. From `labs`, run the lesson experiment, for example `node lab.mjs staging`. It installs no dependencies and uses no network. It creates new repositories in `labs/runs/` and retains previous runs. With `node lab.mjs visor` in another terminal and the experiment run with `--step`, every operation shows at http://127.0.0.1:18092 before and after it runs. See [labs/README.md](labs/README.md) for setup, the experiment map, the viewer and limits.
 
 Las actividades en GitHub necesitan una cuenta, un repositorio propio de práctica y los permisos correspondientes. Revisión independiente requiere otra persona. Actions y reglas dependen de disponibilidad y configuración. La alternativa sin cuenta es un caso de estudio y se identifica como tal. Marcar una actividad como completa es una declaración del estudiante, no detección de ejecución.
 
@@ -47,20 +48,21 @@ GitHub activities need an account, your own practice repository and appropriate 
 
 ## Edición y evidencia / Editing and evidence
 
-Versión del curso: **1.3.1**, 19/10/2026. Referencias oficiales revisadas el 18/10/2026. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
+Versión del curso: **1.4.0**, 20/10/2026. Referencias oficiales revisadas el 18/10/2026. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
 
-Course version: **1.3.1**, 19 October 2026. Official references were reviewed on 18 October 2026. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
+Course version: **1.4.0**, 20 October 2026. Official references were reviewed on 18 October 2026. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
 
 ```text
 npm run build
 npm run check
 npm run test:labs
+npm run test:visor
 npm run preview
 ```
 
-`build` genera páginas, apuntes, ZIP y `dist/`. `check` verifica contenido y artefactos, dibuja 1584 variantes de modelos y prueba el ejemplo de horarios con un caso que falla y otro que pasa. `test:labs` ejecuta los 14 experimentos. `preview` sirve en localhost:4174. No se necesita Node para abrir el curso ya generado.
+`build` genera páginas, apuntes, ZIP y `dist/`. `check` verifica contenido y artefactos, dibuja 1584 variantes de modelos y prueba el ejemplo de horarios con un caso que falla y otro que pasa. `test:labs` ejecuta los 14 experimentos. `test:visor` prueba el visor: HTTP de solo lectura, una corrida completa leída sin cambiar ningún archivo y tres experimentos con `--step`. `preview` sirve en localhost:4174. No se necesita Node para abrir el curso ya generado.
 
-`build` generates pages, notes, ZIP and `dist/`. `check` verifies content and artifacts, renders 1584 model variants and tests the hours example with failing and passing cases. `test:labs` executes all 14 experiments. `preview` serves localhost:4174. Node is not needed to open the already generated course.
+`build` generates pages, notes, ZIP and `dist/`. `check` verifies content and artifacts, renders 1584 model variants and tests the hours example with failing and passing cases. `test:labs` executes all 14 experiments. `test:visor` tests the viewer: read-only HTTP, a full run read without changing any file, and three experiments with `--step`. `preview` serves localhost:4174. Node is not needed to open the already generated course.
 
 El método y contrato de edición están en [TEACHING.md](docs/TEACHING.md); publicación estática y copia independiente, en [DEPLOYMENT.md](docs/DEPLOYMENT.md). Quedan fuera del alcance operaciones avanzadas de Git, administración de organizaciones, implementación completa de CI/CD y respuesta exhaustiva a incidentes de secretos. Las lecciones nombran esos límites y enlazan fuentes oficiales.
 

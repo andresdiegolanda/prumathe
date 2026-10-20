@@ -1,5 +1,7 @@
 /* Real, offline Git experiments. Each invocation creates new repositories under labs/runs.
-   No credentials, user repositories, global configuration, shell interpolation or cleanup. */
+   No credentials, user repositories, global configuration, shell interpolation or cleanup.
+   --step pauses before each operation that changes a repository; progress.json in the run folder
+   records the last and the next operation for the live viewer (node lab.mjs visor). */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,9 +10,16 @@ import assert from 'node:assert/strict';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const experiments = { setup, local, snapshots, staging, branches, merge, conflict, remotes, sync, forks, strategies, undo, tags, secrets };
-const requested = process.argv[2] || 'help';
-if (requested === 'help' || !['all', ...Object.keys(experiments)].includes(requested)) {
-  console.log('GitHub from scratch / GitHub desde cero\nnode lab.mjs <experiment>\n' + Object.keys(experiments).join(', ') + ', all');
+const words = process.argv.slice(2);
+const requested = words.find(w => !w.startsWith('--')) || 'help';
+const stepMode = words.includes('--step');
+// Git commands that change a repository. With --step the helper pauses before each one and before each file it writes.
+const CHANGES = new Set(['init','add','commit','switch','merge','rebase','revert','reset','tag','rm','clone','fetch','push']);
+let active = null;
+if (requested === 'visor') {
+  await import('./visor.mjs');
+} else if (requested === 'help' || !['all', ...Object.keys(experiments)].includes(requested)) {
+  console.log('GitHub from scratch / GitHub desde cero\nnode lab.mjs <experiment> [--step]\n' + Object.keys(experiments).join(', ') + ', all\n--step: pause before each operation that changes a repository / pausa antes de cada operación que cambia un repositorio\nnode lab.mjs visor: live viewer / visor en vivo, http://127.0.0.1:18092');
   if (requested !== 'help') process.exitCode = 1;
 } else {
   fs.mkdirSync(path.join(here, 'runs'), { recursive: true });
@@ -21,15 +30,19 @@ if (requested === 'help' || !['all', ...Object.keys(experiments)].includes(reque
   // Ignore inherited Git overrides and user defaults so experiments stay self-contained.
   const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.toUpperCase().startsWith('GIT_')));
   Object.assign(env, { GIT_CONFIG_NOSYSTEM:'1', GIT_CONFIG_GLOBAL:blankConfig, GIT_TERMINAL_PROMPT:'0', GIT_ALLOW_PROTOCOL:'file', GIT_EDITOR:'true', GIT_SEQUENCE_EDITOR:'true', GIT_MERGE_AUTOEDIT:'no', GIT_AUTHOR_NAME:'Faro Student', GIT_AUTHOR_EMAIL:'student@example.invalid', GIT_COMMITTER_NAME:'Faro Student', GIT_COMMITTER_EMAIL:'student@example.invalid' });
-  const ctx = { root, env, blankHooks, passes:0, sequence:0 };
+  const ctx = { root, env, blankHooks, passes:0, sequence:0, step:stepMode, done:0, current:null, last:null, list: requested === 'all' ? Object.keys(experiments) : [requested] };
+  active = ctx; progress(ctx, null);
   console.log('EXPERIMENT / EXPERIMENTO: ' + root);
+  if (stepMode) console.log('STEP BY STEP / PASO A PASO: Enter runs each operation / Enter ejecuta cada operación');
   console.log('Node ' + process.version);
   git(ctx, root, ['--version']);
   for (const name of requested === 'all' ? Object.keys(experiments) : [requested]) {
     console.log('\nEXPERIMENT / EXPERIMENTO: ' + name);
+    ctx.current = name;
     experiments[name](ctx);
   }
   fs.writeFileSync(path.join(root, 'result.json'), JSON.stringify({ experiments: requested === 'all' ? Object.keys(experiments) : [requested], assertions:ctx.passes, node:process.version, git:git(ctx,root,['--version'],false).out.trim(), platform:process.platform, completedAt:new Date().toISOString() },null,2)+'\n');
+  progress(ctx, null, true);
   console.log('\nPASS: ' + ctx.passes + ' assertions / comprobaciones');
   console.log('Inspect files / Inspeccioná archivos: ' + root);
 }
@@ -37,9 +50,12 @@ function git(c, cwd, args, echo = true, expected = 0) {
   const resolved = path.resolve(cwd);
   assert.ok(resolved === c.root || resolved.startsWith(c.root + path.sep), 'Git cwd outside experiment');
   const options = ['-c','core.autocrlf=false','-c','commit.gpgsign=false','-c','tag.gpgsign=false','-c','core.hooksPath='+c.blankHooks,'-c','init.templateDir='+c.blankHooks,'-c','core.excludesFile='+path.join(c.root,'empty.gitconfig')];
-  if(echo) console.log('$ git '+args.map(a => /\s/.test(a) ? "'"+a+"'" : a).join(' '));
+  const op = changes(args) ? { op:'git', args, repo: repoOf(c, resolved, args) } : null;
+  if(op) before(c, op);
+  if(echo) console.log('$ '+shown(args));
   const r = spawnSync('git',[...options,...args],{cwd:resolved,env:c.env,encoding:'utf8',windowsHide:true,timeout:30000});
   if(r.error) throw r.error;
+  if(op) after(c, op, r.status, expected !== 0);
   const out = r.stdout || '', err = r.stderr || '';
   if(echo && out.trim()) console.log(out.trim());
   if(r.status !== expected) throw new Error('Git result '+r.status+', expected '+expected+'\n'+out+err);
@@ -47,7 +63,28 @@ function git(c, cwd, args, echo = true, expected = 0) {
   return {out,err,status:r.status};
 }
 function check(c, condition, en, es) { assert.ok(condition,en); c.passes++; console.log('PASS: '+en+' / '+es); }
-function write(repo,name,text) { fs.writeFileSync(path.join(repo,name),text); }
+function write(repo,name,text) {
+  const op = active ? { op:'write', file:name, text, repo: path.relative(active.root, repo) || '.' } : null;
+  if(op) before(active, op);
+  fs.writeFileSync(path.join(repo,name),text);
+  if(op) after(active, op, null, false);
+}
+function changes(args) { return CHANGES.has(args[0]) || (args[0] === 'remote' && args[1] === 'add'); }
+function repoOf(c, cwd, args) { return ['init','clone'].includes(args[0]) ? path.basename(args.at(-1)) : (path.relative(c.root, cwd) || '.'); }
+function shown(args) { return 'git '+args.map(a => /\s/.test(a) ? "'"+a+"'" : a).join(' '); }
+// In --step mode, show the next operation and wait for Enter. A child process reads the line, so the
+// experiments stay synchronous and unchanged.
+function before(c, op) {
+  if(!c.step) return;
+  progress(c, op);
+  const what = op.op === 'git' ? shown(op.args) : 'write / escribir '+op.file+': '+op.text.trim().split('\n').join(' | ');
+  console.log('\nSTEP / PASO '+(c.done+1)+' · '+op.repo+'\n  '+what+'\nEnter: run / ejecutar');
+  spawnSync(process.execPath,['-e',"process.stdin.once('data',()=>process.exit(0));process.stdin.once('end',()=>process.exit(0));"],{stdio:'inherit'});
+}
+function after(c, op, exit, expected) { c.done++; c.last = { ...op, exit, expected }; progress(c, null); }
+function progress(c, next, finished = false) {
+  fs.writeFileSync(path.join(c.root,'progress.json'), JSON.stringify({ experiments:c.list, current:c.current, step:c.step, done:c.done, last:c.last, next, finished, pid:process.pid, updatedAt:Date.now() },null,2)+'\n');
+}
 function read(repo,name) { return fs.readFileSync(path.join(repo,name),'utf8'); }
 function rev(c,r,ref='HEAD') { return git(c,r,['rev-parse',ref],false).out.trim(); }
 function record(c,r,message) { git(c,r,['add','.']); git(c,r,['commit','-m',message]); return rev(c,r); }

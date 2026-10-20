@@ -1,5 +1,5 @@
 GITHUB DESDE CERO. APUNTES DEL CURSO
-Git + GitHub | 2026-10-18 | v1.3.1
+Git + GitHub | 2026-10-20 | v1.4.0
 
 QUÉ SON GIT Y GITHUB
 =================================================================
@@ -64,28 +64,36 @@ Leé las tres escenas, cambiá el modelo, predecí un experimento y explicá tre
 → El avance registra tu declaración, no una verificación automática.
 
 ACTIVIDAD / EVIDENCIA: Git local
-1. Predecí antes de mirar
+Visor en vivo (http://127.0.0.1:18092): Una corrida nueva con un repositorio: un commit en main y ningún remoto.
+1. Abrí el visor en vivo
+En una segunda terminal, en labs, levantá el visor y abrí http://127.0.0.1:18092 en el navegador. Dejá las dos abiertas todo el curso: la página muestra los repositorios que crea cada experimento y sigue al que cambió último. Ctrl+C en esa terminal lo cierra.
+
+node lab.mjs visor
+
+Observá: VISOR http://127.0.0.1:18092 en la terminal y una página que espera el primer experimento. Solo lee labs/runs.
+
+2. Predecí antes de mirar
 ¿Puede existir un repositorio real enteramente en tu computadora?
 
 
 
 Observá: Anotá tu predicción y el motivo. Una predicción incorrecta es evidencia útil.
 
-2. Ejecutá el experimento
+3. Ejecutá el experimento
 Descomprimí el kit y abrí una terminal en labs. El asistente ejecuta Git real en una carpeta nueva dentro de labs/runs e imprime cada operación. Necesita Git y Node.js. Leé la acción antes que la sintaxis; no hace falta memorizarla.
 
 node lab.mjs setup
 
 Observá: Una ruta nueva de experimento, salidas de Git y líneas PASS. Una falla detiene el experimento; conservá la salida para investigar.
 
-3. Compará con tu predicción
+4. Compará con tu predicción
 Buscá las versiones de Git y Node, la carpeta nueva y el commit inicial. No se configuró ningún remoto.
 
 
 
 Observá: Señalá una salida o contenido de archivo concreto. PASS no reemplaza tu explicación.
 
-4. Explicá el límite
+5. Explicá el límite
 Explicá por qué instalar Git es independiente de crear una cuenta de GitHub.
 
 
@@ -130,6 +138,7 @@ Ana registra horarios nuevos en su laptop. Bruno todavía ve la versión anterio
 → Siempre nombrá la copia de la que hablás.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Dos commits en main y la lista de remotos vacía: registrar no necesitó otra copia.
 1. Predecí antes de mirar
 ¿Un commit nuevo va a necesitar conexión o un remoto?
 
@@ -196,6 +205,7 @@ El motivo ayuda a quien viene después
 → Una decisión entendible es una unidad útil de historia.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Elegí cada commit: guide.txt dice 09:00 en el padre y 10:00 en el hijo, y la flecha apunta al padre.
 1. Predecí antes de mirar
 Después de cambiar los horarios, ¿el commit anterior va a mostrar los viejos o los nuevos?
 
@@ -263,6 +273,7 @@ El diff común compara tus archivos de trabajo con el index. El diff preparado c
 → Preguntá qué dos estados usa la comparación.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Correlo con --step y frená antes del segundo commit: HEAD 09:00, index 10:00 y el archivo 11:00, tres lugares a la vez.
 1. Predecí antes de mirar
 El experimento prepara 10:00 y después guarda 11:00. Predecí los horarios registrados.
 
@@ -329,6 +340,7 @@ main es una convención, no una garantía incorporada de calidad. Una rama llama
 → El nombre comunica intención; una política la hace cumplir.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): hours nace en el mismo commit que main y avanza sola; HEAD cambia de rama al volver y el archivo vuelve a 09:00.
 1. Predecí antes de mirar
 ¿Se va a mover main cuando el asistente registre un cambio de horarios en otra rama?
 
@@ -395,6 +407,7 @@ Ana cambia la apertura a las 10:00. Bruno anuncia un taller a las 09:30 en otro 
 → Sin conflicto textual no significa sin problema.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): En el repositorio del fast-forward, main salta a la punta de hours sin commit nuevo; en el otro, el commit de merge tiene dos padres.
 1. Predecí antes de mirar
 Una rama edita horarios y otra agrega contact.txt. Predecí el resultado y la cantidad de padres.
 
@@ -461,6 +474,7 @@ Después de acordar 10:30, reemplazá las marcas del conflicto por el texto deci
 → La resolución es una decisión nueva con evidencia propia.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Correlo con --step y frená después del merge: el index guarda base, nuestra y suya, y el archivo tiene las marcas hasta que se registra el acuerdo.
 1. Predecí antes de mirar
 Ambas ramas reemplazan la misma línea de horarios. Predecí dónde se detendrá la integración automática.
 
@@ -527,6 +541,7 @@ origin/main normalmente es una referencia local de seguimiento: tu última vista
 → Una referencia de seguimiento es conocimiento, no una ventana en vivo.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Mirá el mapa de la corrida: el main del remoto avanza y el origin/main de Bruno queda atrás, marcado como viejo.
 1. Predecí antes de mirar
 Dos clones comparten un remoto local. ¿Bruno verá el cambio publicado de Ana antes de hacer fetch (traer novedades)?
 
@@ -593,6 +608,7 @@ Un push normal propone actualizar una referencia remota con tu historia. Si el r
 → Un rechazo puede preservar el trabajo de otra persona.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Correlo con --step: fetch mueve el origin/main de Bruno y no su main; el push rechazado deja el remoto donde estaba.
 1. Predecí antes de mirar
 Predecí el archivo de Bruno después de fetch y después de integrar. Después predecí un push desactualizado.
 
@@ -660,6 +676,7 @@ Podés clonar tu fork y configurar origin hacia él y upstream hacia el original
 → Dibujá los repositorios antes de dibujar las ramas adentro.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): El push llega a fork.git y original.git queda intacto; el clon tiene origin y upstream hacia repositorios distintos.
 1. Predecí antes de mirar
 El asistente modela un original, otro repositorio semejante a un fork y un clon. ¿Qué punta cambia al publicar en el segundo repositorio?
 
@@ -726,6 +743,7 @@ Registrá la guía afectada, horarios esperados, criterios de aceptación y qui�
 → Registrá la decisión y la evidencia que la sostiene.
 
 ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+Visor en vivo (http://127.0.0.1:18092): Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.
 1. Prepará un repositorio de práctica
 En línea: creá un repositorio propio llamado faro-practice con README y elegí su visibilidad conscientemente. La visibilidad importa después: con GitHub Free, los rulesets existen solo en repositorios públicos. Usá solo datos inventados. En main, editá el README para que diga Open at 09:00, como la guía de los experimentos locales. Caso sin cuenta: dibujá ese repositorio en papel e identificá todos los pasos posteriores como caso de estudio.
 
@@ -792,6 +810,7 @@ Contá el problema, qué cambia, cómo lo comprobaste y qué issue lo motivó. L
 → Que el cambio sea revisable forma parte del trabajo.
 
 ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+Visor en vivo (http://127.0.0.1:18092): Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.
 1. Partí del problema
 Usá faro-practice de la lección 10. En GitHub creá winter-hours desde main. Caso en papel: dibujá ambos nombres en el mismo commit.
 
@@ -858,6 +877,7 @@ Un commit posterior puede cambiar lo revisado. Que una aprobación siga habilita
 → Una aprobación tiene contexto, incluida la versión revisada.
 
 ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+Visor en vivo (http://127.0.0.1:18092): Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.
 1. Prepará la revisión
 Usá la propuesta abierta de la lección 11. Escribí dos preguntas: ¿Hay respaldo para el horario y los demás avisos son coherentes? Caso en papel: revisá el mismo diff hipotético.
 
@@ -925,6 +945,7 @@ Rebase reaplica cambios sobre otra base y produce commits nuevos cuando cambia l
 → Archivos finales iguales no implican ascendencia igual.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): Compará los tres clones: los mismos archivos finales y historias distintas (dos padres, un commit combinado, dos commits reaplicados).
 1. Predecí antes de mirar
 La misma propuesta se integra de tres maneras en repositorios separados. Predecí si coincidirán archivos finales y cantidad de padres.
 
@@ -992,6 +1013,7 @@ Reset puede mover la rama actual y, según el modo, cambiar el index y los archi
 → Protegé trabajo sin registrar antes de cambiar referencias o archivos.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): revert agrega un commit después del error; reset --soft lleva soft-reset-example hacia atrás y deja el cambio en el index. El reflog de HEAD muestra cada movimiento.
 1. Predecí antes de mirar
 Después de revertir el cambio de horarios, ¿se restaurarán exactamente el contenido y la historia anteriores?
 
@@ -1060,6 +1082,7 @@ Un workflow ejecuta código con permisos y posiblemente secretos. Limitá permis
 → La automatización es código y autoridad, además de una señal verde.
 
 ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+Visor en vivo (http://127.0.0.1:18092): Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.
 1. Leé el ejemplo incluido
 Abrí labs/examples/hours.yml y hours.test.mjs del kit. Predecí el resultado para README con 09:00. La práctica en línea necesita Actions habilitado y uso disponible en tu cuenta; inspeccionalo antes de ejecutar.
 
@@ -1127,6 +1150,7 @@ Los permisos de bypass, activación de reglas y patrones de rama afectan el cump
 → Indicá destino, requisito y excepciones juntos.
 
 ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+Visor en vivo (http://127.0.0.1:18092): Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.
 1. Describí la política pretendida
 Para faro-practice escribí: main necesita un PR y el control hours exitoso. Agregá aprobación independiente solo si tenés otra persona colaborando. Caso de estudio: usá la misma política en papel.
 
@@ -1193,6 +1217,7 @@ Un despliegue coloca un artefacto elegido en un entorno. Publicar una release no
 → Versión de código, artefacto descargable y sistema en ejecución son distintos.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): v1.0 queda en su commit mientras main avanza; es un tag anotado.
 1. Predecí antes de mirar
 Creá v1.0 y después otro commit en main. Predecí si ambos nombres siguen identificando el mismo punto.
 
@@ -1260,6 +1285,7 @@ Si se expone una credencial real, revocala o rotala primero. Después seguí el 
 → Detené la autoridad del secreto antes de limpiar sus rastros.
 
 ACTIVIDAD / EVIDENCIA: Git local
+Visor en vivo (http://127.0.0.1:18092): practice.env ya no está en HEAD, en el index ni en la carpeta; la historia muestra el commit que lo agregó, y ese commit todavía lo contiene.
 1. Predecí antes de mirar
 Se registra, ignora y después borra un marcador ficticio. ¿Un commit anterior todavía lo mostrará?
 
@@ -1327,6 +1353,7 @@ Elegí una estrategia de integración, verificá la guía resultante y nombrá u
 → Terminar significa un resultado explicable, no una secuencia de clics.
 
 ACTIVIDAD / EVIDENCIA: GitHub / case study / caso de estudio
+Visor en vivo (http://127.0.0.1:18092): Esta actividad ocurre en GitHub; el visor muestra solo repositorios locales.
 1. Definí el cambio
 En faro-practice abrí otro issue para apertura a las 10:00 con un aviso de taller coherente. Creá una rama propuesta y registrá guía y aviso en commits con propósito. Cerrá los PR de práctica anteriores con una nota, o integrá el de 10:00 como parte de esta entrega. Sin cuenta, dibujá las mismas historias y escribí una propuesta de caso de estudio.
 

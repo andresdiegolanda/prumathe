@@ -1,5 +1,5 @@
 DOCKER Y KUBERNETES DESDE CERO. APUNTES DEL CURSO
-Kubernetes 1.37.0 | 2026-10-18 | v1.3.1
+Kubernetes 1.37.0 | 2026-10-20 | v1.4.0
 
 QUÉ SON DOCKER Y KUBERNETES
 =================================================================
@@ -131,28 +131,37 @@ Ejecutá id e inspeccioná los procesos dentro de la imagen. Nuestra aplicación
 → Nombrá el límite que observaste.
 
 LABORATORIO
-1. Inspeccioná el usuario
+Visor en vivo (http://127.0.0.1:18091): Cada docker run --rm aparece y desaparece en el registro, con su código de salida; la imagen conserva su ID.
+
+1. Abrí el visor en vivo
+El visor es una página chica que muestra, mientras practicás, lo que el curso crea en Docker y, desde la lección 13, en el clúster. Corre en su propio contenedor del proyecto del curso y solo lee. Levantalo y abrí http://127.0.0.1:18091 en el navegador; dejalo abierto todo el curso.
+
+docker compose up -d --wait visor
+
+Observá: La primera vez, Compose construye prumathe-visor desde la imagen base ya descargada. Después la página muestra prumathe-signal:1.0.0 y, si sigue levantado, el contenedor app de la lección 00.
+
+2. Inspeccioná el usuario
 Ejecutá un comando corto en vez del servidor por defecto. --rm borra este contenedor temporal cuando termina.
 
 docker run --rm prumathe-signal:1.0.0 id
 
 Observá: UID 10001, no root.
 
-2. Mirá procesos aislados
+3. Mirá procesos aislados
 Ejecutá ps en otro contenedor. La lista es su vista, no la de todas las aplicaciones del host.
 
 docker run --rm prumathe-signal:1.0.0 ps
 
 Observá: Una lista pequeña con ps; no aparecen aplicaciones del host.
 
-3. Escribí en una capa temporal
+4. Escribí en una capa temporal
 Creá una marca dentro de este contenedor. El shell y la marca desaparecen cuando termina.
 
 docker run --rm prumathe-signal:1.0.0 sh -c 'echo isolated > /tmp/marker; cat /tmp/marker'
 
 Observá: Se imprime isolated.
 
-4. Partí de la imagen otra vez
+5. Partí de la imagen otra vez
 Revisá la misma ruta en otro contenedor nuevo. test comprueba ausencia e imprime PASS solo si se cumple.
 
 docker run --rm prumathe-signal:1.0.0 sh -c 'test ! -f /tmp/marker && echo PASS'
@@ -196,6 +205,8 @@ Detener conserva la capa escribible. Borrar el contenedor elimina esa capa; los 
 → Stop conserva; remove descarta la capa del contenedor.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Seguí a dk-life: created, running, exited (0) y otra vez running; al borrarlo desaparece y la imagen queda.
+
 1. Creá el proceso con nombre
 Usá el nombre propio dk-life. Si repetís después de interrumpir, borrá solo dk-life con docker rm -f dk-life antes de este paso.
 
@@ -266,6 +277,8 @@ docker image history muestra la historia de construcción; image inspect muestra
 → Inspeccioná contenido e identidad aparte del nombre.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Elegí prumathe-signal:1.0.0: sus capas y su ID no cambian después de los contenedores que escriben en /tmp.
+
 1. Leé los valores por defecto
 Inspeccioná usuario y comando sin arrancar un proceso.
 
@@ -331,6 +344,8 @@ USER elige el usuario de ejecución. CMD aporta el comando por defecto; la forma
 → La configuración del build no es la de ejecución.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): El build con caché deja el mismo ID; el de 1.1.0 agrega otra imagen con otro ID.
+
 1. Construí desde un contexto explícito
 El argumento final app elige el contexto. Leé app/Dockerfile y app/.dockerignore antes.
 
@@ -397,6 +412,8 @@ docker compose down conserva volúmenes con nombre por defecto; down -v elimina 
 → Conocé qué se borra antes de limpiar.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): app cambia de ID de contenedor al recrearse y signal-data sigue montado en /data.
+
 1. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
 
@@ -463,6 +480,8 @@ Una red compartida permite comunicar; no autentica pedidos de la aplicación. El
 → Diagnosticá nombre, conexión y después respuesta.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): La red del proyecto con app y su IP, y el toolbox que entra y sale.
+
 1. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
 
@@ -528,6 +547,8 @@ Revisá el mapeo y consultá la URL publicada y la interna. Un puerto ocupado im
 → Seguí la ruta antes de cambiar el enlace.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Elegí app: 8080/tcp publicado solo en 127.0.0.1:18080.
+
 1. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
 
@@ -593,12 +614,14 @@ config muestra la configuración resuelta; ps muestra estado; logs muestra salid
 → Usá una herramienta dentro de su alcance.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): El toolbox aparece solo mientras corre; el reinicio de app queda en el registro sin cambiar su ID.
+
 1. Leé el modelo resuelto
 Compose valida y muestra configuración sin arrancar contenedores. Se usa solo un secreto falso.
 
 docker compose config
 
-Observá: app, el volumen signal-data, el secreto demo_token y el puerto 127.0.0.1:18080. toolbox no aparece: su perfil tools está inactivo.
+Observá: app, el volumen signal-data, el secreto demo_token y el puerto 127.0.0.1:18080. toolbox y visor no aparecen: sus perfiles, tools y visor, están inactivos.
 
 2. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
@@ -614,7 +637,7 @@ docker compose run --rm --no-deps toolbox
 docker compose ps
 docker compose logs --tail 5 app
 
-Observá: App healthy y logs de pedidos HTTP.
+Observá: App healthy y logs de pedidos HTTP. Si el visor está abierto, ps también lo lista.
 
 4. Probá un reinicio local
 Reiniciá el servicio y esperá su salud antes de comprobar otra respuesta.
@@ -662,6 +685,8 @@ Editar la fuente de una variable no reescribe el entorno de un proceso activo. R
 → Conocé cuándo lee cada valor la aplicación.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): MESSAGE sigue en hello-compose y el secreto aparece montado, sin su contenido; el contenedor con -e MESSAGE pasa por el registro.
+
 1. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
 
@@ -727,6 +752,8 @@ Borrá el archivo de falla y esperá recuperación del health check. El estado d
 → El detector y el mecanismo de recuperación son distintos.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Los límites, y la salud que pasa a unhealthy con su racha de fallas mientras el proceso sigue corriendo; después, otra vez healthy.
+
 1. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
 
@@ -795,6 +822,8 @@ Una imagen en Docker de tu laptop no está automáticamente en el runtime del no
 → Distribuir es un paso explícito.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): practice aparece con el mismo ID que 1.0.0; al borrarlo se va solo el alias.
+
 1. Dale otro nombre a la imagen
 Creá un alias local. No publica en un registro.
 
@@ -863,6 +892,8 @@ Un cambio de emergencia con exec desaparece al reemplazar el contenedor. Reprodu
 → Un parche en vivo no es una versión durable.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Las últimas líneas de log de app y los exec que crean y quitan /tmp/not-ready.
+
 1. Arrancá el servicio de práctica
 Desde labs, después de la lección 00. Arranca solo el proyecto Compose del curso.
 
@@ -931,6 +962,8 @@ Un kubeconfig contiene información de conexión y autenticación; un contexto e
 → Revisá el destino antes de modificar.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Después del paso 5, los dos nodos aparecen como contenedores en el plano Docker y como Nodes en el plano Kubernetes.
+
 1. Verificá herramientas
 Instalá kind 0.33.0 y kubectl 1.37.x con las instrucciones oficiales de labs/README.md. Tienen que estar en PATH.
 
@@ -962,6 +995,14 @@ kubectl --kubeconfig kubeconfig --context kind-prumathe-dk get nodes
 kubectl --kubeconfig kubeconfig --context kind-prumathe-dk apply -f k8s/namespace.yaml
 
 Observá: Dos nodos Ready en v1.37.0 y namespace dk-lab.
+
+5. Conectá el visor al clúster
+El clúster vive en su propia red de Docker, kind, que no existía antes de esta lección. Un contenedor puede estar en varias redes (lección 06): conectá el visor a esta para que llegue al API server. Lee con las credenciales del archivo kubeconfig que acabás de crear, desde la carpeta labs que monta como solo lectura.
+
+docker compose up -d --wait visor
+docker network connect kind prumathe-dk-visor-1
+
+Observá: El plano Kubernetes del visor muestra dos nodos Ready y el namespace dk-lab. Si el visor ya estaba conectado, Docker lo dice y no cambia nada.
 
 CONTROL
 1. ¿Quién recibe pedidos de kubectl?
@@ -1000,6 +1041,8 @@ El kubelet puede reiniciar un contenedor según su política. Borrar este Pod su
 → Reiniciar un contenedor y reemplazar un Pod son cosas distintas.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): solo, sin dueño, con su UID, nodo e IP; al borrarlo no vuelve.
+
 1. Creá un Pod suelto
 Completá antes la lección 13. Enviá el manifiesto del Pod suelto.
 
@@ -1068,6 +1111,8 @@ Un scale imperativo cambia el estado deseado en vivo. Aplicar un manifiesto que 
 → El estado vivo y la intención versionada pueden separarse.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Deseado contra listo del Deployment (3 y 2 hasta converger) y la vuelta a 2 al aplicar el archivo de nuevo.
+
 1. Restaurá la base declarada
 Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
 
@@ -1137,6 +1182,8 @@ Escalar cambia la cantidad deseada. Los nodos necesitan recursos para esos Pods.
 → La cantidad sola no es una arquitectura de disponibilidad.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): La cadena Deployment, ReplicaSet, Pods; los Pods borrados vuelven con nombre y UID nuevos.
+
 1. Restaurá la base declarada
 Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
 
@@ -1206,6 +1253,8 @@ Nuestro Service es ClusterIP, accesible dentro del clúster. Para depurar localm
 → Un Service no publica automáticamente en internet.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): El puerto 80 hacia 8080 y, en el EndpointSlice, un endpoint listo por Pod.
+
 1. Restaurá la base declarada
 Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
 
@@ -1272,6 +1321,8 @@ Los volúmenes de ConfigMap y Secret pueden recibir actualizaciones eventuales, 
 → Entregar y consumir son pasos distintos.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): signal-settings con su valor, demo-token solo por nombre; un ReplicaSet nuevo al importar la variable y otro al quitarla.
+
 1. Restaurá la base declarada
 Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
 
@@ -1343,6 +1394,8 @@ Este volumen vive en el entorno local de kind. Borrar el clúster lo pierde. Bor
 → La persistencia tiene que nombrar su límite de falla.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): notebook Bound; writer se reemplaza y el claim es el mismo.
+
 1. Creá un claim y writer
 Completá antes la lección 13. El provisioner local asigna almacenamiento cuando se ubica el Pod.
 
@@ -1412,6 +1465,8 @@ Una startup probe demora readiness y liveness hasta tener éxito. Su umbral y pe
 → Usá señales distintas para decisiones de recuperación distintas.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): probe pasa a Ready false con el proceso vivo y su endpoint deja de estar listo.
+
 1. Prepará un Pod dedicado a sondas
 Completá antes la lección 13. Un Pod y Service con nombre aíslan el experimento de cambios de escala.
 
@@ -1483,6 +1538,8 @@ El Pod no-room pide 1000 CPU, deliberadamente más de lo que ofrece este clúste
 → Pending es un estado para explicar, no para reiniciar a ciegas.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): no-room queda en Pending con su FailedScheduling; elegí un nodo para ver el taint del nodo de control.
+
 1. Inspeccioná presupuestos
 La app pide 50m CPU y 32Mi por réplica, con límites mayores.
 
@@ -1551,6 +1608,8 @@ rollout undo restaura una revisión anterior de plantilla. No deshace migracione
 → Rollback restaura una plantilla, no todo el mundo.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): El ReplicaSet de 1.1.0 crece mientras el de 1.0.0 baja; el undo lo invierte con una revisión nueva.
+
 1. Restaurá la base declarada
 Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
 
@@ -1622,6 +1681,8 @@ auth can-i pregunta si una acción está autorizada. El administrador del lab su
 → Una comprobación prueba una acción para una identidad.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): observer, su RoleBinding y las reglas de pod-reader, sin delete ni secrets.
+
 1. Creá una identidad de lectura
 Aplicá ServiceAccount, Role y RoleBinding en dk-lab. No se otorga un rol de todo el clúster.
 
@@ -1687,6 +1748,8 @@ Antes de un despliegue real, decidí distribución de imágenes, TLS y acceso ex
 → Un clúster de estudio enseña mecanismos; no completa la preparación productiva.
 
 LABORATORIO
+Visor en vivo (http://127.0.0.1:18091): Pods nuevos y endpoints listos otra vez; en el plano Docker, los nodos siguen siendo los mismos contenedores.
+
 1. Restaurá la base declarada
 Completá antes la lección 13. Aplicá el manifiesto en dk-lab y esperá el rollout. Restaura imagen y cantidad de réplicas declaradas.
 

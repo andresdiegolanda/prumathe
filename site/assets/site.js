@@ -51,7 +51,7 @@
           'One small HTTP application followed from a process to a Kubernetes deployment: images, volumes, networks, Compose, Pods, Deployments, Services, storage, probes, resources, rollouts and RBAC, on a kind cluster.',
           'Una aplicación HTTP pequeña seguida desde su proceso hasta un despliegue en Kubernetes: imágenes, volúmenes, redes, Compose, Pods, Deployments, Services, almacenamiento, sondas, recursos, rollouts y RBAC, sobre un clúster kind.',
         ),
-        stats: [B('25 lessons', '25 lecciones'), B('100 lab steps', '100 pasos de lab'), B('Compose and kind', 'Compose y kind')],
+        stats: [B('25 lessons', '25 lecciones'), B('102 lab steps', '102 pasos de lab'), B('Compose and kind', 'Compose y kind')],
         needs: B('Docker with Linux containers; kind and kubectl for the second half.', 'Docker con contenedores Linux; kind y kubectl para la segunda mitad.'),
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],

@@ -18,6 +18,23 @@ services:
     profiles: [tools]
     entrypoint: [python, /app/probe.py]
     command: ["http://app:8080", "hello-compose"]
+  # Live viewer (lesson 01): http://127.0.0.1:18091. It only reads Docker and, from lesson 13, the
+  # course cluster. Start it by naming it, docker compose up -d --wait visor; stop it with
+  # docker compose stop visor. DOCKER_GID: the group of the socket, 0 in Docker Desktop.
+  visor:
+    image: prumathe-visor:1.4.0
+    build: ./visor
+    profiles: [visor]
+    group_add: ["${DOCKER_GID:-0}"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/course:ro
+    networks: [visor]
+    ports:
+      - "127.0.0.1:18091:18091"
+    init: true
+networks:
+  visor: {}
 volumes:
   signal-data:
 secrets:

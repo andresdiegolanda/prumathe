@@ -20,13 +20,34 @@ for(const [i,l] of course.lessons.entries()) {
   for(const f of l.frames)for(const k of ['title','text','rule'])pair(f[k],`${i} frame ${k}`);
   for(const q of l.quiz){pair(q.question,'question');pair(q.explanation,'explanation');assert.equal(q.options.length,3);q.options.forEach(x=>pair(x,'option'));assert.ok(q.correct>=0&&q.correct<3);}
   assert.ok(refs.sources[l.source]?.[1].startsWith('https://'));
+  if(i>0)pair(l.visor,`${i} visor note`);else assert.equal(l.visor,undefined,'lesson 00 has no viewer note: the viewer opens in lesson 01');
   for(const s of l.lab){steps++;for(const key of ['title','text','expected'])pair(s[key],`${i} lab ${key}`);assert.ok(s.command.trim());for(const line of s.command.split('\n'))if(line.startsWith('kubectl ')&&!line.includes('version --client')){assert.ok(line.includes('--kubeconfig kubeconfig'));assert.ok(line.includes('--context kind-prumathe-dk'));}assert.ok(!s.command.includes('prune'));assert.ok(!/'[^']*"[^']*'/.test(s.command),`${i} lab command nests double quotes inside single quotes (breaks in Windows PowerShell 5.1)`);}
   for(const theme of ['light','dark','reading','projector'])for(const lang of ['en','es'])for(let scene=0;scene<3;scene++)for(const state of [{},{toggle:true,value:3}]) {
     const r=visuals.render(l.visual,scene,state,lang,theme);assert.ok(r.svg.includes('<svg'));assert.ok(!/undefined|NaN/.test(r.svg));assert.ok(r.controls.length>0);assert.ok(Object.keys(r.details).length>0);renders++;
   }
   const html=fs.readFileSync(path.join(root,'lessons',l.slug+'.html'),'utf8');assert.ok(html.includes(`data-lesson="${i}"`));
 }
-assert.equal(steps,100);
+assert.equal(steps,102);
+// The live viewer: lesson 01 opens it, lesson 13 connects it to the cluster, Compose publishes it only on
+// 127.0.0.1 with the version of the course, it shares the pinned base image and it only issues GET requests.
+assert.equal(course.lessons[1].lab[0].command,'docker compose up -d --wait visor','lesson 01 opens the viewer');
+assert.ok(course.lessons[13].lab.some(s=>s.command.includes('docker network connect kind prumathe-dk-visor-1')),'lesson 13 connects the viewer to the cluster');
+const compose=fs.readFileSync(path.join(root,'labs/compose.yaml'),'utf8');
+const visorService=compose.split(/\n  visor:\n/)[1]?.split(/\n[a-z]/)[0]||'';
+for(const needle of ['profiles: [visor]','image: prumathe-visor:'+course.version,'build: ./visor','/var/run/docker.sock:/var/run/docker.sock','.:/course:ro','"127.0.0.1:18091:18091"','group_add:'])assert.ok(visorService.includes(needle),'compose visor service: '+needle);
+const fromOf=f=>fs.readFileSync(path.join(root,f),'utf8').match(/^FROM (\S+)/m)[1];
+assert.equal(fromOf('labs/visor/Dockerfile'),fromOf('labs/app/Dockerfile'),'the viewer image shares the pinned base');
+for(const f of ['visor.py','docker_watch.py','kube_watch.py','static/index.html','static/visor.css','static/visor.js','static/favicon.svg'])assert.ok(fs.existsSync(path.join(root,'labs/visor',f)),'viewer file '+f);
+for(const f of ['docker_watch.py','kube_watch.py']){const py=fs.readFileSync(path.join(root,'labs/visor',f),'utf8');assert.ok(py.includes(".request('GET'")&&!/\.request\('(?!GET')/.test(py),f+' issues only GET requests');}
+const visorJs=fs.readFileSync(path.join(root,'labs/visor/static/visor.js'),'utf8');
+new vm.Script(visorJs,{filename:'visor.js'});
+assert.ok(!visorJs.includes('style="'),'visor.js writes no inline styles: the CSP blocks them');
+// The lesson table of the viewer follows the curriculum, and every command it offers is a line of the
+// practice of the lesson it names.
+const visorTable=name=>JSON.parse(visorJs.match(new RegExp('const '+name+' = (\\{.*\\});'))[1]);
+const visorLessons=visorTable('LESSONS'),visorCmds=visorTable('CMDS');
+for(const [n,[en,es]] of Object.entries(visorLessons)){const l=course.lessons[Number(n)];assert.ok(l&&n===String(l.id).padStart(2,'0'),'viewer lesson '+n);assert.equal(en,l.title.en,'viewer lesson '+n+' title');assert.equal(es,l.title.es,'viewer lesson '+n+' title');}
+for(const [key,[n,cmd]] of Object.entries(visorCmds)){assert.ok(visorLessons[n],'viewer command '+key+' points to a lesson in its table');assert.ok(course.lessons[Number(n)].lab.some(s=>s.command.split('\n').includes(cmd)),'viewer command '+key+' is a line of lesson '+n);}
 // The "What Docker and Kubernetes are" page: every string bilingual, six milestones, three table headers, https sources.
 const about=c.window.DK_ABOUT;
 (function walkAbout(node,where){

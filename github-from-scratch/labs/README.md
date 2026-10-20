@@ -42,6 +42,24 @@ Every run creates a new `runs/faro-*` folder. The helper prints actual Git comma
 
 `node lab.mjs all` runs all 14 experiments. Remotes use local paths and only the file protocol is allowed. The helper ignores inherited Git variables, uses a fictional identity and its own configuration, and disables external hooks. It does not modify global configuration or existing repositories. Reset and deletion examples affect only newly created experiment repositories. No real credentials are included.
 
+## Visor en vivo / Live viewer
+
+```text
+node lab.mjs visor
+```
+
+Levanta una página en http://127.0.0.1:18092 que lee cada medio segundo los repositorios de `runs/` y dibuja la corrida más nueva: la historia de cada repositorio con sus ramas, HEAD, remotos y tags (las flechas apuntan al padre), los tres lugares de cada archivo (último commit, index y archivo de trabajo), los remotos que unen los repositorios de la corrida y un registro de lo que cambió. Al hacer clic en un commit, una rama, HEAD, un archivo o un repositorio, explica qué es, para qué sirve y qué muestra ahora. Dejalo abierto en una terminal y, en otra, corré el experimento con `--step` para que frene antes de cada operación:
+
+Starts a page at http://127.0.0.1:18092 that reads the repositories in `runs/` every half second and draws the newest run: the history of each repository with its branches, HEAD, remotes and tags (arrows point to the parent), the three places of each file (last commit, index and working file), the remotes that link the repositories of the run, and a feed of what changed. Clicking a commit, a branch, HEAD, a file or a repository explains what it is, what it is for and what it shows now. Leave it running in one terminal and, in another, run the experiment with `--step` so that it stops before each operation:
+
+```text
+node lab.mjs staging --step
+```
+
+Con `--step`, el asistente muestra la próxima operación y espera Enter; el visor la muestra también, para que predigas qué cambia antes de verlo. El asistente deja su avance en `progress.json`, dentro de la carpeta de la corrida. Sin `--step`, el experimento termina en menos de un segundo y el visor muestra el resultado. El visor solo lee: usa comandos de Git que consultan, sin tomar el lock del index, y no escribe en `runs/` ni en otro lado. Atiende solo en 127.0.0.1 y solo pedidos GET y HEAD. No ve GitHub: las actividades en línea no aparecen. Se cierra con Ctrl+C.
+
+With `--step`, the helper shows the next operation and waits for Enter; the viewer shows it too, so you predict what changes before you see it. The helper keeps its progress in `progress.json`, inside the run folder. Without `--step`, the experiment ends in less than a second and the viewer shows the result. The viewer only reads: it uses Git commands that query, without taking the index lock, and it writes nothing in `runs/` or anywhere else. It answers only on 127.0.0.1 and only GET and HEAD requests. It does not see GitHub: the online activities do not appear. Stop it with Ctrl+C.
+
 ## GitHub / GitHub
 
 Las lecciones 10, 11, 12, 15, 16 y 19 tienen actividades en tu propio repositorio `faro-practice`. Siguen ese orden y pueden hacerse por la interfaz web. Las lecciones 10 a 12 no requieren usar la terminal ni autenticar Git localmente. Cada una ofrece un caso de estudio sin cuenta, que debe quedar identificado como tal en el cuaderno. No es una ejecución de GitHub.

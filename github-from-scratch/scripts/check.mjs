@@ -21,11 +21,11 @@ let renderings=0,commands=0;
 for(const [i,l] of course.lessons.entries()){
   assert.equal(l.id,i);assert.ok(course.units[l.unit]);assert.ok(refs.sources[l.source]);
   for(const key of ['title','intro','experiment'])B(l[key],l.slug+' '+key);
-  assert.equal(l.frames.length,3);assert.equal(l.quiz.length,3);assert.equal(l.lab.length,4);
+  assert.equal(l.frames.length,3);assert.equal(l.quiz.length,3);assert.equal(l.lab.length,i===0?5:4);B(l.visor,l.slug+' visor note');
   for(const f of l.frames)for(const key of ['title','text','rule'])B(f[key],l.slug+' '+key);
   for(const q of l.quiz){B(q.question,l.slug);B(q.explanation,l.slug);assert.equal(q.options.length,3);q.options.forEach(o=>B(o,l.slug));assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<3);for(const lang of ['en','es'])assert.equal(new Set(q.options.map(o=>o[lang])).size,3);}
-  for(const step of l.lab){for(const key of ['title','text','expected'])B(step[key],l.slug);if(step.command){assert.match(step.command,/^node lab\.mjs [a-z]+$/);assert.ok(supported.has(step.command.split(' ').at(-1)),'Unknown experiment');commands++;}}
-  assert.equal(l.lab.filter(s=>s.command).length,l.mode==='local'?1:0);
+  for(const step of l.lab){for(const key of ['title','text','expected'])B(step[key],l.slug);if(step.command){assert.match(step.command,/^node lab\.mjs [a-z]+$/);assert.ok(supported.has(step.command.split(' ').at(-1))||step.command==='node lab.mjs visor','Unknown experiment');commands++;}}
+  assert.equal(l.lab.filter(s=>s.command).length,(l.mode==='local'?1:0)+(i===0?1:0));
   for(const lang of ['en','es'])for(const theme of visuals.themes)for(let scene=0;scene<3;scene++){
     const rendered=visuals.render(l.visual,scene,{},lang,theme);
     assert.ok(rendered.svg.includes('<svg')&&rendered.svg.includes('<title>'));
@@ -57,7 +57,21 @@ assert.equal(about.origin.timeline.length,6);assert.equal(about.misfits.headers.
 for(const [name,url] of about.sources.items)assert.ok(name&&/^https:\/\//.test(url),'about source '+name);
 const aboutPage=fs.readFileSync(path.join(root,'what-git-and-github-are.html'),'utf8');assert.ok(aboutPage.includes('data-page="about"')&&aboutPage.includes('assets/about.js'),'about page shell');
 assert.ok(visuals.render('git-and-github',0,{},'en','light').svg.includes('<svg'),'about model');
-assert.equal(commands,14);assert.equal(course.lessons.filter(l=>l.mode==='github').length,6);
+assert.equal(commands,15);assert.equal(course.lessons.filter(l=>l.mode==='github').length,6);
+// The live viewer: lesson 00 opens it, lab.mjs starts it, its files exist and travel in the kit.
+assert.equal(course.lessons[0].lab[0].command,'node lab.mjs visor','lesson 00 opens the viewer');
+assert.ok(/requested === 'visor'[\s\S]*?import\('\.\/visor\.mjs'\)/.test(runnerSource),'lab.mjs starts the viewer');
+assert.ok(runnerSource.includes("words.includes('--step')"),'lab.mjs has the --step mode');
+for(const f of ['labs/visor.mjs','labs/visor/index.html','labs/visor/visor.css','labs/visor/visor.js','labs/visor/favicon.svg'])assert.ok(fs.existsSync(path.join(root,f)),'viewer file '+f);
+// The lessons the viewer names: same titles as the curriculum, and every lesson it points to is in its table.
+const visorPage=fs.readFileSync(path.join(root,'labs/visor/visor.js'),'utf8');
+const visorTable=JSON.parse(visorPage.match(/const LESSONS = (\{.*?\});/)[1]);
+for(const [n,[en,es]] of Object.entries(visorTable)){const l=course.lessons[Number(n)];assert.ok(l&&l.title.en===en&&l.title.es===es,'visor.js LESSONS '+n+' disagrees with the curriculum');}
+for(const line of visorPage.split('\n').filter(x=>/\bwhere: /.test(x)))for(const [,n] of line.matchAll(/'(\d\d)'/g))assert.ok(visorTable[n],'visor.js points to lesson '+n+' without its title');
+assert.ok(!/style="/.test(visorPage),'visor.js writes inline styles, which its CSP blocks');
+const visorServer=fs.readFileSync(path.join(root,'labs/visor.mjs'),'utf8');
+assert.ok(visorServer.includes("'--no-optional-locks'")&&visorServer.includes("server.listen(PORT, '127.0.0.1'")&&visorServer.includes('18092'),'viewer reads without locks and listens only on 127.0.0.1:18092');
+assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).scripts['test:visor'],'node scripts/test-visor.mjs','package.json test:visor');
 for(const [i,u] of course.units.entries()){B(u,'unit');assert.ok(course.lessons.some(l=>l.unit===i));}
 for(const g of refs.glossary){assert.equal(g.length,5);assert.ok(course.lessons[g[4]]);for(let i=0;i<4;i++)assert.ok(g[i]);}
 for(const s of [...Object.values(refs.sources),...Object.values(refs.more).flat()])assert.ok(/^https:\/\/(git-scm.com|docs.github.com)\//.test(s[1]));
@@ -94,6 +108,7 @@ assert.ok(app.includes('refs.more[lesson.source]'));
 const zip=fs.readFileSync(path.join(root,'downloads/github-labs.zip'));
 assert.equal(zip.readUInt32LE(0),0x04034b50);assert.ok(!zip.includes(Buffer.from('labs/runs/')));
 assert.ok(zip.includes(Buffer.from('labs/lab.mjs'))&&zip.includes(Buffer.from('labs/CAPSTONE.md')));
+assert.ok(zip.includes(Buffer.from('labs/visor.mjs'))&&zip.includes(Buffer.from('labs/visor/visor.js')),'the kit carries the viewer');
 for(const l of course.lessons)assert.ok(fs.existsSync(path.join(root,'dist/lessons',l.slug+'.html')));
 assert.ok(fs.existsSync(path.join(root,'dist/what-git-and-github-are.html')),'about page in dist');
 // Prove the supplied narrow assertion fails for 09:00 and passes for 10:00, locally, outside the course folder.
@@ -109,4 +124,4 @@ assert.ok(forum && forum.repo && forum.category && forum.term === 'github-from-s
 if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
 assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
 assert.ok(fs.readFileSync(path.join(root, 'lessons', course.lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
-console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 80 activity steps, 37 glossary terms, ${renderings} model renderings, the What Git and GitHub are page, bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);
+console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 81 activity steps, a live viewer note per lesson, 37 glossary terms, ${renderings} model renderings, the What Git and GitHub are page, bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);
