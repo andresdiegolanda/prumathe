@@ -1,0 +1,181 @@
+{
+  "about": "Questions of the evaluation (lesson 18). A retrieved chunk is right when it comes from one of the expected sources and contains its text; an empty expected list means the runbooks do not cover the question. keywords: every group must appear in a good answer, and | separates alternatives.",
+  "questions": [
+    {
+      "id": "en-01",
+      "question": "What should I do when a delivery fails with CAU-4021?",
+      "expected": [
+        { "source": "en/errors-4xxx.md", "text": "The downstream queue is full" },
+        { "source": "es/errors-4xxx.md", "text": "La cola de destino está llena" }
+      ],
+      "keywords": ["wait", "backoff"]
+    },
+    {
+      "id": "en-02",
+      "question": "The target keeps answering 429 Too Many Requests. What should Cauce do?",
+      "expected": [
+        { "source": "en/errors-4xxx.md", "text": "The target answered HTTP 429" },
+        { "source": "es/errors-4xxx.md", "text": "El destino respondió HTTP 429" }
+      ],
+      "keywords": ["Retry-After"]
+    },
+    {
+      "id": "en-03",
+      "question": "Why are errors in the 1xxx family never retried?",
+      "expected": [
+        { "source": "en/errors-1xxx.md", "text": "Retrying sends the same wrong message again" },
+        { "source": "es/errors-1xxx.md", "text": "Reintentar manda otra vez el mismo mensaje equivocado" },
+        { "source": "en/retry-policy.md", "text": "Message content errors (1xxx) are never retried" },
+        { "source": "es/retry-policy.md", "text": "Los errores de contenido del mensaje (1xxx) nunca se reintentan" }
+      ],
+      "keywords": ["same|wrong|producer"]
+    },
+    {
+      "id": "en-04",
+      "question": "How long does a message stay in the dead letter queue?",
+      "expected": [
+        { "source": "en/dead-letter-queue.md", "text": "keeps messages for 14 days" },
+        { "source": "es/dead-letter-queue.md", "text": "14 días" }
+      ],
+      "keywords": ["14"]
+    },
+    {
+      "id": "en-05",
+      "question": "How many delivery attempts does Cauce make before it gives up?",
+      "expected": [
+        { "source": "en/retry-policy.md", "text": "five attempts in total" },
+        { "source": "es/retry-policy.md", "text": "cinco intentos en total" }
+      ],
+      "keywords": ["five|5"]
+    },
+    {
+      "id": "en-06",
+      "question": "A connector stopped because its credentials expired. How do I fix it?",
+      "expected": [
+        { "source": "en/errors-2xxx.md", "text": "The connector credentials expired" },
+        { "source": "es/errors-2xxx.md", "text": "Vencieron las credenciales del conector" }
+      ],
+      "keywords": ["renew", "restart"]
+    },
+    {
+      "id": "en-07",
+      "question": "Can the operations assistant close an incident?",
+      "expected": [
+        { "source": "en/on-call.md", "text": "It cannot close, reassign or escalate" },
+        { "source": "es/on-call.md", "text": "No puede cerrar, reasignar ni escalar" }
+      ],
+      "keywords": ["cannot|can't|can not|not allowed|no"]
+    },
+    {
+      "id": "en-08",
+      "question": "What is the uptime target of the reporting dashboard?",
+      "expected": [],
+      "keywords": []
+    },
+    {
+      "id": "es-01",
+      "question": "¿Qué hago si una entrega falla con CAU-4021?",
+      "expected": [
+        { "source": "es/errors-4xxx.md", "text": "La cola de destino está llena" },
+        { "source": "en/errors-4xxx.md", "text": "The downstream queue is full" }
+      ],
+      "keywords": ["esper", "exponencial"]
+    },
+    {
+      "id": "es-02",
+      "question": "¿Cada cuánto rota la guardia?",
+      "expected": [
+        { "source": "es/on-call.md", "text": "La guardia rota los lunes" },
+        { "source": "en/on-call.md", "text": "rotate every Monday" }
+      ],
+      "keywords": ["lunes"]
+    },
+    {
+      "id": "es-03",
+      "question": "El certificado del destino venció y falla la conexión TLS. ¿Reintento?",
+      "expected": [
+        { "source": "es/errors-4xxx.md", "text": "Falló el handshake TLS" },
+        { "source": "en/errors-4xxx.md", "text": "The TLS handshake with the target failed" }
+      ],
+      "keywords": ["renov"]
+    },
+    {
+      "id": "es-04",
+      "question": "¿Qué quiere decir que un incidente esté mitigado?",
+      "expected": [
+        { "source": "es/on-call.md", "text": "Mitigado quiere decir" },
+        { "source": "en/on-call.md", "text": "Mitigated means" }
+      ],
+      "keywords": ["impacto"]
+    },
+    {
+      "id": "es-05",
+      "question": "Un consumidor está muy atrasado y los mensajes llegan tarde. ¿Qué código es y qué hago?",
+      "expected": [
+        { "source": "es/errors-3xxx.md", "text": "Un consumidor está demasiado atrasado" },
+        { "source": "en/errors-3xxx.md", "text": "A consumer is too far behind" }
+      ],
+      "keywords": ["CAU-3021"]
+    },
+    {
+      "id": "es-06",
+      "question": "¿Cuánto espera el primer reintento?",
+      "expected": [
+        { "source": "es/retry-policy.md", "text": "El primer reintento espera 2 segundos" },
+        { "source": "en/retry-policy.md", "text": "The first retry waits 2 seconds" }
+      ],
+      "keywords": ["2"]
+    },
+    {
+      "id": "es-07",
+      "question": "¿Qué pasa si una partición de un canal se queda sin líder?",
+      "expected": [
+        { "source": "es/errors-3xxx.md", "text": "no tiene líder" },
+        { "source": "en/errors-3xxx.md", "text": "has no leader" }
+      ],
+      "keywords": ["plataforma"]
+    },
+    {
+      "id": "code-01",
+      "question": "CAU-2021",
+      "expected": [
+        { "source": "en/errors-2xxx.md", "text": "The connector lost its position file" },
+        { "source": "es/errors-2xxx.md", "text": "El conector perdió su archivo de posición" }
+      ],
+      "keywords": ["position|posición"]
+    },
+    {
+      "id": "code-02",
+      "question": "CAU-1022",
+      "expected": [
+        { "source": "en/errors-1xxx.md", "text": "The event type is not registered" },
+        { "source": "es/errors-1xxx.md", "text": "El tipo de evento no está registrado" }
+      ],
+      "keywords": ["regist"]
+    },
+    {
+      "id": "code-03",
+      "question": "What do I do with CAU-3012?",
+      "expected": [
+        { "source": "en/errors-3xxx.md", "text": "A channel partition has no leader" },
+        { "source": "es/errors-3xxx.md", "text": "Una partición del canal no tiene líder" }
+      ],
+      "keywords": ["platform|plataforma"]
+    },
+    {
+      "id": "code-04",
+      "question": "¿Qué hago con CAU-4022?",
+      "expected": [
+        { "source": "es/errors-4xxx.md", "text": "El dueño de la cola de destino la pausó" },
+        { "source": "en/errors-4xxx.md", "text": "The downstream queue was paused by its owner" }
+      ],
+      "keywords": ["reanud|resume"]
+    },
+    {
+      "id": "es-08",
+      "question": "¿Cuál es el presupuesto anual del equipo de plataforma?",
+      "expected": [],
+      "keywords": []
+    }
+  ]
+}

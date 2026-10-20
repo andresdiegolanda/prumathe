@@ -1,0 +1,46 @@
+[
+  {
+    "id": "INC-2041",
+    "title": "Billing deliveries failing",
+    "code": "CAU-4021",
+    "severity": "SEV2",
+    "status": "mitigated",
+    "owner": "billing-on-call",
+    "opened": "2026-10-19T13:40:00Z",
+    "updated": "2026-10-19T14:05:00Z",
+    "note": "The billing consumer was scaled out; its queue is draining."
+  },
+  {
+    "id": "INC-2042",
+    "title": "Order events rejected by schema",
+    "code": "CAU-1011",
+    "severity": "SEV1",
+    "status": "open",
+    "owner": "orders-on-call",
+    "opened": "2026-10-20T08:12:00Z",
+    "updated": "2026-10-20T08:20:00Z",
+    "note": "A producer release changed the type of the amount field."
+  },
+  {
+    "id": "INC-2043",
+    "title": "Stock connector stopped",
+    "code": "CAU-2001",
+    "severity": "SEV2",
+    "status": "resolved",
+    "owner": "stock-on-call",
+    "opened": "2026-10-18T22:01:00Z",
+    "updated": "2026-10-18T23:30:00Z",
+    "note": "Credentials renewed; the connector resumed from its position."
+  },
+  {
+    "id": "INC-2044",
+    "title": "Notifications consumer behind",
+    "code": "CAU-3021",
+    "severity": "SEV3",
+    "status": "open",
+    "owner": "notifications-on-call",
+    "opened": "2026-10-20T09:30:00Z",
+    "updated": "2026-10-20T09:30:00Z",
+    "note": "Lag above threshold since the morning batch."
+  }
+]

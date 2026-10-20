@@ -109,3 +109,10 @@ Control: revisión de lectura; nada se presenta como ejecutado sin aserción.
 
 Origen: criterio del curso de GitHub; la medición de tiempos por lección sigue como card del [`tablero.md`](../../tablero.md).
 Control: revisión de lectura.
+
+### Un modelo chico se muestra como es
+
+Sus respuestas repiten reglas del prompt, mezclan idiomas y a veces afirman acciones que no ocurrieron. El texto lo presenta como dato medido y enseña a juzgar con el registro de llamadas y los resultados, no con la respuesta. Una mitigación que falla en la medición se cuenta como falló.
+
+Origen: LLMs, RAG y MCP 1.0.0, lecciones 18 (el juez y los controles), 19 (la regla que no alcanzó), 24 (un cierre afirmado que no ocurrió) y 25.
+Control: revisión de lectura contra los logs de medición.

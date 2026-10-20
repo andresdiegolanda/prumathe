@@ -39,3 +39,10 @@ Control: abrir todas las URL de `reference.js` en cada revisión.
 
 Origen: en Kafka, compilar para Java 17 dentro de una imagen de Java 21 y los brokers como root, sin una línea que dijera por qué (§5.3 y §4.9).
 Control: revisión de lectura de Dockerfile, compose y build.
+
+### Si el framework va una revisión atrás del protocolo, se practica con el framework y se mira la vigente en el cable
+
+Cuando la especificación vigente todavía no está en el framework del público, las prácticas usan la revisión que el framework implementa, lo dicen, y una lección compara las dos en el cable con un servidor que hable la vigente.
+
+Origen: LLMs, RAG y MCP 1.0.0: MCP 2026-07-28 vigente, Spring AI 2.0.1 en 2025-11-25; la lección 21 compara las dos con un servidor del SDK de TypeScript v2.
+Control: la lección de revisiones y la revisión de versiones de cada entrega.

@@ -5,6 +5,7 @@
   const B = (en, es) => ({ en, es });
   const base = document.body.dataset.coursesBase ?? '../';
   const repo = 'https://github.com/andresdiegolanda/prumathe';
+  const contact = 'prumathe01@gmail.com';
 
   const site = {
     eyebrow: B('Courses for learning complex technologies', 'Cursos para aprender tecnologías complejas'),
@@ -71,6 +72,21 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-git-and-github-are.html', B('What they are', 'Qué son'), false],
+        ],
+      },
+      {
+        slug: 'llm-rag-mcp-from-scratch',
+        tech: 'LLM + RAG + MCP',
+        title: B('LLMs, RAG & MCP from scratch', 'LLMs, RAG y MCP desde cero'),
+        text: B(
+          'What a language model does, token by token, and then retrieval with sources, evaluation, prompt injection and MCP tools with consent, on a small open model that runs on your CPU.',
+          'Qué hace un modelo de lenguaje, token a token, y después recuperación con fuentes, evaluación, prompt injection y tools MCP con consentimiento, sobre un modelo abierto chico que corre en tu CPU.',
+        ),
+        stats: [B('26 lessons', '26 lecciones'), B('129 lab steps', '129 pasos de lab'), B('Java and Spring AI', 'Java y Spring AI')],
+        needs: B('Docker with Compose v2, about 6 GB of free memory and 9 GB of disk; no API key.', 'Docker con Compose v2, unos 6 GB de memoria libre y 9 GB de disco; sin clave de API.'),
+        links: [
+          ['index.html', B('Open the course', 'Abrir el curso'), true],
+          ['what-llms-rag-and-mcp-are.html', B('What they are', 'Qué son'), false],
         ],
       },
     ],
@@ -142,6 +158,7 @@
     ),
     footer: B('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.'),
     repoLabel: B('Source and courses on GitHub', 'Código y cursos en GitHub'),
+    contactLabel: B('Contact', 'Contacto'),
     license: B('MIT license', 'Licencia MIT'),
     languageLabel: B('Language', 'Idioma'),
     themeLabel: B('Appearance', 'Apariencia'),
@@ -186,7 +203,7 @@
       .join('')}</div></section>`;
     const lesson = `<section class="lesson"><div class="section-head"><span class="eyebrow">${e(L(site.lessonTitle))}</span></div><ol class="steps">${site.lesson.map((s) => `<li>${e(L(s))}</li>`).join('')}</ol><p class="note">${e(L(site.lessonNote))}</p></section>`;
     const name = `<section class="name"><div class="section-head"><span class="eyebrow">${e(L(site.nameTitle))}</span></div><div class="name-body">${mark}<p>${e(L(site.nameText))}</p></div></section>`;
-    const footer = `<footer class="bottom"><span>${e(L(site.footer))}</span><span><a href="${repo}" target="_blank" rel="noopener noreferrer">${e(L(site.repoLabel))} ↗</a> · ${e(L(site.license))}</span></footer>`;
+    const footer = `<footer class="bottom"><span>${e(L(site.footer))}</span><span><a href="mailto:${contact}">${e(L(site.contactLabel))}: ${contact}</a> · <a href="${repo}" target="_blank" rel="noopener noreferrer">${e(L(site.repoLabel))} ↗</a> · ${e(L(site.license))}</span></footer>`;
     document.getElementById('app').innerHTML = `<a class="skip-link" href="#courses">${e(L(site.skip))}</a><div class="page">${header}<main id="main">${hero}${courses}${method}${lesson}${name}</main>${footer}</div>`;
     for (const b of document.querySelectorAll('[data-lang]')) {
       b.addEventListener('click', () => {

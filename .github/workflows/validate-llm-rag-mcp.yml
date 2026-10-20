@@ -1,0 +1,32 @@
+name: Validar llm-rag-mcp-from-scratch
+on:
+  push:
+    paths:
+      - 'llm-rag-mcp-from-scratch/**'
+      - '.github/workflows/validate-llm-rag-mcp.yml'
+  pull_request:
+    paths:
+      - 'llm-rag-mcp-from-scratch/**'
+      - '.github/workflows/validate-llm-rag-mcp.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: llm-rag-mcp-from-scratch
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm run build
+      - run: npm run check
+      - run: docker compose -f labs/compose.yaml config --quiet
+      - uses: actions/upload-artifact@v7
+        with:
+          name: llm-rag-mcp-from-scratch-dist
+          path: llm-rag-mcp-from-scratch/dist

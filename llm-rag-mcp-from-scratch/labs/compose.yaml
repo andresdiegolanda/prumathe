@@ -1,0 +1,163 @@
+name: prumathe-llm
+
+# The three model servers share this block: the same llama.cpp build, the models volume read-only,
+# a user without privileges and a health check that answers once the model is loaded in memory.
+# LLM_THREADS (optional, in .env) sets the CPU threads of each server; more threads than free
+# cores make it slower, not faster.
+x-llama: &llama
+  image: ghcr.io/ggml-org/llama.cpp:server-b11749@sha256:9fbaa06d7f4449e2ae0d02b40e0431f7c212dcf231c9e3a7777a6afc2cc8f312
+  user: "10001:10001"
+  environment:
+    LLAMA_ARG_THREADS: ${LLM_THREADS:-4}
+  volumes:
+    - models:/models:ro
+  depends_on:
+    models:
+      condition: service_completed_successfully
+  healthcheck:
+    test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+    interval: 10s
+    timeout: 5s
+    retries: 3
+    start_period: 300s
+    start_interval: 2s
+
+services:
+  # Downloads the three models (about 3.5 GB) into the models volume and checks their SHA256.
+  # It runs before any model server; once verified, a model is not downloaded again.
+  models:
+    image: ghcr.io/ggml-org/llama.cpp:server-b11749@sha256:9fbaa06d7f4449e2ae0d02b40e0431f7c212dcf231c9e3a7777a6afc2cc8f312
+    entrypoint: ["sh", "/course/models/fetch.sh"]
+    volumes:
+      - models:/models
+      - ./models:/course/models:ro
+
+  # The language model: Granite 4.2 3B, 4-bit, 8192 tokens of context. Reasoning starts off; a
+  # request turns it on with chat_template_kwargs (lesson 07).
+  chat:
+    <<: *llama
+    command: ["-m", "/models/granite-4.2-3b-Q4_K_M.gguf", "--alias", "granite-4.2-3b", "-c", "8192",
+              "--jinja", "--reasoning", "off", "--metrics", "--no-webui"]
+
+  # The embedding model: Qwen3-Embedding 0.6B, one vector of 1024 numbers per text. A text must
+  # fit in one batch (-ub), here up to 2048 tokens.
+  embed:
+    <<: *llama
+    command: ["-m", "/models/Qwen3-Embedding-0.6B-Q8_0.gguf", "--alias", "qwen3-embedding-0.6b", "--embedding",
+              "--pooling", "last", "-c", "8192", "-b", "2048", "-ub", "2048", "--no-webui"]
+
+  # The reranker: Qwen3-Reranker 0.6B, a score for each question and passage pair (lesson 17).
+  rerank:
+    <<: *llama
+    command: ["-m", "/models/qwen3-reranker-0.6b-q8_0.gguf", "--alias", "qwen3-reranker-0.6b", "--rerank",
+              "-c", "8192", "-b", "2048", "-ub", "2048", "--no-webui"]
+
+  # PostgreSQL with pgvector: the vector store of the RAG lessons. Local course credentials.
+  db:
+    image: pgvector/pgvector:0.8.7-pg18@sha256:2358fcba361ed2233a5ed81b5fe4ca779ccb304120ce531a3bf51c0ed7e2bc11
+    environment:
+      POSTGRES_DB: cauce
+      POSTGRES_USER: cauce
+      POSTGRES_PASSWORD: cauce
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "cauce", "-d", "cauce"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+      start_interval: 1s
+
+  # Java client without a framework (lessons 00 to 11, 21 and 24):
+  # docker compose run --rm lab <command>. The LLM_ variables come from the optional .env file and
+  # are used only by --remote.
+  lab:
+    image: prumathe-llm-lab:1.0.0
+    build: ./lab
+    profiles: [tools]
+    environment:
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+    volumes:
+      - ./corpus:/course/corpus:ro
+      - lab-state:/state
+
+  # Spring Boot with Spring AI (lessons 12 to 19, 23 to 25): docker compose run --rm app <command>.
+  app:
+    image: prumathe-llm-app:1.0.0
+    build: ./app
+    profiles: [tools]
+    volumes:
+      - ./corpus:/course/corpus:ro
+      - ./eval:/course/eval:ro
+      - cauce-state:/state
+
+  # The MCP server of the course, from the same image with the mcp profile: http://mcp:8081/mcp.
+  # It shares the state volume with the app: what one closes, the other sees closed.
+  mcp:
+    image: prumathe-llm-app:1.0.0
+    build: ./app
+    command: ["--spring.profiles.active=mcp"]
+    volumes:
+      - ./corpus:/course/corpus:ro
+      - cauce-state:/state
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8081"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+      start_interval: 1s
+
+  # The same server over stdio (lesson 22): docker compose run --rm mcp-stdio. Its stdin gets the
+  # JSON-RPC lines of mcp/stdio-session.jsonl, as a client would write them, and it answers one line
+  # per message on stdout. The input stays open 10 seconds after the last line, so the server answers
+  # before it sees the end of the input and exits.
+  mcp-stdio:
+    image: prumathe-llm-app:1.0.0
+    build: ./app
+    profiles: [tools]
+    entrypoint: ["bash", "-c", "(cat /course/mcp/stdio-session.jsonl; sleep 10) | java -XX:+UseSerialGC -Xmx512m -jar /opt/app/llm-app.jar --spring.profiles.active=mcp,stdio"]
+    volumes:
+      - ./corpus:/course/corpus:ro
+      - ./mcp:/course/mcp:ro
+      - cauce-state:/state
+
+  # The same tools with the official TypeScript SDK, revision 2026-07-28: http://mcp-modern:8080/mcp.
+  mcp-modern:
+    image: prumathe-llm-mcp-modern:1.0.0
+    build: ./mcp-modern
+    volumes:
+      - ./corpus:/course/corpus:ro
+    healthcheck: &node-health
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/mcp').then(() => process.exit(0), () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
+
+  # A server with a poisoned tool description (lesson 24). It starts only when named.
+  mcp-poisoned:
+    image: prumathe-llm-mcp-modern:1.0.0
+    build: ./mcp-modern
+    profiles: [poisoned]
+    environment:
+      VARIANT: poisoned
+    volumes:
+      - ./corpus:/course/corpus:ro
+    healthcheck: *node-health
+
+  # MCP Inspector, command-line mode: docker compose run --rm inspector <url> --transport http --method ...
+  inspector:
+    image: ghcr.io/modelcontextprotocol/inspector:2.11.0@sha256:2863cc93d245b3ecb177fda831f3cfc28e7d3e0b3158e0f7332edd1744d224b0
+    profiles: [tools]
+    entrypoint: ["mcp-inspector", "--cli"]
+
+volumes:
+  models:
+  db-data:
+  lab-state:
+  cauce-state:

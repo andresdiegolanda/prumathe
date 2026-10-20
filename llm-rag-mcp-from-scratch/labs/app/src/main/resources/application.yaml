@@ -1,0 +1,87 @@
+# The commands run as a plain process (no web server) and create each bean on first use, so a
+# command that does not touch the database does not need it running. The mcp profile, at the end,
+# turns the same jar into the MCP server of the course.
+spring:
+  main:
+    banner-mode: off
+    lazy-initialization: true
+  ai:
+    openai:
+      # The course server speaks the same chat API as the hosted providers; it needs no key.
+      base-url: ${CHAT_URL:http://chat:8080/v1}
+      api-key: ${LLM_API_KEY:not-needed}
+      chat:
+        options:
+          model: ${CHAT_MODEL:granite-4.2-3b}
+          temperature: 0.0
+          seed: 42
+          max-tokens: 600
+          # A llama.cpp extension: do not reuse an earlier prompt, so a command repeats its answer.
+          extra-body:
+            cache_prompt: false
+      embedding:
+        base-url: ${EMBED_URL:http://embed:8080/v1}
+        options:
+          model: qwen3-embedding-0.6b
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        dimensions: 1024
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+    mcp:
+      server:
+        enabled: false
+      client:
+        enabled: false
+  datasource:
+    url: jdbc:postgresql://db:5432/cauce
+    username: cauce
+    password: cauce
+logging:
+  level:
+    root: WARN
+    org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR
+    org.springframework.ai.mcp: ERROR
+    io.modelcontextprotocol: ERROR
+course:
+  corpus: /course/corpus
+  eval: /course/eval
+  state: /state
+  rerank-url: ${RERANK_URL:http://rerank:8080}
+---
+spring:
+  config:
+    activate:
+      on-profile: mcp
+  main:
+    lazy-initialization: false
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: cauce-incidents
+        version: 1.0.0
+        protocol: STREAMABLE
+        instructions: Read-only access to the incidents and runbooks of the Cauce integration platform, plus one tool that closes an incident.
+        annotation-scanner:
+          enabled: true
+server:
+  port: 8081
+logging:
+  level:
+    org.springframework.ai.mcp: WARN
+---
+# The same server over stdio (lesson 22): JSON-RPC messages, one per line, on stdin and stdout.
+# Nothing else may be written to stdout, so the console log is off.
+spring:
+  config:
+    activate:
+      on-profile: stdio
+  ai:
+    mcp:
+      server:
+        stdio: true
+logging:
+  threshold:
+    console: "OFF"

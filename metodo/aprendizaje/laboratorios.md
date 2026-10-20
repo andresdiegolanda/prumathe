@@ -119,3 +119,52 @@ Una vista cuenta lo que realmente mide. Donde la compactación o las transaccion
 
 Origen: visor de Kafka 1.5.0, corregido durante la validación con temas compactados y transaccionales.
 Control: validar cada vista con los casos que rompen la intuición (borrados, huecos, sistema caído).
+
+### Lo generativo se escribe después de medirlo
+
+El texto de una lección con un modelo de lenguaje cita la salida medida en el kit, con sus defectos, y el control de la práctica mira su estructura (una cita, una tool, un encabezado). Lo que se supuso antes de medir se reescribe con lo medido.
+
+Origen: LLMs, RAG y MCP 1.0.0: la lección 19 suponía que una nota plantada haría llamar a `close_incident`; medido, el modelo solo repitió la orden. La llamada apareció en la lección 24, con la orden en el resultado de una tool ([`docs/VALIDATION.md`](../../llm-rag-mcp-from-scratch/docs/VALIDATION.md)).
+Control: cada número o salida del texto tiene su sección en un log de medición; la suite controla la estructura.
+
+### Un agente con tools lleva un presupuesto de llamadas
+
+Un host que ofrece tools a un modelo corta la corrida después de un número de llamadas y lo dice. Sin eso, un modelo al que le falta la tool que necesita repite las otras hasta llenar el contexto.
+
+Origen: LLMs, RAG y MCP 1.0.0, lección 23: con `--allow` y sin `close_incident`, el modelo alternó dos tools durante más de cinco minutos hasta que se cortó a mano; `Guard.java` corta ahora en 6 llamadas (`--max-steps`).
+Control: el paso de la lección 23 con `--allow`, en la suite.
+
+### El kit cumple lo obligatorio de la especificación que enseña
+
+Antes de enseñar una regla de seguridad de un protocolo, se prueba que los servidores del kit la cumplen; si el framework no la trae, el kit la agrega y la lección lo dice.
+
+Origen: LLMs, RAG y MCP 1.0.0: con la configuración del kit, el servidor de Spring AI 2.0.1 respondía 200 a un `Origin` ajeno, que la especificación de MCP manda rechazar con 403; se agregó `OriginFilter.java` y la lección 24 lo muestra con `mcp-wire --origin`.
+Control: el paso de la lección 24 en la suite.
+
+### Lo que publica un framework se lee en el cable
+
+Una anotación no dice todo lo que el framework genera: se lista lo publicado (`tools/list`, `prompts/get`) antes de escribir la lección.
+
+Origen: LLMs, RAG y MCP 1.0.0: un `@McpPrompt` que devolvía un `String` salía como mensaje de rol `assistant`, no `user`; ahora devuelve un `GetPromptResult` con rol `user` y la lección 22 lo explica.
+Control: el paso de `prompts/get` de la lección 22 comprueba el rol.
+
+### En PowerShell 5.1, la salida redirigida se decodifica con la página de códigos de la consola
+
+Los argumentos con acentos llegan bien a los contenedores, pero la salida que pasa por un pipe o una variable sale rota si la consola no está en UTF-8. La guía del kit da la línea que lo arregla, y los scripts de medición la ponen al principio; además, un `.ps1` sin BOM se lee en ANSI, así que sus acentos van con códigos de carácter.
+
+Origen: medición de LLMs, RAG y MCP 1.0.0 en la laptop, con `lab tokens "¿Qué pasa?"` bajo la página 850 y bajo UTF-8.
+Control: [`labs/README.md`](../../llm-rag-mcp-from-scratch/labs/README.md) del curso.
+
+### Lo generado se mide con un pedido por vez
+
+Los textos que citan una salida del modelo salen de una corrida secuencial de la suite, con los hilos que dice el documento de validación. Temperatura 0 y semilla fija no alcanzan: dos pedidos al mismo tiempo comparten lote en el servidor y cambian la respuesta de los dos.
+
+Origen: LLMs, RAG y MCP 1.0.0: dos textos esperados (pasos 18.5 y 19.2) describían respuestas de una corrida de medición fuera de la suite, que no garantizaba un pedido por vez; las dos corridas secuenciales de la suite dieron otras, idénticas entre sí, y un servidor de prueba confirmó el efecto del lote ([`docs/VALIDATION.md`](../../llm-rag-mcp-from-scratch/docs/VALIDATION.md)).
+Control: la suite corre un paso por vez; antes de escribir una salida generada, se comparan dos corridas.
+
+### Un número que informa el framework se cruza con el servidor
+
+Un contador que entrega una biblioteca puede sumar varios pedidos; antes de explicarlo en una lección, se compara con el registro del servidor.
+
+Origen: LLMs, RAG y MCP 1.0.0: los 974 y 1399 tokens de prompt que informa Spring AI en el ciclo de tools eran la suma de dos pedidos (443 y 531, 652 y 747), y las lecciones 12 y 23 los presentaban como uno ([revisión](../../reviews/2026-10-20-llm-rag-mcp-from-scratch-v1.0.0.md), 3.3).
+Control: el registro del servidor de chat por pedido, en la medición que cita VALIDATION.
