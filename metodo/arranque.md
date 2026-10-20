@@ -9,6 +9,7 @@ Qué leer al empezar y cómo se trabaja en este repositorio. Las reglas están e
 3. Las entradas recientes de [`CHANGELOG.md`](../CHANGELOG.md).
 4. Del curso en el que se trabaja: su `README.md`, `docs/TEACHING.md` (cómo se enseña y cómo se edita), `docs/VALIDATION.md` (qué se ejecutó y qué no) y `labs/README.md`.
 5. Si hay una revisión por aplicar, la de [`reviews/`](../reviews/).
+6. Antes de proponer un curso nuevo o una función nueva de un curso, [`aprendizaje/`](aprendizaje/README.md): lo que ya se aprendió haciendo cursos.
 
 ## Convenciones de trabajo
 
@@ -19,6 +20,7 @@ Qué leer al empezar y cómo se trabaja en este repositorio. Las reglas están e
 - Commits: antes, `git fetch` y `git pull --ff-only`; si el remoto divergió, se para. `git add` con rutas explícitas, nunca `git add -A` ni `git commit -a`. Mensaje en español y sin tildes, como el historial, escrito en un archivo de `tmp/` y pasado con `git commit -F`. Sin líneas de atribución.
 - Nunca entran al repositorio: `tmp/` (salvo `tmp/README.md`), `.qa/`, `labs/runs/`, `labs/kubeconfig`, `dist/`, `release/`, `site/dist/` y `.wrangler/`.
 - No se borra nada: lo que sobra va a `tmp/_obsoleto/`.
+- Cuando un trabajo deja algo sobre cómo hacer cursos que habría convenido saber antes, se agrega en [`aprendizaje/`](aprendizaje/README.md) en la misma sesión, con el formato de su README.
 
 ## La máquina
 
