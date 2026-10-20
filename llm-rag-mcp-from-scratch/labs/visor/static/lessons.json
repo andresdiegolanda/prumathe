@@ -1,0 +1,1431 @@
+{
+ "version": "1.0.0",
+ "lessons": [
+  {
+   "id": 0,
+   "title": {
+    "en": "Before you start",
+    "es": "Antes de empezar"
+   }
+  },
+  {
+   "id": 1,
+   "title": {
+    "en": "One token at a time",
+    "es": "De a un token"
+   },
+   "visor": {
+    "en": "Each next appears with its five bars; each generate, with its steps in order.",
+    "es": "Cada next aparece con sus cinco barras; cada generate, con sus pasos en orden."
+   }
+  },
+  {
+   "id": 2,
+   "title": {
+    "en": "Tokens, not words",
+    "es": "Tokens, no palabras"
+   },
+   "visor": {
+    "en": "Each tokens call shows its pieces as chips and the count beside them.",
+    "es": "Cada tokens muestra sus pedazos como fichas y la cuenta al lado."
+   }
+  },
+  {
+   "id": 3,
+   "title": {
+    "en": "Sampling",
+    "es": "Muestreo"
+   },
+   "visor": {
+    "en": "Each sample shows its draws; with a seed, the lines repeat.",
+    "es": "Cada sample muestra sus sorteos; con semilla, las líneas se repiten."
+   }
+  },
+  {
+   "id": 4,
+   "title": {
+    "en": "The model remembers nothing",
+    "es": "El modelo no recuerda nada"
+   },
+   "visor": {
+    "en": "Each chat shows how many messages it sent and how full the context was; the rejection appears in red.",
+    "es": "Cada chat muestra cuántos mensajes mandó y qué tan lleno estaba el contexto; el rechazo aparece en rojo."
+   }
+  },
+  {
+   "id": 5,
+   "title": {
+    "en": "Meaning as a vector",
+    "es": "El significado como vector"
+   },
+   "visor": {
+    "en": "Each similar shows its matrix, with the strongest pairs highlighted.",
+    "es": "Cada similar muestra su matriz, con los pares más fuertes resaltados."
+   }
+  },
+  {
+   "id": 6,
+   "title": {
+    "en": "Attention",
+    "es": "Atención"
+   },
+   "visor": {
+    "en": "Put two next events side by side to compare their bars.",
+    "es": "Poné dos eventos next uno al lado del otro para comparar sus barras."
+   }
+  },
+  {
+   "id": 7,
+   "title": {
+    "en": "From base model to assistant",
+    "es": "De modelo base a asistente"
+   },
+   "visor": {
+    "en": "Each template appears with its special tokens highlighted.",
+    "es": "Cada template aparece con sus tokens especiales resaltados."
+   }
+  },
+  {
+   "id": 8,
+   "title": {
+    "en": "Size, quantization and hardware",
+    "es": "Tamaño, cuantización y hardware"
+   },
+   "visor": {
+    "en": "Each chat with timings shows the two speeds as bars.",
+    "es": "Cada chat con timings muestra las dos velocidades como barras."
+   }
+  },
+  {
+   "id": 9,
+   "title": {
+    "en": "The chat API on the wire",
+    "es": "La API de chat en el cable"
+   },
+   "visor": {
+    "en": "Each chat with --raw shows its request and response; each --stream, its events in order.",
+    "es": "Cada chat con --raw muestra su pedido y su respuesta; cada --stream, sus eventos en orden."
+   }
+  },
+  {
+   "id": 10,
+   "title": {
+    "en": "Structured output",
+    "es": "Salida estructurada"
+   },
+   "visor": {
+    "en": "Each extract shows the JSON and the verdict of the validation.",
+    "es": "Cada extract muestra el JSON y el veredicto de la validación."
+   }
+  },
+  {
+   "id": 11,
+   "title": {
+    "en": "Tool calling",
+    "es": "Tool calling"
+   },
+   "visor": {
+    "en": "The rounds appear in order: request, call, result and answer.",
+    "es": "Las vueltas aparecen en orden: pedido, llamada, resultado y respuesta."
+   }
+  },
+  {
+   "id": 12,
+   "title": {
+    "en": "Spring AI",
+    "es": "Spring AI"
+   },
+   "visor": {
+    "en": "Calls from the app appear like those of the lab, with the request Spring AI built.",
+    "es": "Las llamadas de la app aparecen como las del laboratorio, con el pedido que armó Spring AI."
+   }
+  },
+  {
+   "id": 13,
+   "title": {
+    "en": "Why RAG",
+    "es": "Por qué RAG"
+   },
+   "visor": {
+    "en": "Each ask shows the prompt size, so you can compare without and with the document.",
+    "es": "Cada ask muestra el tamaño del prompt, para comparar sin y con el documento."
+   }
+  },
+  {
+   "id": 14,
+   "title": {
+    "en": "Chunk and index",
+    "es": "Partir e indexar"
+   },
+   "visor": {
+    "en": "Each index shows the chunks per file and the example chunk.",
+    "es": "Cada index muestra los chunks por archivo y el chunk de ejemplo."
+   }
+  },
+  {
+   "id": 15,
+   "title": {
+    "en": "Search",
+    "es": "Buscar"
+   },
+   "visor": {
+    "en": "Each search shows its query, its mode and the chunks with their scores.",
+    "es": "Cada search muestra su consulta, su modo y los chunks con sus puntajes."
+   }
+  },
+  {
+   "id": 16,
+   "title": {
+    "en": "Answer with sources",
+    "es": "Responder con fuentes"
+   },
+   "visor": {
+    "en": "Each ask shows the retrieved chunks, the final prompt and the citations of the answer.",
+    "es": "Cada ask muestra los chunks recuperados, el prompt final y las citas de la respuesta."
+   }
+  },
+  {
+   "id": 17,
+   "title": {
+    "en": "Rerank and filter",
+    "es": "Reordenar y filtrar"
+   },
+   "visor": {
+    "en": "Each reranked search shows the order before and after.",
+    "es": "Cada búsqueda reordenada muestra el orden antes y después."
+   }
+  },
+  {
+   "id": 18,
+   "title": {
+    "en": "Evaluate",
+    "es": "Evaluar"
+   },
+   "visor": {
+    "en": "Each evaluated question appears with its retrieval and its verdicts.",
+    "es": "Cada pregunta evaluada aparece con su recuperación y sus veredictos."
+   }
+  },
+  {
+   "id": 19,
+   "title": {
+    "en": "Prompt injection",
+    "es": "Prompt injection"
+   },
+   "visor": {
+    "en": "The retrieval shows each chunk with its trust label.",
+    "es": "La recuperación muestra cada chunk con su etiqueta de confianza."
+   }
+  },
+  {
+   "id": 20,
+   "title": {
+    "en": "What MCP standardizes",
+    "es": "Qué estandariza MCP"
+   },
+   "visor": {
+    "en": "Each MCP request and response appears with its method.",
+    "es": "Cada pedido y respuesta MCP aparece con su método."
+   }
+  },
+  {
+   "id": 21,
+   "title": {
+    "en": "Two revisions on the wire",
+    "es": "Dos revisiones en el cable"
+   },
+   "visor": {
+    "en": "The messages of both revisions appear side by side, with their headers.",
+    "es": "Los mensajes de las dos revisiones aparecen lado a lado, con sus encabezados."
+   }
+  },
+  {
+   "id": 22,
+   "title": {
+    "en": "An MCP server in Spring",
+    "es": "Un servidor MCP en Spring"
+   },
+   "visor": {
+    "en": "The messages over stdio appear like the ones over HTTP.",
+    "es": "Los mensajes por stdio aparecen como los de HTTP."
+   }
+  },
+  {
+   "id": 23,
+   "title": {
+    "en": "A model that uses MCP",
+    "es": "Un modelo que usa MCP"
+   },
+   "visor": {
+    "en": "The round appears whole: tools/list, the model's request, the consent and tools/call.",
+    "es": "La ronda aparece completa: tools/list, el pedido del modelo, el consentimiento y tools/call."
+   }
+  },
+  {
+   "id": 24,
+   "title": {
+    "en": "Security in MCP",
+    "es": "Seguridad en MCP"
+   },
+   "visor": {
+    "en": "Each tool description and result appears whole, as the model reads it.",
+    "es": "Cada descripción y resultado de tool aparece completo, como lo lee el modelo."
+   }
+  },
+  {
+   "id": 25,
+   "title": {
+    "en": "An assistant you can defend",
+    "es": "Un asistente que se puede defender"
+   },
+   "visor": {
+    "en": "The whole run appears in order: tool calls, retrieval and answer.",
+    "es": "La corrida entera aparece en orden: llamadas a tools, recuperación y respuesta."
+   }
+  }
+ ],
+ "commands": [
+  {
+   "lesson": 0,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "hello"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "The capital of France is"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "The capital of France is Paris"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "generate",
+    "The capital of France is",
+    "--tokens",
+    "8"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 5,
+   "tool": "lab",
+   "argv": [
+    "generate",
+    "La capital de Francia es",
+    "--tokens",
+    "6"
+   ]
+  },
+  {
+   "lesson": 2,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "tokens",
+    "The downstream queue is full."
+   ]
+  },
+  {
+   "lesson": 2,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "tokens",
+    "La cola de destino está llena."
+   ]
+  },
+  {
+   "lesson": 2,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "tokens",
+    "CAU-4021"
+   ]
+  },
+  {
+   "lesson": 2,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "tokens",
+    "--corpus"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "My cat is called"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "My cat is called",
+    "--temperature",
+    "1.5"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "sample",
+    "My cat is called",
+    "--temperature",
+    "1",
+    "--times",
+    "5"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "sample",
+    "My cat is called",
+    "--temperature",
+    "1",
+    "--seed",
+    "42",
+    "--times",
+    "3"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 5,
+   "tool": "lab",
+   "argv": [
+    "sample",
+    "My cat is called",
+    "--temperature",
+    "0",
+    "--times",
+    "3"
+   ]
+  },
+  {
+   "lesson": 4,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "My name is Ana.",
+    "--forget",
+    "--remember"
+   ]
+  },
+  {
+   "lesson": 4,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "What is my name?",
+    "--remember"
+   ]
+  },
+  {
+   "lesson": 4,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "What is my name?"
+   ]
+  },
+  {
+   "lesson": 4,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "context",
+    "--tokens",
+    "9000"
+   ]
+  },
+  {
+   "lesson": 5,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "embed",
+    "The downstream queue is full."
+   ]
+  },
+  {
+   "lesson": 5,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "similar",
+    "The downstream queue is full.",
+    "La cola de destino está llena.",
+    "The certificate expired."
+   ]
+  },
+  {
+   "lesson": 5,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "similar",
+    "The queue is full.",
+    "The queue is not full.",
+    "The queue has room."
+   ]
+  },
+  {
+   "lesson": 6,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "I sat on the grass by the bank of the"
+   ]
+  },
+  {
+   "lesson": 6,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "She opened a savings account at the bank of the"
+   ]
+  },
+  {
+   "lesson": 6,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "Me senté a leer en un banco de la"
+   ]
+  },
+  {
+   "lesson": 6,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "next",
+    "Abrí una cuenta en el banco de la"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "template",
+    "Hello",
+    "--system",
+    "You are terse."
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "template",
+    "Hello"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "template",
+    "Hello",
+    "--think"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Is 17 a prime number? Answer yes or no.",
+    "--think"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 5,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Is 17 a prime number? Answer yes or no."
+   ]
+  },
+  {
+   "lesson": 8,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "props"
+   ]
+  },
+  {
+   "lesson": 8,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Count from 1 to 30, separated by commas.",
+    "--timings",
+    "--max",
+    "90"
+   ]
+  },
+  {
+   "lesson": 8,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "context",
+    "--tokens",
+    "1500"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Say hi.",
+    "--raw"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Say hi.",
+    "--system",
+    "Answer in Spanish.",
+    "--raw"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Describe the sea in three sentences.",
+    "--raw",
+    "--max",
+    "12"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Count from 1 to 5.",
+    "--stream"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 5,
+   "tool": "lab",
+   "argv": [
+    "chat",
+    "Say hi.",
+    "--raw",
+    "--remote"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "extract",
+    "Billing deliveries fail with CAU-4021, the queue is full; it is serious and we should retry."
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "extract",
+    "Billing deliveries fail with CAU-4021, the queue is full; it is serious and we should retry.",
+    "--schema"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "extract",
+    "Something is wrong with the billing deliveries since this morning, error code 4021 I think. Not sure if we should retry."
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "extract",
+    "Something is wrong with the billing deliveries since this morning, error code 4021 I think. Not sure if we should retry.",
+    "--schema"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 1,
+   "tool": "lab",
+   "argv": [
+    "tools",
+    "What is the status of incident INC-2041?"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "tools",
+    "¿En qué estado está el incidente INC-2041?"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "tools",
+    "What is the status of incident INC-9999?"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "tools",
+    "What does an incident owner do?"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 1,
+   "tool": "app",
+   "argv": [
+    "chat",
+    "In one sentence: what is a dead letter queue?"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "entity",
+    "Billing deliveries fail with CAU-4021, the queue is full; it is serious and we should retry."
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "entity",
+    "Something is wrong with the billing deliveries since this morning, error code 4021 I think. Not sure if we should retry.",
+    "--native"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "tools",
+    "What is the status of incident INC-2041?"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "memory"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 1,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do when a delivery fails with CAU-4021?",
+    "--no-context"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "In Cauce, how many delivery attempts are made before a message goes to the dead letter queue?",
+    "--no-context"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "In Cauce, how many delivery attempts are made before a message goes to the dead letter queue?",
+    "--with-doc",
+    "en/retry-policy.md"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do when a delivery fails with CAU-4021?",
+    "--with-doc",
+    "en/errors-4xxx.md"
+   ]
+  },
+  {
+   "lesson": 14,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "index"
+   ]
+  },
+  {
+   "lesson": 14,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "index",
+    "--fixed",
+    "--chunk",
+    "400",
+    "--overlap",
+    "80"
+   ]
+  },
+  {
+   "lesson": 14,
+   "step": 6,
+   "tool": "app",
+   "argv": [
+    "index"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 1,
+   "tool": "app",
+   "argv": [
+    "search",
+    "What should I do when a delivery fails with CAU-4021?"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "search",
+    "CAU-4021"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "search",
+    "CAU-4021",
+    "--keyword"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "search",
+    "CAU-4021",
+    "--hybrid"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 1,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do when a delivery fails with CAU-4021?",
+    "--hybrid"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do when a delivery fails with CAU-4021?",
+    "--hybrid",
+    "--show-prompt"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What is the uptime target of the reporting dashboard?",
+    "--hybrid"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "¿Cada cuánto rota la guardia?",
+    "--hybrid"
+   ]
+  },
+  {
+   "lesson": 17,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "search",
+    "CAU-4021",
+    "--hybrid",
+    "--rerank"
+   ]
+  },
+  {
+   "lesson": 17,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "search",
+    "CAU-4021",
+    "--rerank"
+   ]
+  },
+  {
+   "lesson": 17,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "search",
+    "¿Qué hago si una entrega falla con CAU-4021?",
+    "--hybrid",
+    "--rerank"
+   ]
+  },
+  {
+   "lesson": 17,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "¿Qué hago si una entrega falla con CAU-4021?",
+    "--hybrid",
+    "--rerank"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "index"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "eval"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "eval",
+    "--answers",
+    "--judge"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What do I do with CAU-3012?",
+    "--hybrid",
+    "--rerank"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 1,
+   "tool": "app",
+   "argv": [
+    "index",
+    "--extra"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do about CAU-4021?",
+    "--hybrid",
+    "--rerank"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do about CAU-4021?",
+    "--hybrid",
+    "--rerank",
+    "--harden"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do about CAU-4021?",
+    "--hybrid",
+    "--rerank",
+    "--trusted"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "ask",
+    "What should I do about CAU-4021?",
+    "--hybrid",
+    "--rerank",
+    "--tools"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 6,
+   "tool": "app",
+   "argv": [
+    "reset"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 7,
+   "tool": "app",
+   "argv": [
+    "index"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 2,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "tools/list"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 3,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "tools/call",
+    "--tool-name",
+    "get_incident_status",
+    "--tool-arg",
+    "id=INC-2041"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 4,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "tools/call",
+    "--tool-name",
+    "search_runbooks",
+    "--tool-arg",
+    "query=CAU-4021"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 5,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "resources/list"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 6,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "prompts/list"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 2,
+   "tool": "lab",
+   "argv": [
+    "mcp-wire",
+    "legacy",
+    "http://mcp:8081/mcp"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 3,
+   "tool": "lab",
+   "argv": [
+    "mcp-wire",
+    "modern",
+    "http://mcp-modern:8080/mcp"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 4,
+   "tool": "lab",
+   "argv": [
+    "mcp-wire",
+    "modern",
+    "http://mcp-modern:8080/mcp",
+    "--call",
+    "get_incident_status",
+    "--arg",
+    "id=INC-2041"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 5,
+   "tool": "lab",
+   "argv": [
+    "mcp-wire",
+    "modern",
+    "http://mcp-modern:8080/mcp",
+    "--mismatch"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 6,
+   "tool": "lab",
+   "argv": [
+    "mcp-wire",
+    "modern",
+    "http://mcp-modern:8080/mcp",
+    "--version",
+    "2027-01-01"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 7,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--protocol-era",
+    "modern",
+    "--method",
+    "tools/list"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 1,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "resources/templates/list"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 2,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "resources/read",
+    "--uri",
+    "cauce://runbooks/retry-policy"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 3,
+   "tool": "inspector",
+   "argv": [
+    "http://mcp:8081/mcp",
+    "--transport",
+    "http",
+    "--method",
+    "prompts/get",
+    "--prompt-name",
+    "triage",
+    "--prompt-args",
+    "code=CAU-4021"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 4,
+   "tool": "mcp-stdio",
+   "argv": []
+  },
+  {
+   "lesson": 23,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "What is the status of incident INC-2041?"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "Incident INC-2044 is fixed. Close it.",
+    "--approve"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "Incident INC-2044 is fixed. Close it.",
+    "--allow",
+    "get_incident_status,list_open_incidents"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "reset"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "Which incidents are open?",
+    "--servers",
+    "cauce,poisoned",
+    "--verbose"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "Is billing healthy?",
+    "--servers",
+    "cauce,poisoned"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "reset"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "Is billing healthy?",
+    "--servers",
+    "cauce,poisoned",
+    "--approve"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 6,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "Is billing healthy?",
+    "--servers",
+    "cauce,poisoned",
+    "--allow",
+    "get_service_health,get_incident_status,list_open_incidents"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 7,
+   "tool": "app",
+   "argv": [
+    "reset"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 8,
+   "tool": "lab",
+   "argv": [
+    "mcp-wire",
+    "legacy",
+    "http://mcp:8081/mcp",
+    "--origin",
+    "http://evil.example"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 2,
+   "tool": "app",
+   "argv": [
+    "eval"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 3,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "INC-2041 is about CAU-4021. What does the runbook say to do, and what is the status of the incident?"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 4,
+   "tool": "app",
+   "argv": [
+    "agent",
+    "¿Qué dice el runbook sobre CAU-4012 y qué incidentes siguen abiertos?"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 5,
+   "tool": "app",
+   "argv": [
+    "reset"
+   ]
+  }
+ ]
+}

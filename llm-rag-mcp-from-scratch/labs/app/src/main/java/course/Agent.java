@@ -51,6 +51,8 @@ class Agent {
         List<McpSyncClient> clients = new ArrayList<>();
         List<ToolCallback> tools = new ArrayList<>();
         long closedBefore = closed();
+        tools.jackson.databind.node.ObjectNode ev = Events.object().put("task", task).put("approve", approve).put("maxSteps", Guard.max);
+        Events.put("agent", ev);
         try {
             for (String name : names) {
                 String[] server = SERVERS.get(name);
@@ -64,11 +66,13 @@ class Agent {
                     throw new CourseError("Cannot reach " + server[1] + " at " + server[0] + "/mcp (" + Out.firstLine(e) + "). Start it with docker compose up -d --wait " + server[1]);
                 }
                 System.out.println("Server " + init.serverInfo().name() + " " + init.serverInfo().version() + " (" + name + "), protocol " + init.protocolVersion());
+                ev.withArray("servers").addObject().put("name", name).put("url", server[0] + "/mcp").put("serverName", init.serverInfo().name()).put("protocol", init.protocolVersion());
                 for (McpSchema.Tool t : client.listTools().tools()) {
                     boolean readOnly = t.annotations() != null && Boolean.TRUE.equals(t.annotations().readOnlyHint());
                     boolean offered = allow.isEmpty() || allow.contains(t.name());
                     System.out.printf("  %-22s %-13s %s%n", t.name(), readOnly ? "read-only" : "changes data", offered ? "offered to the model" : "not offered (not in --allow)");
                     String d = t.description() == null ? "" : t.description();
+                    ev.withArray("tools").addObject().put("server", name).put("name", t.name()).put("readOnly", readOnly).put("offered", offered).put("description", d);
                     System.out.println("    " + (a.has("verbose") ? d : Out.snippet(d, 110)));
                     if (offered) {
                         ToolCallback c = SyncMcpToolCallback.builder().mcpClient(client).tool(t).prefixedToolName(t.name()).build();
@@ -81,6 +85,7 @@ class Agent {
             System.out.println("Task: " + task);
             long t0 = System.nanoTime();
             ChatResponse r = chat.prompt().system(Basics.ASSISTANT).user(task).tools(tools.toArray()).call().chatResponse();
+            ev.put("answer", Out.text(r));
             System.out.println("Answer:");
             System.out.println("  " + Out.text(r).replace("\n", "\n  "));
             System.out.println(Out.usage(r, t0));
@@ -91,6 +96,7 @@ class Agent {
             throw e;
         } catch (RuntimeException e) {
             if (!Guard.spent(e)) throw new CourseError(Out.firstLine(e));
+            ev.put("stopped", true);
             System.out.println("Answer: none. The host stopped the run after " + Guard.max + " tool calls (--max-steps).");
             System.out.println("Tool calls: " + String.join(", ", Guard.CALLS));
             long closedNow = closed() - closedBefore;

@@ -83,6 +83,7 @@ services:
     volumes:
       - ./corpus:/course/corpus:ro
       - lab-state:/state
+      - events:/events
 
   # Spring Boot with Spring AI (lessons 12 to 19, 23 to 25): docker compose run --rm app <command>.
   app:
@@ -93,6 +94,7 @@ services:
       - ./corpus:/course/corpus:ro
       - ./eval:/course/eval:ro
       - cauce-state:/state
+      - events:/events
 
   # The MCP server of the course, from the same image with the mcp profile: http://mcp:8081/mcp.
   # It shares the state volume with the app: what one closes, the other sees closed.
@@ -103,6 +105,7 @@ services:
     volumes:
       - ./corpus:/course/corpus:ro
       - cauce-state:/state
+      - events:/events
     healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8081"]
       interval: 10s
@@ -124,6 +127,7 @@ services:
       - ./corpus:/course/corpus:ro
       - ./mcp:/course/mcp:ro
       - cauce-state:/state
+      - events:/events
 
   # The same tools with the official TypeScript SDK, revision 2026-07-28: http://mcp-modern:8080/mcp.
   mcp-modern:
@@ -131,8 +135,10 @@ services:
     build: ./mcp-modern
     volumes:
       - ./corpus:/course/corpus:ro
+      - events:/events
+    # A TCP connection, not an HTTP request: the viewer shows only what a client sent.
     healthcheck: &node-health
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/mcp').then(() => process.exit(0), () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('node:net').connect(8080, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -148,6 +154,7 @@ services:
       VARIANT: poisoned
     volumes:
       - ./corpus:/course/corpus:ro
+      - events:/events
     healthcheck: *node-health
 
   # MCP Inspector, command-line mode: docker compose run --rm inspector <url> --transport http --method ...
@@ -156,8 +163,28 @@ services:
     profiles: [tools]
     entrypoint: ["mcp-inspector", "--cli"]
 
+  # The live viewer (lessons 01 to 25): http://localhost:18093. It reads the events volume, where
+  # every lab and app command, and every MCP server, writes what went on the wire. It only reads:
+  # no other method than GET, and only from this computer.
+  visor:
+    image: prumathe-llm-visor:1.0.0
+    build: ./visor
+    profiles: [visor]
+    ports:
+      - "127.0.0.1:18093:18093"
+    volumes:
+      - events:/events:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('node:net').connect(18093, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+      start_interval: 1s
+
 volumes:
   models:
   db-data:
   lab-state:
   cauce-state:
+  events:

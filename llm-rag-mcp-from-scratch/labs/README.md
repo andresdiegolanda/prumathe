@@ -29,10 +29,11 @@ Los modelos corren en la CPU, igual en Windows, macOS y Linux: los contenedores 
 | `mcp`, `mcp-stdio` | The MCP server of the course (Spring AI), over HTTP and over stdio / El servidor MCP del curso (Spring AI), por HTTP y por stdio | 20 to 25 / 20 a 25 |
 | `mcp-modern`, `mcp-poisoned` | The same tools with the TypeScript SDK v2, and a poisoned variant / Las mismas tools con el SDK de TypeScript v2, y una variante envenenada | 21, 24 |
 | `inspector` | MCP Inspector 2.11.0, command-line mode / MCP Inspector 2.11.0, modo línea de comandos | 20 to 22 / 20 a 22 |
+| `visor` | The live viewer: shows at http://127.0.0.1:18093 the requests, retrievals, tool calls and MCP messages that the commands write to the `events` volume / El visor en vivo: muestra en http://127.0.0.1:18093 los pedidos, recuperaciones, llamadas a tools y mensajes MCP que los comandos escriben en el volumen `events` | 01 to 25 / 01 a 25 |
 
-No model server, database or MCP server publishes a port on your machine: they talk inside the Compose network, and the commands reach them through `lab`, `app` and `inspector`. The images are pinned by digest and the models by commit and SHA256 (`models/manifest.txt`).
+No model server, database or MCP server publishes a port on your machine: they talk inside the Compose network, and the commands reach them through `lab`, `app` and `inspector`. The viewer is the only service with a port, 18093, and only on 127.0.0.1. The images are pinned by digest and the models by commit and SHA256 (`models/manifest.txt`).
 
-Ningún servidor de modelos, base ni servidor MCP publica un puerto en tu máquina: hablan dentro de la red de Compose, y los comandos llegan a ellos por `lab`, `app` e `inspector`. Las imágenes están fijadas por digest y los modelos por commit y SHA256 (`models/manifest.txt`).
+Ningún servidor de modelos, base ni servidor MCP publica un puerto en tu máquina: hablan dentro de la red de Compose, y los comandos llegan a ellos por `lab`, `app` e `inspector`. El visor es el único servicio con un puerto, el 18093, y solo en 127.0.0.1. Las imágenes están fijadas por digest y los modelos por commit y SHA256 (`models/manifest.txt`).
 
 ## Settings, threads and the optional key / Configuración, hilos y la clave opcional
 
@@ -43,6 +44,12 @@ Copiá `.env.example` a `.env` para cambiar lo que lista. `LLM_THREADS` fija los
 No lesson needs an API key. Only the optional last step of lesson 09 compares the same request against a hosted provider with an OpenAI-compatible chat API, with `LLM_BASE_URL`, `LLM_API_KEY` and `LLM_MODEL` in `.env`. That file stays on your machine: it is in `.gitignore` and the course ZIP never includes it.
 
 Ninguna lección necesita una clave de API. Solo el último paso opcional de la lección 09 compara el mismo pedido contra un proveedor alojado con una API de chat compatible con la de OpenAI, con `LLM_BASE_URL`, `LLM_API_KEY` y `LLM_MODEL` en `.env`. Ese archivo queda en tu máquina: está en `.gitignore` y el ZIP del curso nunca lo incluye.
+
+## The live viewer / El visor en vivo
+
+`docker compose up -d --wait visor` starts it (lesson 01); open http://127.0.0.1:18093 beside the terminal. Each `lab` and `app` command writes one event to the `events` volume when it ends: its command line, what it printed and every HTTP request it made, with headers and bodies; the MCP servers add one line per message they receive and send. The viewer only reads that volume: it answers GET and nothing else, only to requests addressed to localhost or 127.0.0.1, and never talks to the models. Authorization headers, API keys and cookies are not recorded, bodies are cut at 64 KB, an event keeps its first 120 requests and embedding vectors keep their first eight numbers. The commands write their events whether or not the viewer is running. To start the log from zero without stopping anything: `docker compose run --rm --user root --entrypoint sh lab -c "rm -f /events/*"`.
+
+`docker compose up -d --wait visor` lo levanta (lección 01); abrí http://127.0.0.1:18093 al lado de la terminal. Cada comando de `lab` y de `app` escribe un evento en el volumen `events` cuando termina: su línea de comando, lo que imprimió y cada pedido HTTP que hizo, con encabezados y cuerpos; los servidores MCP suman una línea por cada mensaje que reciben y mandan. El visor solo lee ese volumen: responde GET y nada más, solo a pedidos dirigidos a localhost o 127.0.0.1, y nunca habla con los modelos. Los encabezados de autorización, las claves de API y las cookies no se registran, los cuerpos se cortan en 64 KB, un evento guarda sus primeros 120 pedidos y los vectores de embeddings conservan sus primeros ocho números. Los comandos escriben sus eventos esté o no corriendo el visor. Para empezar el registro de cero sin detener nada: `docker compose run --rm --user root --entrypoint sh lab -c "rm -f /events/*"`.
 
 ## State and reset / Estado y vuelta atrás
 
@@ -62,6 +69,6 @@ Los comandos con texto en español, como `¿Qué hago si una entrega falla con C
 
 ## Clean up / Limpieza
 
-`docker compose --profile "*" down` stops and removes every container of the course, including the services that start only when named, such as `mcp-poisoned`, and keeps its volumes, so the models are not downloaded again. Adding `-v` also deletes the volumes: the 3.5 GB of models, the vector store and the state of the incidents. Neither touches other Compose projects.
+`docker compose --profile "*" down` stops and removes every container of the course, including the services that start only when named, such as `mcp-poisoned`, and keeps its volumes, so the models are not downloaded again. Adding `-v` also deletes the volumes: the 3.5 GB of models, the vector store, the state of the incidents and the events of the viewer. Neither touches other Compose projects.
 
-`docker compose --profile "*" down` detiene y borra todos los contenedores del curso, incluidos los servicios que arrancan solo si se los nombra, como `mcp-poisoned`, y conserva sus volúmenes, así los modelos no se descargan de nuevo. Agregar `-v` además borra los volúmenes: los 3,5 GB de modelos, el almacén de vectores y el estado de los incidentes. Ninguno de los dos toca otros proyectos de Compose.
+`docker compose --profile "*" down` detiene y borra todos los contenedores del curso, incluidos los servicios que arrancan solo si se los nombra, como `mcp-poisoned`, y conserva sus volúmenes, así los modelos no se descargan de nuevo. Agregar `-v` además borra los volúmenes: los 3,5 GB de modelos, el almacén de vectores, el estado de los incidentes y los eventos del visor. Ninguno de los dos toca otros proyectos de Compose.

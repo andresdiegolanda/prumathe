@@ -259,11 +259,11 @@ window.LLMVisuals = (() => {
       const bits = range('bits', t('Bits per weight', 'Bits por peso'), 2, 16, 5);
       const ctxk = range('ctx', t('Context, thousands of tokens', 'Contexto, miles de tokens'), 1, 32, 8);
       title('MEMORY = WEIGHTS + CACHE + BUFFERS', 'MEMORIA = PESOS + CACHÉ + BUFFERS');
-      const weights = 3.66 * bits / 8, kv = 0.125 * ctxk, buf = 0.3, total = weights + kv + buf, sc = 640 / 20;
+      const weights = 3.66 * bits / 8, kv = 0.04 * ctxk, buf = 0.05, total = weights + kv + buf, sc = 640 / 20;
       parts.push(rect(45, 70, 640, 44, P.panel, P.line, 6));
       parts.push(`<rect x="45" y="70" width="${weights * sc}" height="44" rx="6" fill="${P.blue}"/><rect x="${45 + weights * sc}" y="70" width="${kv * sc}" height="44" fill="${P.amber}"/><rect x="${45 + (weights + kv) * sc}" y="70" width="${buf * sc}" height="44" fill="${P.line}"/>`);
       [8, 16].forEach(g => parts.push(`<path d="M${45 + g * sc} 62 L${45 + g * sc} 122" stroke="${P.red}" stroke-width="2" stroke-dasharray="4 4"/>`, text(45 + g * sc, 58, g + ' GB', 12, P.red)));
-      parts.push(box(45, 132, 205, 58, t('Weights', 'Pesos'), fmt(weights) + ' GB', 'weights', P.white, t('3.66 billion parameters times the bits of each, over 8.', '3.660 millones de parámetros por los bits de cada uno, sobre 8.')), box(265, 132, 205, 58, t('KV cache', 'Caché KV'), fmt(kv) + ' GB', 'kv', P.white, t('Grows with the context. Size per token illustrative, derived from the memory measured in the kit.', 'Crece con el contexto. Tamaño por token ilustrativo, derivado de la memoria medida en el kit.')), box(485, 132, 200, 58, 'Total', fmt(total) + ' GB', 'total', total > 16 ? P.fail : total > 8 ? P.amber : P.mint));
+      parts.push(box(45, 132, 205, 58, t('Weights', 'Pesos'), fmt(weights) + ' GB', 'weights', P.white, t('3.66 billion parameters times the bits of each, over 8.', '3.660 millones de parámetros por los bits de cada uno, sobre 8.')), box(265, 132, 205, 58, t('KV cache', 'Caché KV'), fmt(kv) + ' GB', 'kv', P.white, t('Grows with the context. Size per token derived from the kit: 2.09 GiB fresh, 2.32 GiB after 6000 tokens of prompt.', 'Crece con el contexto. Tamaño por token derivado del kit: 2,09 GiB recién iniciado, 2,32 GiB después de 6000 tokens de prompt.')), box(485, 132, 200, 58, 'Total', fmt(total) + ' GB', 'total', total > 16 ? P.fail : total > 8 ? P.amber : P.mint));
       parts.push(text(45, 228, t('Measured, 4 threads, tokens per second', 'Medido, 4 hilos, tokens por segundo'), 13, P.muted, 'start'));
       parts.push(text(45, 258, t('reading', 'lectura'), 13, P.ink, 'start'), bar(140, 245, 250, 18, 73 / 80, P.green), text(420, 259, '~70', 13, P.ink, 'end'), text(45, 288, t('writing', 'escritura'), 13, P.ink, 'start'), bar(140, 275, 250, 18, 10 / 80, P.orange), text(420, 289, '~10', 13, P.ink, 'end'));
       parts.push(text(470, 228, t('Writing by threads (measured)', 'Escritura según hilos (medido)'), 13, P.muted, 'start'));
@@ -327,7 +327,7 @@ window.LLMVisuals = (() => {
     } else if (type === 'rag') {
       const d = select('doc', t('Context', 'Contexto'), [t('none', 'ninguno'), t('whole file', 'archivo entero'), t('four chunks', 'cuatro chunks')], [0, 1, 2][step] ?? 0);
       title('WHAT CHANGES IS WHAT THE MODEL READS', 'LO QUE CAMBIA ES LO QUE LEE EL MODELO');
-      const prompt = [30, 360, 432][d], answer = [t('does not know CAU-4021, asks which system', 'no conoce CAU-4021, pregunta qué sistema es'), t('right steps, plus advice the runbook does not give', 'pasos correctos, más consejos que el runbook no da'), t('one sentence that cites [2]', 'una oración que cita [2]')][d];
+      const prompt = [30, 360, 432][d], answer = [t('does not know CAU-4021, asks which system', 'no conoce CAU-4021, pregunta qué sistema es'), t('right steps, plus advice the runbook does not give', 'pasos correctos, más consejos que el runbook no da'), t('two sentences and a single [2]', 'dos oraciones y un solo [2]')][d];
       parts.push(box(45, 70, 190, 70, t('Question', 'Pregunta'), 'CAU-4021', 'qq', P.white, 'What should I do when a delivery fails with CAU-4021?'));
       parts.push(line(235, 105, 285, 105), box(285, 70, 190, 70, 'Prompt', prompt + ' tokens', 'prompt', d ? P.amber : P.white, t('Measured prompt tokens.', 'Tokens de prompt medidos.')), line(475, 105, 525, 105), box(525, 70, 190, 70, t('Model', 'Modelo'), 'Granite 4.2 3B', 'model', P.white, t('The same weights in the three cases.', 'Los mismos pesos en los tres casos.')));
       if (d) parts.push(box(285, 165, 190, 56, d === 1 ? 'en/errors-4xxx.md' : t('4 chunks, hybrid', '4 chunks, híbrida'), '', 'ctxsrc', P.mint, t('What retrieval adds to the prompt.', 'Lo que la recuperación agrega al prompt.')), line(380, 165, 380, 140));
@@ -359,7 +359,7 @@ window.LLMVisuals = (() => {
         else { let cur = pts[3]; for (let k = 0; k < 5; k++) { const nx = pts.slice().sort((a, b) => Math.hypot(a[0] - qx, a[1] - qy) - Math.hypot(b[0] - qx, b[1] - qy))[Math.max(0, 8 - 2 * k)]; parts.push(line(cur[0], cur[1], nx[0], nx[1], P.orange)); cur = nx; } }
         pts.forEach(([x, y]) => parts.push(`<circle cx="${x}" cy="${y}" r="4" fill="${P.blue}"/>`));
         parts.push(`<circle cx="${qx}" cy="${qy}" r="7" fill="${P.amber}" stroke="${P.ink}"/>`);
-        parts.push(box(520, 90, 195, 120, hnsw ? 'Index Scan' : 'Seq Scan', hnsw ? t('cost 348.93, forced', 'costo 348,93, forzado') : t('cost 13.30, chosen', 'costo 13,30, elegido'), 'plan', hnsw ? P.amber : P.mint, t('Measured with EXPLAIN on the 86 rows of the kit.', 'Medido con EXPLAIN sobre las 86 filas del kit.')));
+        parts.push(box(520, 90, 195, 120, hnsw ? 'Index Scan' : 'Seq Scan', hnsw ? t('cost 274.48, forced', 'costo 274,48, forzado') : t('cost 23.73, chosen', 'costo 23,73, elegido'), 'plan', hnsw ? P.amber : P.mint, t('Measured with EXPLAIN on the 86 rows of the kit.', 'Medido con EXPLAIN sobre las 86 filas del kit.')));
         parts.push(text(520, 250, hnsw ? t('walks a graph of neighbors:', 'recorre un grafo de vecinos:') : t('compares every row:', 'compara todas las filas:'), 13, P.ink, 'start'), text(520, 272, hnsw ? t('fast, may miss one', 'rápido, puede perder uno') : t('exact, fine for 86 rows', 'exacto, alcanza para 86 filas'), 13, P.ink, 'start'));
         note(t('Dots placed at random; the plans and costs are measured.', 'Puntos ubicados al azar; los planes y los costos son medidos.'));
       } else {
@@ -392,7 +392,7 @@ window.LLMVisuals = (() => {
       const hit = covered && k >= 2;
       parts.push(line(445, 230, 480, 230), box(480, 120, 235, 110, hit ? 'Wait, retry with backoff. [2]' : "I don't know…", hit ? t('cites [2] = CAU-4021', 'cita [2] = CAU-4021') : t('the exact sentence of rule 1', 'la oración exacta de la regla 1'), 'answer', hit ? P.mint : P.amber, hit ? 'Wait for the target consumer to catch up, then retry with exponential backoff. Do not add producers. [2]' : t('The app detects the sentence and says the sources do not answer it.', 'La app detecta la oración y dice que las fuentes no lo responden.')));
       parts.push(box(480, 250, 235, 70, t('Prompt size', 'Tamaño del prompt'), t(`about ${100 + 83 * k} tokens`, `unos ${100 + 83 * k} tokens`), 'size', P.white, t('Measured: about 430 tokens with k 4.', 'Medido: unos 430 tokens con k 4.')));
-      note(covered && k < 2 ? t('With k 1 the right chunk is not retrieved: illustrative.', 'Con k 1 el chunk correcto no se recupera: ilustrativo.') : t('Sources and answers measured with --hybrid.', 'Fuentes y respuestas medidas con --hybrid.'));
+      note(covered && k < 2 ? t('With k 1 the right chunk is not retrieved: illustrative.', 'Con k 1 el chunk correcto no se recupera: ilustrativo.') : t('Sources measured with --hybrid for CAU-4021; answers for both questions.', 'Fuentes medidas con --hybrid para CAU-4021; respuestas para las dos preguntas.'));
     } else if (type === 'rerank') {
       if (step === 2) {
         const filt = select('filter', t('Filter', 'Filtro'), [t('none', 'ninguno'), "trust == 'runbook'"], 1) === 1;

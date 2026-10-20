@@ -82,8 +82,10 @@ final class McpWire {
         post(url, step(a), h);
         if (session != null) {
             System.out.println(">>> DELETE " + URI.create(url).getPath() + "   Mcp-Session-Id: " + session);
+            long at = System.currentTimeMillis();
             HttpResponse<String> r = CLIENT.send(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(30))
                     .header("Mcp-Session-Id", session).header("MCP-Protocol-Version", LEGACY).DELETE().build(), HttpResponse.BodyHandlers.ofString());
+            Events.exchange(at, "DELETE", url, Map.of("Mcp-Session-Id", session, "MCP-Protocol-Version", LEGACY), null, r.statusCode(), r.headers().map(), r.body(), null);
             System.out.println("<<< " + r.statusCode() + "   the session is closed\n");
         } else {
             System.out.println("The server gave no Mcp-Session-Id: it serves this revision without sessions.");
@@ -141,17 +143,25 @@ final class McpWire {
         headers.forEach((k, v) -> line.append("   ").append(k).append(": ").append(v));
         System.out.println(line);
         System.out.println(Http.pretty(body));
+        String sentBody = Http.JSON.writeValueAsString(body);
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(60))
                 .header("Content-Type", "application/json").header("Accept", "application/json, text/event-stream")
-                .POST(HttpRequest.BodyPublishers.ofString(Http.JSON.writeValueAsString(body)));
+                .POST(HttpRequest.BodyPublishers.ofString(sentBody));
         if (origin != null) b.header("Origin", origin);
         headers.forEach(b::header);
+        Map<String, String> sent = new java.util.LinkedHashMap<>();
+        sent.put("Content-Type", "application/json");
+        sent.put("Accept", "application/json, text/event-stream");
+        if (origin != null) sent.put("Origin", origin);
+        sent.putAll(headers);
         HttpResponse<String> r;
+        long at = System.currentTimeMillis();
         try {
             r = CLIENT.send(b.build(), HttpResponse.BodyHandlers.ofString());
         } catch (java.net.ConnectException e) {
             throw new LabError("Cannot reach " + URI.create(url).getHost() + ". Start it with docker compose up -d --wait " + URI.create(url).getHost());
         }
+        Events.exchange(at, "POST", url, sent, sentBody, r.statusCode(), r.headers().map(), r.body(), null);
         String type = r.headers().firstValue("Content-Type").orElse("");
         String session = r.headers().firstValue("Mcp-Session-Id").orElse(null);
         List<JsonNode> messages = new ArrayList<>();

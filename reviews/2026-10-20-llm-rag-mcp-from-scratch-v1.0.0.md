@@ -1,6 +1,6 @@
 # Review: LLMs, RAG and MCP from scratch v1.0.0
 
-Estado: aplicada el mismo día, antes de publicar la 1.0.0, salvo el visor en vivo (3.1), que espera la aprobación de su diseño y tiene card en [`tablero.md`](../tablero.md). El detalle está en [`CHANGELOG.md`](../CHANGELOG.md) y en `docs/VALIDATION.md` del curso. El texto de abajo describe el curso tal como estaba al revisarlo.
+Estado: aplicada el mismo día, antes de publicar la 1.0.0. El visor en vivo (3.1) se construyó después de aprobar su diseño y pasó la corrida completa de la suite. El detalle está en [`CHANGELOG.md`](../CHANGELOG.md) y en `docs/VALIDATION.md` del curso. El texto de abajo describe el curso tal como estaba al revisarlo.
 
 Fecha: 2026-10-20. Objeto: [`llm-rag-mcp-from-scratch/`](../llm-rag-mcp-from-scratch/) en el árbol de trabajo antes de su primer commit (versión 1.0.0).
 
@@ -50,7 +50,7 @@ Decisión: las dos escenas, el resultado esperado del paso 12.4 y el modelo de l
 
 Los pasos 18.5 y 19.2 describían respuestas que llegaban al límite de 600 tokens; en las dos corridas secuenciales de la suite las respuestas cortan antes (74 y 101 tokens) y son idénticas entre sí. Un servidor de prueba mostró por qué: un pedido solo devuelve siempre el mismo texto, pero dos pedidos al mismo tiempo cambian la respuesta de los dos, y con un solo slot cambia igual una de ellas. Las corridas de medición anteriores a la suite no garantizaban un pedido por vez.
 
-Decisión: todo texto de las lecciones que cita una salida del modelo se compara con la corrida secuencial de la suite y se corrige donde no coincide; `docs/VALIDATION.md` registra la medición, y `docs/TEACHING.md` la regla de que la suite manda un pedido por vez.
+Decisión: todo texto de las lecciones que cita una salida del modelo se compara con la corrida secuencial de la suite y se corrige donde no coincide; `docs/VALIDATION.md` registra la medición, y `docs/TEACHING.md` la regla de que la suite manda un pedido por vez. La comparación corrigió las escenas 2 y 3 de la lección 18 (los desacuerdos de la corrida son en-07, en-08, es-03, code-03 y es-08), el paso 18.5, que pasa a code-03, la escena 1 y el paso 2 de la lección 19, la escena 2 de la 16 y su modelo (dos oraciones y una sola cita), el paso 23.4 (las llamadas se repiten sin alternar), los nombres de ejemplo del paso 3.3, los sistemas citados en la escena 1 de la lección 13, los costos de EXPLAIN del modelo de la 15 y la nota de fuentes del modelo de la 16. La memoria del contenedor de chat se midió aparte: 2,09 GiB recién iniciado y 2,32 GiB después de un prompt de 6000 tokens, contra los 3,3 GiB que decía el paso 8.2; el paso, la escena 3 de la lección 08 y su modelo usan esa medición.
 
 ### 4.2 Controles que no prueban lo que afirma su paso [LEÍDO] [EJECUTADO]
 

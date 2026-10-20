@@ -4,7 +4,7 @@
 // read from the same incidents file. With VARIANT=poisoned it also publishes one tool whose
 // description carries hidden instructions, for the tool poisoning lesson.
 import { createServer } from 'node:http';
-import { readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 import { McpServer, createMcpHandler } from '@modelcontextprotocol/server';
 import { toNodeHandler, hostHeaderValidation, originValidation } from '@modelcontextprotocol/node';
 import * as z from 'zod/v4';
@@ -67,6 +67,66 @@ function factory() {
   return server;
 }
 
+// For the live viewer: every HTTP message this server receives and sends, headers included, as
+// one line of a file in the events volume. Keys and cookies are not recorded. Without the volume
+// nothing is written and the server answers the same.
+const LOG = `${process.env.EVENTS_DIR ?? '/events'}/${POISONED ? 'mcp-poisoned' : 'mcp-modern'}-${Date.now()}-${process.pid}.jsonl`;
+const SECRET = new Set(['authorization', 'proxy-authorization', 'x-api-key', 'api-key', 'cookie', 'set-cookie']);
+const MAX = 64 * 1024;
+const cut = (text) => (text.length > MAX ? `${text.slice(0, MAX)}\n[... cut at 64 KB]` : text);
+const recorded = (headers) => Object.fromEntries(Object.entries(headers)
+  .filter(([name, value]) => value !== undefined && !name.startsWith(':'))
+  .map(([name, value]) => [name, SECRET.has(name.toLowerCase()) ? '[not recorded]' : [value].flat().join(', ')]));
+
+function wireLog(req, res) {
+  const at = Date.now();
+  const received = [];
+  const sent = [];
+  let sentHeaders = {};
+  const keep = (list, chunk, encoding) => {
+    if (chunk == null || typeof chunk === 'function') return;
+    if (list.reduce((n, b) => n + b.length, 0) >= MAX) return;
+    list.push(typeof chunk === 'string' ? Buffer.from(chunk, typeof encoding === 'string' ? encoding : 'utf8') : Buffer.from(chunk));
+  };
+  // The SDK reads the body with for await; the copy is taken on the way, so its size limit still applies.
+  const read = req[Symbol.asyncIterator].bind(req);
+  req[Symbol.asyncIterator] = async function* copy() {
+    for await (const chunk of read()) {
+      keep(received, chunk);
+      yield chunk;
+    }
+  };
+  const writeHead = res.writeHead.bind(res);
+  const write = res.write.bind(res);
+  const end = res.end.bind(res);
+  res.writeHead = (status, ...rest) => {
+    const headers = rest.find((x) => x && typeof x === 'object' && !Array.isArray(x));
+    if (headers) sentHeaders = headers;
+    return writeHead(status, ...rest);
+  };
+  res.write = (chunk, ...rest) => {
+    keep(sent, chunk, rest[0]);
+    return write(chunk, ...rest);
+  };
+  res.end = (chunk, ...rest) => {
+    keep(sent, chunk, rest[0]);
+    return end(chunk, ...rest);
+  };
+  res.on('finish', () => {
+    const body = (list) => (list.length ? { body: cut(Buffer.concat(list).toString('utf8')) } : {});
+    const line = {
+      v: 1, type: 'rpc', source: POISONED ? 'mcp-poisoned' : 'mcp-modern', transport: 'http', at, ms: Date.now() - at,
+      request: { method: req.method, path: req.url, headers: recorded(req.headers), ...body(received) },
+      response: { status: res.statusCode, headers: recorded({ ...res.getHeaders(), ...sentHeaders }), ...body(sent) },
+    };
+    try {
+      appendFileSync(LOG, `${JSON.stringify(line)}\n`);
+    } catch {
+      // The viewer is optional.
+    }
+  });
+}
+
 // Only the names this server is reached by inside the compose network, and no browser origins
 // other than localhost: the guards answer 403 to anything else (DNS rebinding protection).
 const host = hostHeaderValidation([POISONED ? 'mcp-poisoned' : 'mcp-modern', 'localhost', '127.0.0.1']);
@@ -74,6 +134,7 @@ const origin = originValidation(['localhost', '127.0.0.1']);
 const handle = toNodeHandler(createMcpHandler(factory));
 
 createServer((req, res) => {
+  wireLog(req, res);
   if (new URL(req.url, 'http://localhost').pathname !== '/mcp') {
     res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Not found. The MCP endpoint is /mcp.');
     return;

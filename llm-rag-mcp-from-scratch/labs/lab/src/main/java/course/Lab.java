@@ -59,6 +59,7 @@ public final class Lab {
     public static void main(String[] argv) {
         String command = argv.length == 0 ? "help" : argv[0];
         Args a = parse(java.util.Arrays.copyOfRange(argv, Math.min(1, argv.length), argv.length));
+        if (!command.equals("help")) Events.start(argv);
         try {
             switch (command) {
                 case "hello" -> Basics.hello(a);
@@ -80,11 +81,14 @@ public final class Lab {
             }
         } catch (LabError e) {
             System.out.println("ERROR " + e.getMessage());
+            Events.finish(1);
             System.exit(1);
         } catch (Exception e) {
             System.out.println("ERROR " + e);
+            Events.finish(1);
             System.exit(1);
         }
+        Events.finish(0);
     }
 
     static void help() {

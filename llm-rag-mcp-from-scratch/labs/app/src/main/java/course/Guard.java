@@ -63,8 +63,10 @@ final class Guard implements ToolCallback {
 
     @Override
     public String call(String input, @Nullable ToolContext context) {
+        long at = System.currentTimeMillis();
         String name = delegate.getToolDefinition().name();
         if (CALLS.size() >= max) {
+            Events.add("toolCalls", Events.object().put("at", at).put("name", name).put("input", input).put("readOnly", readOnly).put("status", "stopped"));
             System.out.println("  [stopped] the model asked for " + name + ", but the budget of " + max + " tool calls is spent.");
             throw new BudgetSpent(max);
         }
@@ -74,12 +76,15 @@ final class Guard implements ToolCallback {
             System.out.flush();
             String answer = readLine();
             if (!"yes".equalsIgnoreCase(answer == null ? "" : answer.strip())) {
+                Events.add("toolCalls", Events.object().put("at", at).put("name", name).put("input", input).put("readOnly", readOnly).put("status", "denied"));
                 System.out.println("  [denied] " + name + " did not run.");
                 CALLS.add(name + " denied");
                 return "{\"error\":\"The user did not allow this call. Do not try it again; tell the user what you wanted to do.\"}";
             }
         }
         String result = delegate.call(input, context);
+        Events.add("toolCalls", Events.object().put("at", at).put("name", name).put("input", input).put("readOnly", readOnly).put("status", readOnly ? "read" : approve ? "approved" : "ran")
+                .put("result", result.length() > 4000 ? result.substring(0, 4000) + "..." : result));
         System.out.println("  [result] " + Out.snippet(result, 160));
         CALLS.add(name + (readOnly ? "" : " ran"));
         return result;

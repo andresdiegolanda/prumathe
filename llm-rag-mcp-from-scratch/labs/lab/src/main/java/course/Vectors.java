@@ -52,6 +52,14 @@ final class Vectors {
         if (texts.size() < 2) throw new LabError("similar needs at least two texts.");
         List<double[]> vs = vectors(texts);
         for (int i = 0; i < texts.size(); i++) System.out.println("  T" + (i + 1) + "  " + Tokens.quote(texts.get(i)));
+        ObjectNode sim = Http.object();
+        texts.forEach(sim.putArray("texts")::add);
+        com.fasterxml.jackson.databind.node.ArrayNode matrix = sim.putArray("matrix");
+        for (int i = 0; i < texts.size(); i++) {
+            com.fasterxml.jackson.databind.node.ArrayNode row = matrix.addArray();
+            for (int j = 0; j < texts.size(); j++) row.add(Math.round(cosine(vs.get(i), vs.get(j)) * 1000) / 1000.0);
+        }
+        Events.put("similar", sim);
         System.out.println("Cosine similarity (1 = same direction):");
         StringBuilder head = new StringBuilder("        ");
         for (int j = 0; j < texts.size(); j++) head.append(String.format("%6s", "T" + (j + 1)));

@@ -81,6 +81,51 @@ for (const lang of ['en', 'es']) {
   fs.writeFileSync(path.join(root, `downloads/course-notes-${lang}.txt`), text);
 }
 
+/** The live viewer names the lesson of each event from the lab steps: labs/visor/static/lessons.json. */
+function words(line) {
+  const out = [];
+  let word = null;
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (quoted) {
+      if (ch === '\\' && line[i + 1] === '"') word += line[++i];
+      else if (ch === '"') quoted = false;
+      else word += ch;
+    } else if (ch === '"') {
+      quoted = true;
+      word ??= '';
+    } else if (ch === ' ') {
+      if (word !== null) out.push(word);
+      word = null;
+    } else word = (word ?? '') + ch;
+  }
+  if (word !== null) out.push(word);
+  return out;
+}
+const visorCommands = [];
+for (const l of course.lessons) {
+  for (const [i, s] of l.lab.entries()) {
+    for (const line of s.command.split('\n')) {
+      const w = words(line.trim());
+      if (w.slice(0, 4).join(' ') !== 'docker compose run --rm' || !['lab', 'app', 'inspector', 'mcp-stdio'].includes(w[4])) continue;
+      visorCommands.push({ lesson: l.id, step: i + 1, tool: w[4], argv: w.slice(5) });
+    }
+  }
+}
+fs.writeFileSync(
+  path.join(root, 'labs/visor/static/lessons.json'),
+  JSON.stringify(
+    {
+      version: course.version,
+      lessons: course.lessons.map((l) => ({ id: l.id, title: l.title, ...(l.visor && { visor: l.visor }) })),
+      commands: visorCommands,
+    },
+    null,
+    1,
+  ) + '\n',
+);
+
 /** Every file under labs/, except build output and local caches. */
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {

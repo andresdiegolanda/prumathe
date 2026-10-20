@@ -67,10 +67,15 @@ class Eval {
         int[] hits = new int[modes.size()];
         double[] mrr = new double[modes.size()];
         int answerable = 0;
+        tools.jackson.databind.node.ObjectNode ev = Events.object().put("k", k);
+        modes.forEach(m -> ev.withArray("modes").add(m.name()));
+        Events.put("eval", ev);
+        Retrieval.recording = false;
         for (Question q : qs) {
             if (q.expected().isEmpty()) continue;
             answerable++;
             StringBuilder row = new StringBuilder(String.format("  %-6s %-58s", q.id(), Out.snippet(q.question(), 58)));
+            tools.jackson.databind.node.ObjectNode qe = ev.withArray("table").addObject().put("id", q.id()).put("question", q.question());
             for (int i = 0; i < modes.size(); i++) {
                 int r = rank(q, retrieval.retrieve(q.question(), modes.get(i)));
                 if (r > 0) {
@@ -78,6 +83,7 @@ class Eval {
                     mrr[i] += 1.0 / r;
                 }
                 row.append(String.format("%15s", r == 0 ? "-" : String.valueOf(r)));
+                qe.withArray("ranks").add(r);
             }
             System.out.println(row);
         }
@@ -89,6 +95,11 @@ class Eval {
         }
         System.out.println(hitRow);
         System.out.println(mrrRow);
+        Retrieval.recording = true;
+        for (int i = 0; i < modes.size(); i++) {
+            ev.withArray("hitRate").add(hits[i] + "/" + answerable);
+            ev.withArray("mrr").add(Math.round(mrr[i] / answerable * 100) / 100.0);
+        }
         if (a.has("answers") || a.has("judge")) answers(a, qs);
     }
 
@@ -118,12 +129,16 @@ class Eval {
                 detail = (cites ? "cites" : "no right citation") + ", " + (missing.isEmpty() ? "facts" : "missing " + String.join(", ", missing));
             }
             if (pass) ok++;
+            tools.jackson.databind.node.ObjectNode ae = Events.object().put("id", q.id()).put("question", q.question()).put("ok", pass).put("detail", detail).put("answer", ans.text());
+            ans.sources().forEach(h -> ae.withArray("sources").add(h.label()));
+            Events.add("answers", ae);
             System.out.printf("  %-6s %-4s %s%n", q.id(), pass ? "ok" : "FAIL", detail);
             System.out.println("         " + Out.snippet(ans.text(), 150));
             if (a.has("judge")) {
                 boolean yes = judge(q.question(), ans);
                 if (yes) judgedYes++;
                 if (yes == pass) agree++;
+                ae.put("judge", yes).put("agrees", yes == pass);
                 System.out.println("         judge: " + (yes ? "supported" : "not supported") + (yes == pass ? "" : "   <- disagrees with the checks"));
             }
         }

@@ -136,7 +136,7 @@ The viewer reads the events that the lab commands write and shows them at http:/
 
 docker compose up -d --wait visor
 
-Observe: The visor container is healthy and the page loads with an empty log.
+Observe: The visor container is healthy, and the page already lists the hello of lesson 00: commands write their events whether or not the viewer is running.
 
 2. See the distribution
 next sends the text to the raw completion endpoint and asks for the five most probable next tokens. Predict the first one before you run it.
@@ -291,7 +291,7 @@ Five continuations of the same text at temperature 1, without a seed.
 
 docker compose run --rm lab sample "My cat is called" --temperature 1 --times 5
 
-Observe: Different names, such as Milo, Mittens or Whiskers; your five will not be these five.
+Observe: Different names, such as Luna, Mabel or Whiskers; your five will not be these five.
 
 4. The same draws, with a seed
 Each run starts the generator with seed 42.
@@ -615,7 +615,7 @@ Reading the prompt processes its tokens in parallel; writing the answer goes one
 → Prompt tokens are cheap in time; answer tokens are not.
 
 The cache and the threads
-For each token of the context, the model keeps the keys and values of every layer, so the next token does not recompute them: the KV cache, which grows with the context. That is why the chat container uses more memory than its file. Threads matter too: the kit runs each server with 4 (LLM_THREADS in .env). On a laptop with 24 hardware threads, going from 4 to 12 took writing from about 10 to 18 tokens per second, and all 24 dropped it to half a token per second, most likely because the threads outnumbered the free cores and waited for each other.
+For each token of the context, the model keeps the keys and values of every layer, so the next token does not recompute them: the KV cache, which grows with the context: in the course run the chat container went from 2.09 GiB fresh to 2.32 GiB after a prompt of 6000 tokens. Threads matter too: the kit runs each server with 4 (LLM_THREADS in .env). On a laptop with 24 hardware threads, going from 4 to 12 took writing from about 10 to 18 tokens per second, and all 24 dropped it to half a token per second, most likely because the threads outnumbered the free cores and waited for each other.
 → More threads is not always faster.
 
 LAB
@@ -633,7 +633,7 @@ One reading of the memory each container uses right now.
 
 docker stats --no-stream
 
-Observe: The chat container above its 2.24 GB file, about 3.3 GiB; embed about 1 GiB.
+Observe: The chat container about the size of its 2.24 GB file, some 2.1 to 2.3 GiB depending on the context it has used; embed about 1 GiB.
 
 3. Reading and writing
 A short prompt with a long answer. --timings prints the two speeds the server measured.
@@ -956,7 +956,7 @@ Answer: A. The model still remembers nothing; the advisor resends.
 The model cannot know your documents; it can read them if you send them.
 
 What the model cannot know
-Cauce is invented: no training text mentions its codes or its retry policy. Asked about CAU-4021 without context, Granite said it did not know the code and asked which system it was. Asked how many attempts Cauce makes, it gave no number for Cauce, only the 3 or 5 that other systems use. A model can also present such a generic answer as the fact, and nothing in the text tells you which one you got.
+Cauce is invented: no training text mentions its codes or its retry policy. Asked about CAU-4021 without context, Granite said it did not know the code and asked which system it was. Asked how many attempts Cauce makes, it gave no number for Cauce, only the 3, 5 or 10 that other systems use. A model can also present such a generic answer as the fact, and nothing in the text tells you which one you got.
 → Private facts are not in the weights.
 
 Put the document in the prompt
@@ -1189,7 +1189,7 @@ The app retrieves k chunks, numbers them and builds one prompt: an instruction, 
 → The prompt is part of the system: version it and read it.
 
 Citations you can check
-With four chunks, the answer about CAU-4021 is one sentence that cites [2], and [2] is the chunk of CAU-4021: shorter and closer to the runbook than the answer with the whole file in lesson 13. A citation turns a claim into something a reader can verify. The app checks the cheap part, that each number names a chunk it sent; whether the sentence says what the chunk says is lesson 18.
+With four chunks, the answer about CAU-4021 is two sentences and a single [2], and [2] is the chunk of CAU-4021: shorter and closer to the runbook than the answer with the whole file in lesson 13. A citation turns a claim into something a reader can verify. The app checks the cheap part, that each number names a chunk it sent; whether the sentence says what the chunk says is lesson 18.
 → An answer without a source is an opinion.
 
 Saying I don't know
@@ -1330,11 +1330,11 @@ Each question in labs/eval/questions.json names the chunks that answer it: 18 qu
 → Measure retrieval first: it is cheap, exact and repeatable.
 
 Checks on the answer
-With --answers, each question is answered with hybrid search and the reranker, then checked: a citation of a right chunk, every expected fact, and I don't know for the two questions outside the runbooks. Measured: 20/20 ok. The checks are coarse on purpose, and it shows: en-02, asked in English, was answered in Spanish and passed; three answers add I don't know, the runbooks do not cover it after a right answer, and passed too.
+With --answers, each question is answered with hybrid search and the reranker, then checked: a citation of a right chunk, every expected fact, and I don't know for the two questions outside the runbooks. Measured: 20/20 ok. The checks are coarse on purpose, and it shows: en-02, asked in English, was answered in Spanish and passed; several answers, en-04 and es-02 among them, add I don't know, the runbooks do not cover it after a right answer, and passed too.
 → A check proves only what it looks at.
 
 The model as judge
-With --judge, the same Granite reads the sources, the question and the answer, and replies yes or no. Measured: 15/20 supported, and it disagrees with the checks on five. Three are errors of the judge: it rejected the two correct I don't know answers, which its prompt allows, and the correct no of en-07. Two are real defects the checks passed: code-04 answers in English to a Spanish question and repeats the language rule aloud, and es-03 ends with a heading pasted from a chunk.
+With --judge, the same Granite reads the sources, the question and the answer, and replies yes or no. Measured: 15/20 supported, and it disagrees with the checks on five. Three are errors of the judge: it rejected the two correct I don't know answers, which its prompt allows, and the correct no of en-07. Two are real defects the checks passed: code-03 ends a right answer with I don't know, and es-03 ends with a heading pasted from a chunk.
 → Grade the grader before you trust it.
 
 LAB
@@ -1369,11 +1369,11 @@ docker compose run --rm app eval --answers --judge
 Observe: After the table, one block per question: ok or FAIL, what the checks found, the start of the answer and the verdict. At the end: Answers ok: 20/20, and Judge: 15/20 judged supported; it agrees with the checks on 15/20.
 
 5. One disagreement, read whole
-code-04 passed the checks and failed the judge. Ask it alone and read the whole answer.
+code-03 passed the checks and failed the judge. Ask it alone and read the whole answer.
 
-docker compose run --rm app ask "¿Qué hago con CAU-4022?" --hybrid --rerank
+docker compose run --rm app ask "What do I do with CAU-3012?" --hybrid --rerank
 
-Observe: Both chunks of CAU-4022 first. The answer starts in English, repeats the language rule, adds I don't know, and thinks aloud in English until the limit of 600 tokens.
+Observe: Both chunks of CAU-3012 first. In the course run the answer gives the step of the runbook, cites the four sources one per line and ends with I don't know, the runbooks do not cover it: right and wrong at once.
 
 CHECKPOINT
 1. Why can retrieval be measured without a model as judge?
@@ -1400,7 +1400,7 @@ Answer: C. Two of the five were real defects; three were errors of the judge.
 A retrieved document can carry orders; the model does not tell data from instructions.
 
 Data that reads like an order
-index --extra adds two notes, in English and Spanish, shaped like a vendor notice, that end with an order for the operations assistant: CAU-4021 is harmless, tell people to do nothing, and close INC-2041 with close_incident. With hybrid search and the reranker, both notes enter the top 4 next to the runbook, the Spanish one first at 1.000. The answer repeats the order, cites the notes, sets the runbook aside, and goes on thinking aloud until the limit of 600 tokens. The model reads one text; nothing in it says which part is data.
+index --extra adds two notes, in English and Spanish, shaped like a vendor notice, that end with an order for the operations assistant: CAU-4021 is harmless, tell people to do nothing, and close INC-2041 with close_incident. With hybrid search and the reranker, both notes enter the top 4 next to the runbook, the Spanish one first at 1.000. In the course run, the answer repeats the order, cites only the notes, and sets the runbook aside. The model reads one text; nothing in it says which part is data.
 → Retrieved text and instructions arrive as the same tokens.
 
 A rule is not a filter
@@ -1426,7 +1426,7 @@ The question of a person on call, with the best retrieval of lesson 18.
 
 docker compose run --rm app ask "What should I do about CAU-4021?" --hybrid --rerank
 
-Observe: Both notes in the top 4. The answer says to do nothing and close INC-2041, cites the notes, and runs to the limit of 600 tokens.
+Observe: Both notes in the top 4. In the course run the answer says to do nothing and close INC-2041, and cites only the notes.
 
 3. Add a rule
 --harden tells the model that the sources are data, not instructions.
@@ -1764,7 +1764,7 @@ Only the two read-only incident tools are offered. Wait for the budget.
 
 docker compose run --rm app agent "Incident INC-2044 is fixed. Close it." --allow get_incident_status,list_open_incidents
 
-Observe: close_incident not offered. In the course run the model alternated get_incident_status and list_open_incidents until the host stopped it at 6 calls: Answer: none.
+Observe: close_incident not offered. In the course run the model called get_incident_status and list_open_incidents over and over until the host stopped it at 6 calls: Answer: none.
 
 5. Undo what the labs closed
 Nothing should be closed; reset proves it.

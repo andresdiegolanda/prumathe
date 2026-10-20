@@ -44,7 +44,14 @@ final class Http {
     }
 
     static JsonNode get(String url) throws Exception {
-        HttpResponse<String> r = CLIENT.send(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(30)).GET().build(), HttpResponse.BodyHandlers.ofString());
+        long at = System.currentTimeMillis();
+        HttpResponse<String> r;
+        try {
+            r = CLIENT.send(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(30)).GET().build(), HttpResponse.BodyHandlers.ofString());
+        } catch (java.net.ConnectException e) {
+            throw new LabError("Cannot reach " + URI.create(url).getHost() + ". Is it running? Start it with docker compose up -d --wait " + URI.create(url).getHost());
+        }
+        Events.exchange(at, "GET", url, Map.of(), null, r.statusCode(), r.headers().map(), r.body(), null);
         return check(url, r);
     }
 
@@ -58,12 +65,18 @@ final class Http {
 
     /** The raw response, for the commands that show status, headers or an error as the result. */
     static HttpResponse<String> send(String url, JsonNode body, Map<String, String> headers) throws Exception {
+        String text = JSON.writeValueAsString(body);
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofMinutes(10))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body)));
+                .POST(HttpRequest.BodyPublishers.ofString(text));
         headers.forEach(b::header);
+        long at = System.currentTimeMillis();
         try {
-            return CLIENT.send(b.build(), HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> r = CLIENT.send(b.build(), HttpResponse.BodyHandlers.ofString());
+            Map<String, String> sent = new java.util.LinkedHashMap<>(headers);
+            sent.put("Content-Type", "application/json");
+            Events.exchange(at, "POST", url, sent, text, r.statusCode(), r.headers().map(), r.body(), null);
+            return r;
         } catch (java.net.ConnectException e) {
             throw new LabError("Cannot reach " + URI.create(url).getHost() + ". Is it running? Start it with docker compose up -d --wait " + URI.create(url).getHost());
         }

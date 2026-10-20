@@ -136,17 +136,21 @@ final class Chat {
 
     private static void stream(Endpoint ep, ObjectNode req) throws Exception {
         req.put("stream", true);
+        String text = Http.JSON.writeValueAsString(req);
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(ep.url())).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(Http.JSON.writeValueAsString(req)));
+                .POST(HttpRequest.BodyPublishers.ofString(text));
         ep.headers().forEach(b::header);
+        long at = System.currentTimeMillis();
         HttpResponse<java.io.InputStream> r = HttpClient.newHttpClient().send(b.build(), HttpResponse.BodyHandlers.ofInputStream());
         StringBuilder answer = new StringBuilder();
+        java.util.List<String> events = new java.util.ArrayList<>();
         int chunks = 0;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(r.body(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = in.readLine()) != null) {
                 if (!line.startsWith("data: ")) continue;
                 String data = line.substring(6);
+                events.add(data);
                 if (chunks < 4 || data.equals("[DONE]")) System.out.println("  " + (data.length() > 150 ? data.substring(0, 150) + "..." : data));
                 else if (chunks == 4) System.out.println("  ...");
                 chunks++;
@@ -155,6 +159,9 @@ final class Chat {
                 answer.append(d.path("choices").path(0).path("delta").path("content").asText(""));
             }
         }
+        Map<String, String> sent = new HashMap<>(ep.headers());
+        sent.put("Content-Type", "application/json");
+        Events.exchange(at, "POST", ep.url(), sent, text, r.statusCode(), r.headers().map(), null, events);
         System.out.println(chunks + " server-sent events. The pieces, put together:");
         System.out.println(answer.toString().strip());
     }
@@ -222,8 +229,10 @@ final class Chat {
         long t0 = System.nanoTime();
         JsonNode r = Http.post(ep.url(), req, ep.headers());
         String out = content(r);
+        String verdict = validate(out);
+        Events.put("extract", Http.object().put("schema", a.has("schema")).put("answer", out).put("verdict", verdict));
         System.out.println(out);
-        System.out.println(validate(out));
+        System.out.println(verdict);
         System.out.println(usage(r, t0));
     }
 

@@ -10,8 +10,9 @@ WORKDIR /course
 COPY --from=build /src/target/llm-lab.jar /opt/lab/llm-lab.jar
 COPY --from=build /src/target/lib /opt/lab/lib
 # The conversation history of lesson 04 lives in a named volume mounted here; a new volume takes
-# this directory's owner, so the lab user can write it.
-RUN mkdir /state && chown 10001:10001 /state
+# this directory's owner, so the lab user can write it. The events volume of the live viewer is
+# shared by several images with different users, so its folder is writable by all of them.
+RUN mkdir /state && chown 10001:10001 /state && mkdir -m 1777 /events
 USER 10001:10001
 ENTRYPOINT ["java", "-XX:+UseSerialGC", "-Xmx256m", "-jar", "/opt/lab/llm-lab.jar"]
 CMD ["help"]

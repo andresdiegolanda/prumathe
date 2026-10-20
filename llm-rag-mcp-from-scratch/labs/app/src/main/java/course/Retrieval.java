@@ -101,7 +101,29 @@ class Retrieval {
     List<Hit> retrieve(String query, Mode mode) {
         int pool = mode.rerank() ? POOL : mode.k();
         List<Hit> candidates = mode.hybrid() ? hybrid(query, pool, mode.trusted()) : mode.keyword() ? keyword(query, pool, mode.trusted()) : vector(query, pool, mode.trusted());
-        return mode.rerank() ? rerank(query, candidates, mode.k()) : candidates;
+        List<Hit> out = mode.rerank() ? rerank(query, candidates, mode.k()) : candidates;
+        record(query, mode, mode.rerank() ? candidates : null, out);
+        return out;
+    }
+
+    /** Off while the evaluation fills its table: the table already says where each right chunk came. */
+    static volatile boolean recording = true;
+
+    /** For the live viewer: the query, its mode, the pool before the reranker and the chunks found. */
+    static void record(String query, Mode mode, List<Hit> pool, List<Hit> hits) {
+        if (!recording) return;
+        tools.jackson.databind.node.ObjectNode r = Events.object().put("query", query).put("mode", mode.name()).put("k", mode.k()).put("trusted", mode.trusted());
+        if (pool != null) {
+            tools.jackson.databind.node.ArrayNode p = r.putArray("pool");
+            for (Hit h : pool) p.addObject().put("label", h.label()).put("why", h.why());
+        }
+        tools.jackson.databind.node.ArrayNode a = r.putArray("hits");
+        for (Hit h : hits) {
+            String text = h.content();
+            a.addObject().put("label", h.label()).put("trust", String.valueOf(h.metadata().getOrDefault("trust", ""))).put("score", h.score()).put("why", h.why())
+                    .put("text", text.length() > 700 ? text.substring(0, 700) + "..." : text);
+        }
+        Events.add("retrievals", r);
     }
 
     /** Nearest vectors by cosine distance; Spring AI reports similarity, 1 minus the distance. */

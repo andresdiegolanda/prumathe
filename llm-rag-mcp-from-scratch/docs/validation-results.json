@@ -3,310 +3,319 @@
   "version": "1.0.0",
   "date": "2026-10-20",
   "platform": "Windows 11 Pro 10.0.26200, Docker Desktop 4.55.0 (Engine 29.1.3, Compose 2.40.3-desktop.1), Node.js 24.11.0, LLM_THREADS=8",
-  "coverage": "One sequential run from a clean state: lesson 00, lesson 01 without its first step, and lessons 02 to 25. Lessons 18 to 25 ran a second time in sequence with identical model outputs.",
+  "coverage": "One sequential run of lessons 00 to 25 from a clean state, with the live viewer recording every command. Lessons 18 to 25 had run a second time in sequence, before the viewer, with identical model outputs.",
   "repeatedLessons18to25": {
     "passed": 47,
     "failure": false
+  },
+  "visor": {
+    "checks": 17,
+    "passed": 17,
+    "events": 113,
+    "commands": 103,
+    "sessions": 10
   },
   "steps": [
     {
       "lesson": 0,
       "step": 1,
       "status": "passed",
-      "durationMs": 468,
-      "report": "labs-only-0"
+      "durationMs": 405,
+      "report": "labs"
     },
     {
       "lesson": 0,
       "step": 2,
       "status": "passed",
       "durationMs": 0,
-      "report": "labs-only-0"
+      "report": "labs"
     },
     {
       "lesson": 0,
       "step": 3,
       "status": "passed",
-      "durationMs": 1087,
-      "report": "labs-only-0"
+      "durationMs": 913,
+      "report": "labs"
     },
     {
       "lesson": 0,
       "step": 4,
       "status": "passed",
-      "durationMs": 8644,
-      "report": "labs-only-0"
+      "durationMs": 10571,
+      "report": "labs"
     },
     {
       "lesson": 1,
       "step": 1,
-      "status": "not run: needs the live viewer, which is not built yet"
+      "status": "passed",
+      "durationMs": 2230,
+      "report": "labs"
     },
     {
       "lesson": 1,
       "step": 2,
       "status": "passed",
-      "durationMs": 1684,
-      "report": "labs-lesson-01-without-visor"
+      "durationMs": 1634,
+      "report": "labs"
     },
     {
       "lesson": 1,
       "step": 3,
       "status": "passed",
-      "durationMs": 1621,
-      "report": "labs-lesson-01-without-visor"
+      "durationMs": 1670,
+      "report": "labs"
     },
     {
       "lesson": 1,
       "step": 4,
       "status": "passed",
-      "durationMs": 2232,
-      "report": "labs-lesson-01-without-visor"
+      "durationMs": 2032,
+      "report": "labs"
     },
     {
       "lesson": 1,
       "step": 5,
       "status": "passed",
-      "durationMs": 2069,
-      "report": "labs-lesson-01-without-visor"
+      "durationMs": 2031,
+      "report": "labs"
     },
     {
       "lesson": 2,
       "step": 1,
       "status": "passed",
-      "durationMs": 1480,
-      "report": "labs-from-2"
+      "durationMs": 1601,
+      "report": "labs"
     },
     {
       "lesson": 2,
       "step": 2,
       "status": "passed",
-      "durationMs": 1555,
-      "report": "labs-from-2"
+      "durationMs": 1538,
+      "report": "labs"
     },
     {
       "lesson": 2,
       "step": 3,
       "status": "passed",
-      "durationMs": 1530,
-      "report": "labs-from-2"
+      "durationMs": 1548,
+      "report": "labs"
     },
     {
       "lesson": 2,
       "step": 4,
       "status": "passed",
-      "durationMs": 1605,
-      "report": "labs-from-2"
+      "durationMs": 1703,
+      "report": "labs"
     },
     {
       "lesson": 3,
       "step": 1,
       "status": "passed",
-      "durationMs": 1697,
-      "report": "labs-from-2"
+      "durationMs": 1656,
+      "report": "labs"
     },
     {
       "lesson": 3,
       "step": 2,
       "status": "passed",
-      "durationMs": 1769,
-      "report": "labs-from-2"
+      "durationMs": 1789,
+      "report": "labs"
     },
     {
       "lesson": 3,
       "step": 3,
       "status": "passed",
-      "durationMs": 3702,
-      "report": "labs-from-2"
+      "durationMs": 4040,
+      "report": "labs"
     },
     {
       "lesson": 3,
       "step": 4,
       "status": "passed",
-      "durationMs": 2898,
-      "report": "labs-from-2"
+      "durationMs": 2977,
+      "report": "labs"
     },
     {
       "lesson": 3,
       "step": 5,
       "status": "passed",
-      "durationMs": 2876,
-      "report": "labs-from-2"
+      "durationMs": 3258,
+      "report": "labs"
     },
     {
       "lesson": 4,
       "step": 1,
       "status": "passed",
-      "durationMs": 3165,
-      "report": "labs-from-2"
+      "durationMs": 3470,
+      "report": "labs"
     },
     {
       "lesson": 4,
       "step": 2,
       "status": "passed",
-      "durationMs": 3597,
-      "report": "labs-from-2"
+      "durationMs": 3616,
+      "report": "labs"
     },
     {
       "lesson": 4,
       "step": 3,
       "status": "passed",
-      "durationMs": 4134,
-      "report": "labs-from-2"
+      "durationMs": 4272,
+      "report": "labs"
     },
     {
       "lesson": 4,
       "step": 4,
       "status": "passed",
-      "durationMs": 1745,
-      "report": "labs-from-2"
+      "durationMs": 1736,
+      "report": "labs"
     },
     {
       "lesson": 5,
       "step": 1,
       "status": "passed",
-      "durationMs": 3919,
-      "report": "labs-from-2"
+      "durationMs": 5860,
+      "report": "labs"
     },
     {
       "lesson": 5,
       "step": 2,
+      "status": "passed",
+      "durationMs": 1612,
+      "report": "labs"
+    },
+    {
+      "lesson": 5,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1752,
+      "report": "labs"
+    },
+    {
+      "lesson": 5,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1648,
+      "report": "labs"
+    },
+    {
+      "lesson": 6,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1843,
+      "report": "labs"
+    },
+    {
+      "lesson": 6,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1766,
+      "report": "labs"
+    },
+    {
+      "lesson": 6,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1819,
+      "report": "labs"
+    },
+    {
+      "lesson": 6,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1752,
+      "report": "labs"
+    },
+    {
+      "lesson": 7,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1649,
+      "report": "labs"
+    },
+    {
+      "lesson": 7,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1691,
+      "report": "labs"
+    },
+    {
+      "lesson": 7,
+      "step": 3,
       "status": "passed",
       "durationMs": 1554,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 5,
-      "step": 3,
-      "status": "passed",
-      "durationMs": 1616,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 5,
-      "step": 4,
-      "status": "passed",
-      "durationMs": 1589,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 6,
-      "step": 1,
-      "status": "passed",
-      "durationMs": 1706,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 6,
-      "step": 2,
-      "status": "passed",
-      "durationMs": 1797,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 6,
-      "step": 3,
-      "status": "passed",
-      "durationMs": 1715,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 6,
-      "step": 4,
-      "status": "passed",
-      "durationMs": 1696,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 7,
-      "step": 1,
-      "status": "passed",
-      "durationMs": 1541,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 7,
-      "step": 2,
-      "status": "passed",
-      "durationMs": 1562,
-      "report": "labs-from-2"
-    },
-    {
-      "lesson": 7,
-      "step": 3,
-      "status": "passed",
-      "durationMs": 1582,
-      "report": "labs-from-2"
+      "report": "labs"
     },
     {
       "lesson": 7,
       "step": 4,
       "status": "passed",
-      "durationMs": 5765,
-      "report": "labs-from-2"
+      "durationMs": 5492,
+      "report": "labs"
     },
     {
       "lesson": 7,
       "step": 5,
       "status": "passed",
-      "durationMs": 2000,
-      "report": "labs-from-2"
+      "durationMs": 2110,
+      "report": "labs"
     },
     {
       "lesson": 8,
       "step": 1,
       "status": "passed",
-      "durationMs": 1541,
-      "report": "labs-from-2"
+      "durationMs": 1555,
+      "report": "labs"
     },
     {
       "lesson": 8,
       "step": 2,
       "status": "passed",
-      "durationMs": 2251,
-      "report": "labs-from-2"
+      "durationMs": 2309,
+      "report": "labs"
     },
     {
       "lesson": 8,
       "step": 3,
       "status": "passed",
-      "durationMs": 7816,
-      "report": "labs-from-2"
+      "durationMs": 8300,
+      "report": "labs"
     },
     {
       "lesson": 8,
       "step": 4,
       "status": "passed",
-      "durationMs": 20549,
-      "report": "labs-from-2"
+      "durationMs": 20807,
+      "report": "labs"
     },
     {
       "lesson": 9,
       "step": 1,
       "status": "passed",
-      "durationMs": 2649,
-      "report": "labs-from-2"
+      "durationMs": 2648,
+      "report": "labs"
     },
     {
       "lesson": 9,
       "step": 2,
       "status": "passed",
-      "durationMs": 2463,
-      "report": "labs-from-2"
+      "durationMs": 2627,
+      "report": "labs"
     },
     {
       "lesson": 9,
       "step": 3,
       "status": "passed",
-      "durationMs": 2623,
-      "report": "labs-from-2"
+      "durationMs": 2804,
+      "report": "labs"
     },
     {
       "lesson": 9,
       "step": 4,
       "status": "passed",
-      "durationMs": 2809,
-      "report": "labs-from-2"
+      "durationMs": 2801,
+      "report": "labs"
     },
     {
       "lesson": 9,
@@ -317,596 +326,596 @@
       "lesson": 10,
       "step": 1,
       "status": "passed",
-      "durationMs": 4311,
-      "report": "labs-from-2"
+      "durationMs": 4383,
+      "report": "labs"
     },
     {
       "lesson": 10,
       "step": 2,
       "status": "passed",
-      "durationMs": 4194,
-      "report": "labs-from-2"
+      "durationMs": 4291,
+      "report": "labs"
     },
     {
       "lesson": 10,
       "step": 3,
       "status": "passed",
-      "durationMs": 4083,
-      "report": "labs-from-2"
+      "durationMs": 4422,
+      "report": "labs"
     },
     {
       "lesson": 10,
       "step": 4,
       "status": "passed",
-      "durationMs": 4487,
-      "report": "labs-from-2"
+      "durationMs": 4497,
+      "report": "labs"
     },
     {
       "lesson": 11,
       "step": 1,
       "status": "passed",
-      "durationMs": 13103,
-      "report": "labs-from-2"
+      "durationMs": 13654,
+      "report": "labs"
     },
     {
       "lesson": 11,
       "step": 2,
       "status": "passed",
-      "durationMs": 15150,
-      "report": "labs-from-2"
+      "durationMs": 15964,
+      "report": "labs"
     },
     {
       "lesson": 11,
       "step": 3,
       "status": "passed",
-      "durationMs": 11626,
-      "report": "labs-from-2"
+      "durationMs": 10867,
+      "report": "labs"
     },
     {
       "lesson": 11,
       "step": 4,
       "status": "passed",
-      "durationMs": 14061,
-      "report": "labs-from-2"
+      "durationMs": 12560,
+      "report": "labs"
     },
     {
       "lesson": 12,
       "step": 1,
       "status": "passed",
-      "durationMs": 6573,
-      "report": "labs-from-2"
+      "durationMs": 6206,
+      "report": "labs"
     },
     {
       "lesson": 12,
       "step": 2,
       "status": "passed",
-      "durationMs": 9136,
-      "report": "labs-from-2"
+      "durationMs": 9186,
+      "report": "labs"
     },
     {
       "lesson": 12,
       "step": 3,
       "status": "passed",
-      "durationMs": 6457,
-      "report": "labs-from-2"
+      "durationMs": 6346,
+      "report": "labs"
     },
     {
       "lesson": 12,
       "step": 4,
       "status": "passed",
-      "durationMs": 17304,
-      "report": "labs-from-2"
+      "durationMs": 16926,
+      "report": "labs"
     },
     {
       "lesson": 12,
       "step": 5,
       "status": "passed",
-      "durationMs": 17726,
-      "report": "labs-from-2"
+      "durationMs": 15804,
+      "report": "labs"
     },
     {
       "lesson": 13,
       "step": 1,
       "status": "passed",
-      "durationMs": 34059,
-      "report": "labs-from-2"
+      "durationMs": 28898,
+      "report": "labs"
     },
     {
       "lesson": 13,
       "step": 2,
       "status": "passed",
-      "durationMs": 46276,
-      "report": "labs-from-2"
+      "durationMs": 39410,
+      "report": "labs"
     },
     {
       "lesson": 13,
       "step": 3,
       "status": "passed",
-      "durationMs": 10592,
-      "report": "labs-from-2"
+      "durationMs": 9885,
+      "report": "labs"
     },
     {
       "lesson": 13,
       "step": 4,
       "status": "passed",
-      "durationMs": 26176,
-      "report": "labs-from-2"
+      "durationMs": 25388,
+      "report": "labs"
     },
     {
       "lesson": 14,
       "step": 1,
       "status": "passed",
-      "durationMs": 2287,
-      "report": "labs-from-2"
+      "durationMs": 2315,
+      "report": "labs"
     },
     {
       "lesson": 14,
       "step": 2,
       "status": "passed",
-      "durationMs": 18466,
-      "report": "labs-from-2"
+      "durationMs": 21350,
+      "report": "labs"
     },
     {
       "lesson": 14,
       "step": 3,
       "status": "passed",
-      "durationMs": 479,
-      "report": "labs-from-2"
+      "durationMs": 507,
+      "report": "labs"
     },
     {
       "lesson": 14,
       "step": 4,
       "status": "passed",
-      "durationMs": 482,
-      "report": "labs-from-2"
+      "durationMs": 485,
+      "report": "labs"
     },
     {
       "lesson": 14,
       "step": 5,
       "status": "passed",
-      "durationMs": 17813,
-      "report": "labs-from-2"
+      "durationMs": 19384,
+      "report": "labs"
     },
     {
       "lesson": 14,
       "step": 6,
       "status": "passed",
-      "durationMs": 19377,
-      "report": "labs-from-2"
+      "durationMs": 22562,
+      "report": "labs"
     },
     {
       "lesson": 15,
       "step": 1,
       "status": "passed",
-      "durationMs": 4520,
-      "report": "labs-from-2"
+      "durationMs": 5032,
+      "report": "labs"
     },
     {
       "lesson": 15,
       "step": 2,
       "status": "passed",
-      "durationMs": 4994,
-      "report": "labs-from-2"
+      "durationMs": 4984,
+      "report": "labs"
     },
     {
       "lesson": 15,
       "step": 3,
       "status": "passed",
-      "durationMs": 4092,
-      "report": "labs-from-2"
+      "durationMs": 4846,
+      "report": "labs"
     },
     {
       "lesson": 15,
       "step": 4,
       "status": "passed",
-      "durationMs": 4639,
-      "report": "labs-from-2"
+      "durationMs": 4958,
+      "report": "labs"
     },
     {
       "lesson": 15,
       "step": 5,
       "status": "passed",
-      "durationMs": 488,
-      "report": "labs-from-2"
+      "durationMs": 517,
+      "report": "labs"
     },
     {
       "lesson": 15,
       "step": 6,
       "status": "passed",
-      "durationMs": 495,
-      "report": "labs-from-2"
+      "durationMs": 523,
+      "report": "labs"
     },
     {
       "lesson": 16,
       "step": 1,
       "status": "passed",
-      "durationMs": 10099,
-      "report": "labs-from-2"
+      "durationMs": 11856,
+      "report": "labs"
     },
     {
       "lesson": 16,
       "step": 2,
       "status": "passed",
-      "durationMs": 10028,
-      "report": "labs-from-2"
+      "durationMs": 11086,
+      "report": "labs"
     },
     {
       "lesson": 16,
       "step": 3,
       "status": "passed",
-      "durationMs": 9383,
-      "report": "labs-from-2"
+      "durationMs": 10597,
+      "report": "labs"
     },
     {
       "lesson": 16,
       "step": 4,
       "status": "passed",
-      "durationMs": 11403,
-      "report": "labs-from-2"
+      "durationMs": 12826,
+      "report": "labs"
     },
     {
       "lesson": 17,
       "step": 1,
       "status": "passed",
-      "durationMs": 4016,
-      "report": "labs-from-2"
+      "durationMs": 3898,
+      "report": "labs"
     },
     {
       "lesson": 17,
       "step": 2,
       "status": "passed",
-      "durationMs": 9540,
-      "report": "labs-from-2"
+      "durationMs": 10740,
+      "report": "labs"
     },
     {
       "lesson": 17,
       "step": 3,
       "status": "passed",
-      "durationMs": 9213,
-      "report": "labs-from-2"
+      "durationMs": 10045,
+      "report": "labs"
     },
     {
       "lesson": 17,
       "step": 4,
       "status": "passed",
-      "durationMs": 10137,
-      "report": "labs-from-2"
+      "durationMs": 10724,
+      "report": "labs"
     },
     {
       "lesson": 17,
       "step": 5,
       "status": "passed",
-      "durationMs": 20966,
-      "report": "labs-from-2"
+      "durationMs": 23091,
+      "report": "labs"
     },
     {
       "lesson": 18,
       "step": 1,
       "status": "passed",
-      "durationMs": 1622,
-      "report": "labs-from-2"
+      "durationMs": 1641,
+      "report": "labs"
     },
     {
       "lesson": 18,
       "step": 2,
       "status": "passed",
-      "durationMs": 19085,
-      "report": "labs-from-2"
+      "durationMs": 21052,
+      "report": "labs"
     },
     {
       "lesson": 18,
       "step": 3,
       "status": "passed",
-      "durationMs": 141707,
-      "report": "labs-from-2"
+      "durationMs": 106172,
+      "report": "labs"
     },
     {
       "lesson": 18,
       "step": 4,
       "status": "passed",
-      "durationMs": 723291,
-      "report": "labs-from-2"
+      "durationMs": 534007,
+      "report": "labs"
     },
     {
       "lesson": 18,
       "step": 5,
       "status": "passed",
-      "durationMs": 18465,
-      "report": "labs-from-2"
+      "durationMs": 17769,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 1,
       "status": "passed",
-      "durationMs": 19821,
-      "report": "labs-from-2"
+      "durationMs": 20515,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 2,
       "status": "passed",
-      "durationMs": 22360,
-      "report": "labs-from-2"
+      "durationMs": 25432,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 3,
       "status": "passed",
-      "durationMs": 22680,
-      "report": "labs-from-2"
+      "durationMs": 24491,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 4,
       "status": "passed",
-      "durationMs": 32929,
-      "report": "labs-from-2"
+      "durationMs": 36071,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 5,
       "status": "passed",
-      "durationMs": 30134,
-      "report": "labs-from-2"
+      "durationMs": 30829,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 6,
       "status": "passed",
-      "durationMs": 3685,
-      "report": "labs-from-2"
+      "durationMs": 3336,
+      "report": "labs"
     },
     {
       "lesson": 19,
       "step": 7,
       "status": "passed",
-      "durationMs": 28599,
-      "report": "labs-from-2"
+      "durationMs": 19286,
+      "report": "labs"
     },
     {
       "lesson": 20,
       "step": 1,
       "status": "passed",
-      "durationMs": 7345,
-      "report": "labs-from-2"
+      "durationMs": 5231,
+      "report": "labs"
     },
     {
       "lesson": 20,
       "step": 2,
       "status": "passed",
-      "durationMs": 2071,
-      "report": "labs-from-2"
+      "durationMs": 1523,
+      "report": "labs"
     },
     {
       "lesson": 20,
       "step": 3,
       "status": "passed",
-      "durationMs": 1543,
-      "report": "labs-from-2"
+      "durationMs": 1251,
+      "report": "labs"
     },
     {
       "lesson": 20,
       "step": 4,
       "status": "passed",
-      "durationMs": 11508,
-      "report": "labs-from-2"
+      "durationMs": 7801,
+      "report": "labs"
     },
     {
       "lesson": 20,
       "step": 5,
       "status": "passed",
-      "durationMs": 1356,
-      "report": "labs-from-2"
+      "durationMs": 1121,
+      "report": "labs"
     },
     {
       "lesson": 20,
       "step": 6,
       "status": "passed",
-      "durationMs": 1411,
-      "report": "labs-from-2"
+      "durationMs": 1189,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 1,
       "status": "passed",
-      "durationMs": 2411,
-      "report": "labs-from-2"
+      "durationMs": 2279,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 2,
       "status": "passed",
-      "durationMs": 1822,
-      "report": "labs-from-2"
+      "durationMs": 1591,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 3,
       "status": "passed",
-      "durationMs": 1823,
-      "report": "labs-from-2"
+      "durationMs": 1589,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 4,
       "status": "passed",
-      "durationMs": 1983,
-      "report": "labs-from-2"
+      "durationMs": 1649,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 5,
       "status": "passed",
-      "durationMs": 2027,
-      "report": "labs-from-2"
+      "durationMs": 1701,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 6,
       "status": "passed",
-      "durationMs": 2108,
-      "report": "labs-from-2"
+      "durationMs": 1723,
+      "report": "labs"
     },
     {
       "lesson": 21,
       "step": 7,
       "status": "passed",
-      "durationMs": 1326,
-      "report": "labs-from-2"
+      "durationMs": 1274,
+      "report": "labs"
     },
     {
       "lesson": 22,
       "step": 1,
       "status": "passed",
-      "durationMs": 1512,
-      "report": "labs-from-2"
+      "durationMs": 1211,
+      "report": "labs"
     },
     {
       "lesson": 22,
       "step": 2,
       "status": "passed",
-      "durationMs": 1791,
-      "report": "labs-from-2"
+      "durationMs": 1275,
+      "report": "labs"
     },
     {
       "lesson": 22,
       "step": 3,
       "status": "passed",
-      "durationMs": 1497,
-      "report": "labs-from-2"
+      "durationMs": 1372,
+      "report": "labs"
     },
     {
       "lesson": 22,
       "step": 4,
       "status": "passed",
-      "durationMs": 11150,
-      "report": "labs-from-2"
+      "durationMs": 11522,
+      "report": "labs"
     },
     {
       "lesson": 23,
       "step": 1,
       "status": "passed",
-      "durationMs": 1040,
-      "report": "labs-from-2"
+      "durationMs": 975,
+      "report": "labs"
     },
     {
       "lesson": 23,
       "step": 2,
       "status": "passed",
-      "durationMs": 28010,
-      "report": "labs-from-2"
+      "durationMs": 24569,
+      "report": "labs"
     },
     {
       "lesson": 23,
       "step": 3,
       "status": "passed",
-      "durationMs": 27300,
-      "report": "labs-from-2"
+      "durationMs": 23435,
+      "report": "labs"
     },
     {
       "lesson": 23,
       "step": 4,
       "status": "passed",
-      "durationMs": 82201,
-      "report": "labs-from-2"
+      "durationMs": 69380,
+      "report": "labs"
     },
     {
       "lesson": 23,
       "step": 5,
       "status": "passed",
-      "durationMs": 3672,
-      "report": "labs-from-2"
+      "durationMs": 3613,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 1,
       "status": "passed",
-      "durationMs": 2349,
-      "report": "labs-from-2"
+      "durationMs": 2199,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 2,
       "status": "passed",
-      "durationMs": 30315,
-      "report": "labs-from-2"
+      "durationMs": 26680,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 3,
       "status": "passed",
-      "durationMs": 40512,
-      "report": "labs-from-2"
+      "durationMs": 35481,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 4,
       "status": "passed",
-      "durationMs": 3926,
-      "report": "labs-from-2"
+      "durationMs": 3844,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 5,
       "status": "passed",
-      "durationMs": 60381,
-      "report": "labs-from-2"
+      "durationMs": 49132,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 6,
       "status": "passed",
-      "durationMs": 23814,
-      "report": "labs-from-2"
+      "durationMs": 19909,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 7,
       "status": "passed",
-      "durationMs": 3911,
-      "report": "labs-from-2"
+      "durationMs": 3460,
+      "report": "labs"
     },
     {
       "lesson": 24,
       "step": 8,
       "status": "passed",
-      "durationMs": 2085,
-      "report": "labs-from-2"
+      "durationMs": 1502,
+      "report": "labs"
     },
     {
       "lesson": 25,
       "step": 1,
       "status": "passed",
-      "durationMs": 1808,
-      "report": "labs-from-2"
+      "durationMs": 1666,
+      "report": "labs"
     },
     {
       "lesson": 25,
       "step": 2,
       "status": "passed",
-      "durationMs": 154951,
-      "report": "labs-from-2"
+      "durationMs": 111938,
+      "report": "labs"
     },
     {
       "lesson": 25,
       "step": 3,
       "status": "passed",
-      "durationMs": 64311,
-      "report": "labs-from-2"
+      "durationMs": 52942,
+      "report": "labs"
     },
     {
       "lesson": 25,
       "step": 4,
       "status": "passed",
-      "durationMs": 59233,
-      "report": "labs-from-2"
+      "durationMs": 53010,
+      "report": "labs"
     },
     {
       "lesson": 25,
       "step": 5,
       "status": "passed",
-      "durationMs": 2675,
-      "report": "labs-from-2"
+      "durationMs": 3729,
+      "report": "labs"
     }
   ]
 }

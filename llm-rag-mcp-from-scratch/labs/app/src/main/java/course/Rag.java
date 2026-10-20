@@ -140,6 +140,11 @@ class Rag {
         Set<Integer> cited = new LinkedHashSet<>();
         Matcher m = CITATION.matcher(text);
         while (m.find()) cited.add(Integer.parseInt(m.group(1)));
+        tools.jackson.databind.node.ObjectNode ev = Events.object().put("question", q).put("mode", mode.name()).put("k", mode.k()).put("trusted", mode.trusted())
+                .put("harden", a.has("harden")).put("tools", a.has("tools")).put("answer", text).put("declined", declined(text));
+        used.forEach(h -> ev.withArray("sources").add(h.label()));
+        cited.forEach(n -> ev.withArray("cited").add(n));
+        Events.add("asks", ev);
         if (print) {
             System.out.println("Retrieved with " + mode.name() + ", k " + mode.k() + (mode.trusted() ? ", runbooks only" : "") + (a.has("harden") ? ", with the data-not-instructions rule" : "") + ":");
             for (int i = 0; i < used.size(); i++) System.out.printf("  [%d] %-44s %s%n", i + 1, used.get(i).label(), used.get(i).why());
@@ -212,6 +217,13 @@ class Rag {
         System.out.printf("%d files, %d chunks (%d in English, %d in Spanish), embedded and stored in %.1f s%n", files.size(), docs.size(), docs.size() - es, es, seconds);
         System.out.printf("Chunk length: %d to %d characters, %.0f on average%n", st.getMin(), st.getMax(), st.getAverage());
         Document sample = docs.stream().filter(d -> d.getText().contains("CAU-4021")).findFirst().orElse(docs.get(0));
+        tools.jackson.databind.node.ObjectNode ev = Events.object().put("strategy", fixed ? "fixed" : "sections").put("size", size).put("overlap", overlap)
+                .put("files", files.size()).put("chunks", docs.size()).put("spanish", es).put("minLength", st.getMin()).put("maxLength", st.getMax());
+        java.util.Map<String, Integer> perFile = new java.util.TreeMap<>();
+        docs.forEach(d -> perFile.merge(String.valueOf(d.getMetadata().get("source")), 1, Integer::sum));
+        perFile.forEach((f, n) -> ev.withArray("perFile").addObject().put("source", f).put("chunks", n));
+        ev.putObject("example").put("source", String.valueOf(sample.getMetadata().get("source"))).put("chunk", String.valueOf(sample.getMetadata().get("chunk"))).put("text", sample.getText());
+        Events.put("index", ev);
         System.out.println("Example, chunk " + sample.getMetadata().get("chunk") + " of " + sample.getMetadata().get("source") + ":");
         sample.getText().lines().limit(6).forEach(l -> System.out.println("  | " + l));
         System.out.println("Table vector_store: one row per chunk, with its text, its metadata, a vector of 1024 numbers and its words.");
