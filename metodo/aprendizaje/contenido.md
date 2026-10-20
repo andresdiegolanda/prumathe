@@ -16,6 +16,13 @@ La 00 presenta el método y deja la máquina lista sin crear nada de práctica; 
 Origen: Kafka 1.2.0 agregó la 00 después de publicado y tuvo que migrar las claves numéricas del avance a slugs y desplazar los 46 índices del glosario ([CHANGELOG](../../CHANGELOG.md), 2026-10-18).
 Control: `check.mjs` verifica la unidad de cada lección y la numeración generada; después de insertar una lección, revisar los índices del glosario.
 
+### Lo que identifica una lección va por slug, nunca por posición
+
+Avance guardado, migraciones, unidades, glosario y cualquier tabla que relacione algo con una lección: por slug o con un dato declarado, no calculado por posición. Insertar una lección en el medio mueve todos los números que siguen.
+
+Origen: Kafka 1.6.0 insertó la lección 25 y encontró tres cosas atadas a posiciones: las unidades se calculaban de a cuatro, la migración del avance de la 1.1 calculaba el slug por posición (con la inserción habría acreditado lecciones equivocadas) y el glosario y la tabla del visor usaban números ([CHANGELOG](../../CHANGELOG.md), 2026-10-20).
+Control: `check.mjs` verifica el tamaño de cada unidad y compara la tabla del visor con el currículo; después de insertar, revisar los índices del glosario y recorrer las lecciones movidas.
+
 ### Una página "Qué es" de cinco minutos, fuera de la numeración
 
 Qué es, de dónde salió (línea de tiempo con fechas contrastadas), dónde encaja según la documentación oficial, dónde no según el criterio del curso (dicho como criterio), cinco preguntas para decidir y las fuentes. Se llega desde la portada, la ayuda y la lección 00, y abre los apuntes.

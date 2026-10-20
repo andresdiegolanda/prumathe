@@ -6,9 +6,9 @@ Ejecutá los comandos desde esta carpeta. El curso usa **Apache Kafka 4.1.2**. N
 
 ## First run / Primera ejecución
 
-Course kit 1.5.0. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
+Course kit 1.6.0. Lesson 00, Before you start, walks through this setup step by step with the expected output of each command; this is the short version for the kit on its own.
 
-Kit del curso 1.5.0. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
+Kit del curso 1.6.0. La lección 00, Antes de empezar, recorre esta puesta a punto paso a paso con la salida esperada de cada comando; esta es la versión corta para usar el kit solo.
 
 ```sh
 docker compose version
@@ -28,9 +28,9 @@ Esperá Compose v2.20.2 o superior, un Engine 25 o superior en Server, tres brok
 | Lab container / Contenedor lab | `kafka1:9092,kafka2:9092,kafka3:9092` |
 | Host computer / Tu computadora | `localhost:19092,localhost:29092,localhost:39092` |
 
-Host ports bind to `127.0.0.1`. The live viewer uses port 18090 and the optional Spring HTTP app port 18080; other optional services have no published ports. Bootstrap discovers metadata; advertised listeners must then be reachable from the client. The three main nodes combine broker and controller roles for teaching. Their data is in named volumes. Do not use the Compose configuration as a production deployment.
+Host ports bind to `127.0.0.1`. The live viewer uses port 18090, the Kafbat UI console port 18081 and the optional Spring HTTP app port 18080; other optional services have no published ports. Bootstrap discovers metadata; advertised listeners must then be reachable from the client. The three main nodes combine broker and controller roles for teaching. Their data is in named volumes. Do not use the Compose configuration as a production deployment.
 
-Los puertos de host se ligan a `127.0.0.1`. El visor en vivo usa el puerto 18090 y la app HTTP opcional de Spring el 18080; los demás servicios opcionales no publican puertos. Bootstrap descubre metadatos; después el cliente necesita llegar a los listeners anunciados. Los nodos combinan roles para enseñar y guardan datos en volúmenes con nombre. Esta configuración no es un despliegue productivo.
+Los puertos de host se ligan a `127.0.0.1`. El visor en vivo usa el puerto 18090, la consola Kafbat UI el 18081 y la app HTTP opcional de Spring el 18080; los demás servicios opcionales no publican puertos. Bootstrap descubre metadatos; después el cliente necesita llegar a los listeners anunciados. Los nodos combinan roles para enseñar y guardan datos en volúmenes con nombre. Esta configuración no es un despliegue productivo.
 
 ## Live viewer / Visor en vivo
 
@@ -44,13 +44,13 @@ Abrí http://localhost:18090. El visor es una página que lee el clúster de tre
 
 ## Lesson IDs / IDs de lección
 
-Lesson 29 uses a separate [complete Spring Boot project](spring/README.md), with `KafkaTemplate`, `@KafkaListener` and its own `spring-orders` topic. It does not use the numbered native-client preparation command.
+Lesson 30 uses a separate [complete Spring Boot project](spring/README.md), with `KafkaTemplate`, `@KafkaListener` and its own `spring-orders` topic. It does not use the numbered native-client preparation command.
 
-La lección 29 usa un [proyecto Spring Boot completo](spring/README.md), con `KafkaTemplate`, `@KafkaListener` y su tópico `spring-orders`. No usa el comando numerado de preparación del cliente nativo.
+La lección 30 usa un [proyecto Spring Boot completo](spring/README.md), con `KafkaTemplate`, `@KafkaListener` y su tópico `spring-orders`. No usa el comando numerado de preparación del cliente nativo.
 
-Displayed lessons now run from **00 to 29**. Lessons 00 and 01 create no practice topics. The Java client's topic numbers stay unchanged: lesson 02 uses `prepare 1` and topic `lab1`; displayed lesson 28 uses `prepare 27`. Copy the commands printed on the page.
+Displayed lessons run from **00 to 30**. Lessons 00 and 01 create no practice topics. The Java client's topic numbers stay unchanged when lessons are inserted: lesson 02 uses `prepare 1` and topic `lab1`; displayed lesson 29 uses `prepare 27`; the console lesson, 25, added later, uses `prepare 28`. Copy the commands printed on the page.
 
-Las lecciones visibles van de **00 a 29**. Las lecciones 00 y 01 no crean tópicos de práctica. Los números de tópicos del cliente Java no cambian: la lección 02 usa `prepare 1` y `lab1`; la visible 28 usa `prepare 27`. Copiá los comandos de la página.
+Las lecciones visibles van de **00 a 30**. Las lecciones 00 y 01 no crean tópicos de práctica. Los números de tópicos del cliente Java no cambian cuando se insertan lecciones: la lección 02 usa `prepare 1` y `lab1`; la visible 29 usa `prepare 27`; la de la consola, 25, agregada después, usa `prepare 28`. Copiá los comandos de la página.
 
 `prepare N` deletes and recreates only `labN`, its `labN-*` outputs, and that lesson’s Streams internal topics where applicable. It resets the lesson’s known inactive groups and refuses to reset them while active. Stop all `watch`, `streams` and `windows` commands before preparing again. Preparation does not erase optional database volumes, Connect source files, the separate mirror cluster or share-group experiments. Repeating `outbox create` explicitly resets the one demo event’s sent flag.
 
@@ -65,6 +65,7 @@ Las lecciones visibles van de **00 a 29**. Las lecciones 00 y 01 no crean tópic
 | `security` | Separate SASL/PLAIN + ACL broker / Broker separado para autenticación y permisos | +1 GB |
 | `mirror` | Independent target cluster and explicit one-shot copy / Clúster de destino y copia de una pasada | +1 GB |
 | `share` | Kafka 4.1 share-group preview experiment (production-ready since Kafka 4.2) / Experimento preview de share groups (production-ready desde Kafka 4.2) | +1 GB |
+| `kafbat` | Kafbat UI team console in read-only mode at http://localhost:18081 (lesson 25) / Consola de equipo Kafbat UI en solo lectura en http://localhost:18081 (lección 25) | +0.4 GB |
 
 Start only the profile the lesson requests, then stop it afterward. In the ACL lab, SASL/PLAIN is deliberately restricted to the internal Docker network with public demo passwords; there is **no TLS**. Production requires encrypted listeners and managed secrets. The mirror exercise is **not MirrorMaker 2**. The outbox exercise is **not Debezium**. The schema exercise uses real Avro compatibility checking without a registry server. These boundaries are also explicit in the lessons.
 
@@ -105,19 +106,19 @@ El código del cliente está en `src/main/java/course/`: `Lab.java` deriva cada 
 Stop without deleting data / Detené sin borrar datos:
 
 ```sh
-docker compose --profile visor --profile connect --profile database --profile security --profile mirror --profile share --profile spring stop
+docker compose --profile visor --profile kafbat --profile connect --profile database --profile security --profile mirror --profile share --profile spring stop
 ```
 
 Remove the course containers and network but keep named volumes / Quitá contenedores y red conservando volúmenes:
 
 ```sh
-docker compose --profile visor --profile connect --profile database --profile security --profile mirror --profile share --profile spring down
+docker compose --profile visor --profile kafbat --profile connect --profile database --profile security --profile mirror --profile share --profile spring down
 ```
 
 **Only when you want to erase all course data**, including outbox, Connect offsets and optional brokers / **Solo cuando quieras borrar todos los datos del curso**:
 
 ```sh
-docker compose --profile visor --profile connect --profile database --profile security --profile mirror --profile share --profile spring down --volumes
+docker compose --profile visor --profile kafbat --profile connect --profile database --profile security --profile mirror --profile share --profile spring down --volumes
 ```
 
 Never substitute a system-wide prune command. These commands are scoped to this named Compose project.

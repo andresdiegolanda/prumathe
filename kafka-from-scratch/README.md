@@ -6,18 +6,18 @@ Un curso visual independiente en **inglés y español rioplatense**. Abrí `inde
 
 ## What is included / Qué incluye
 
-- 30 individual HTML lessons in 9 ordered units; 90 visual teaching scenes.
+- 31 individual HTML lessons in 9 ordered units; 93 visual teaching scenes.
 - A five minute “What Kafka is” page: what it is, where it came from, where it fits and where it does not, with its sources.
 - A discussion per lesson, in the Go deeper tab: threads on GitHub Discussions, loaded only when you open them on the published site; reading is open, posting needs a GitHub account.
 - Interactive SVG models, clickable objects, keyboard navigation and an expandable canvas.
-- 30 Docker activities with 135 individually paginated steps, copyable commands and expected observations.
+- 31 Docker activities with 140 individually paginated steps, copyable commands and expected observations.
 - A live viewer at http://localhost:18090 (lesson 01): brokers, topics, partitions, records and consumer groups drawn as the lessons change them, with what each object is and the commands that act on it. It only reads the cluster.
-- 90 checkpoint questions, three per lesson, each with an explanation; a 46-term visual glossary.
+- 93 checkpoint questions, three per lesson, each with an explanation; a 46-term visual glossary.
 - Four skins: Classic, Dark, Reading (each lesson as one scrolling page with larger type) and Projector (for a classroom screen). The choice is kept on the browser and travels in the page address.
 - A language button that preserves the current lesson, scene, lab step and model state.
 - Local progress: completing a lab is a learner declaration, not automatic Docker detection.
 - Complete text notes in both languages, a downloadable lab ZIP and the complete Java source.
-- An isolated three-node KRaft cluster plus optional Connect, PostgreSQL, ACL, mirror, share-group and Spring Boot services.
+- An isolated three-node KRaft cluster plus optional Connect, PostgreSQL, ACL, mirror, share-group, Kafbat UI and Spring Boot services.
 - Static Cloudflare Pages output and a GitHub validation workflow.
 
 Cada lección combina modelo visual, explicación, laboratorio y control. El español usa voseo rioplatense. Los términos de configuración y las salidas de Kafka se conservan tal como aparecen en las herramientas reales.
@@ -62,9 +62,9 @@ docker compose up -d --wait
 
 See [the lab guide](labs/README.md) for troubleshooting, resource boundaries and cleanup. All examples are fictional. These configurations teach mechanisms; they are not production deployment templates.
 
-The complete [Spring Boot example](labs/spring/README.md) accompanies [lesson 29](lessons/spring-java.html): `KafkaTemplate`, `@KafkaListener`, typed JSON events, group offsets and repeatable HTTP requests.
+The complete [Spring Boot example](labs/spring/README.md) accompanies [lesson 30](lessons/spring-java.html): `KafkaTemplate`, `@KafkaListener`, typed JSON events, group offsets and repeatable HTTP requests.
 
-El [ejemplo completo de Spring Boot](labs/spring/README.md) acompaña la [lección 29](lessons/spring-java.html): publicación, consumo, JSON tipado, offsets y pedidos HTTP repetibles.
+El [ejemplo completo de Spring Boot](labs/spring/README.md) acompaña la [lección 30](lessons/spring-java.html): publicación, consumo, JSON tipado, offsets y pedidos HTTP repetibles.
 
 ## Learning sequence / Secuencia
 
@@ -76,9 +76,9 @@ El [ejemplo completo de Spring Boot](labs/spring/README.md) acompaña la [lecci�
 | 3. Resilience / Resistencia | 09 to 12 | Observe rebalances, replication, ISR and metadata quorum / Observar rebalanceo, réplicas, ISR y quórum |
 | 4. Time and guarantees / Tiempo y garantías | 13 to 16 | Explain cleanup, replay, duplicate effects and idempotence / Explicar limpieza, replay, duplicados e idempotencia |
 | 5. Connecting systems / Conectar sistemas | 17 to 20 | Bound transactions; evolve contracts; connect systems; use an outbox / Delimitar transacciones, evolucionar contratos y usar Connect y outbox |
-| 6. Processing and operating / Procesar y operar | 21 to 24 | Restore state, handle late events, enforce ACLs and observe lag / Restaurar estado, manejar tardíos, aplicar ACL y observar lag |
-| 7. Reality / La realidad | 25 to 28 | Diagnose skew; compare cluster positions; explore share groups; survive an incident / Diagnosticar desbalance, copiar entre clústeres y resolver una falla |
-| 8. Java with Spring / Java con Spring | 29 | Publish typed JSON, consume with a listener and verify committed progress / Publicar JSON tipado, consumir con un listener y verificar avance |
+| 6. Processing and operating / Procesar y operar | 21 to 25 | Restore state, handle late events, enforce ACLs, observe lag and read it in a team console / Restaurar estado, manejar tardíos, aplicar ACL, observar lag y leerlo en una consola de equipo |
+| 7. Reality / La realidad | 26 to 29 | Diagnose skew; compare cluster positions; explore share groups; survive an incident / Diagnosticar desbalance, copiar entre clústeres y resolver una falla |
+| 8. Java with Spring / Java con Spring | 30 | Publish typed JSON, consume with a listener and verify committed progress / Publicar JSON tipado, consumir con un listener y verificar avance |
 
 Allow several sessions. Repeat experiments and write down predictions rather than racing through the pages. Completion is not a professional certification.
 
@@ -86,9 +86,9 @@ Reservá varias sesiones. Repetí experimentos y anotá predicciones en vez de c
 
 ## Versions / Versiones
 
-Course 1.5.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 27 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned.
+Course 1.6.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 28 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned. The console of lesson 25, **Kafbat UI v1.5.0** (20 April 2026, the latest release when this version was prepared), is pinned by digest.
 
-Curso 1.5.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 27 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado.
+Curso 1.6.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 28 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado. La consola de la lección 25, **Kafbat UI v1.5.0** (20 de abril de 2026, la última versión publicada al preparar esta), está fijada por digest.
 
 ## Develop and publish / Editá y publicá
 

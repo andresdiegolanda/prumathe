@@ -23,11 +23,11 @@ final class Producing {
   private Producing() {}
 
   /**
-   * Fictional café orders. Lessons 3, 6, 8 and 27 choose each partition explicitly (six records);
+   * Fictional café orders. Topics 3, 6, 8, 27 and 28 choose each partition explicitly (six records);
    * the others let the default partitioner route three records by key.
    */
   static void seed(int n) throws Exception {
-    boolean explicit = Set.of(3, 6, 8, 27).contains(n);
+    boolean explicit = Set.of(3, 6, 8, 27, 28).contains(n);
     int count = explicit ? 6 : 3;
     try (KafkaProducer<String, String> p = new KafkaProducer<>(producerProps(BOOT))) {
       for (int i = 0; i < count; i++) {

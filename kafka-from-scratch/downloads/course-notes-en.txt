@@ -1,5 +1,5 @@
 KAFKA FROM SCRATCH. COURSE NOTES
-Apache Kafka 4.1.2 | 2026-10-18 | v1.5.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.6.0
 
 WHAT KAFKA IS
 =================================================================
@@ -143,7 +143,7 @@ The supplied Java client exposes small, readable experiments. Its entire source 
 
 docker compose build lab
 
-Observe: The image kafka-course-lab:1.5.0 is built. The first build downloads Maven dependencies.
+Observe: The image kafka-course-lab:1.6.0 is built. The first build downloads Maven dependencies.
 
 3. Start three nodes
 Run from the labs folder. This creates only the course’s named Docker project. Ports 19092, 29092 and 39092 must be free.
@@ -1785,7 +1785,82 @@ C. Reduce the lag on the busiest partition
 Answer: A. Find the constraint before scaling. More workers waiting on the same dependency wait together.
 
 
-25. Scale the right dimension
+25. Looking is not touching
+=================================================================
+A team console shows the cluster; permissions decide what can change.
+
+A console for the whole team
+Kafbat UI is an open source web console (Apache 2.0) for managing Kafka clusters. It shows brokers, topics, partitions, consumer groups with their lag, and the messages themselves. It reads them through the same Admin and consumer APIs as the command-line tools: it adds a shared screen, not new information.
+→ A console shows the cluster; it does not replace knowing what each number means.
+
+Read-only is a console setting
+With KAFKA_CLUSTERS_0_READONLY=true the console refuses its own write actions: no new topics, no produced messages, no offset resets. The broker never sees that setting. Any client with the same credentials can still write; what protects the cluster is authentication plus ACLs on the broker, as in lesson 23.
+→ A read-only console is a convenience; least privilege lives in the broker.
+
+The same lag through another window
+The console computes lag as the command-line tool does: log end offset minus the group’s committed offset, per partition, and adds the partitions for a total. It shows a snapshot that refreshes, so between refreshes it can be behind. Browsing messages joins no group and commits nothing: looking moves no bookmark.
+→ Two tools agree because they read the same offsets, not because one checks the other.
+
+DOCKER ACTIVITY
+1. Prepare this lab
+In a terminal, enter the extracted labs folder. Start the cluster, then prepare this lesson’s own topics. Preparation deletes only this lesson’s previous practice topics.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 28
+
+Observe: Three healthy brokers and READY. Run lesson 00 first if the lab image has not been built.
+
+2. Leave a group behind
+Publish six records, two per partition, and place the bookmark of the group console at the beginning without consuming anything.
+
+docker compose run --rm lab seed 28
+docker compose run --rm lab reset 28 console
+
+Observe: Six ACK lines across partitions 0, 1 and 2, then RESET console with offset 0 on each partition.
+
+3. Open the console in read-only mode
+Start Kafbat UI, an optional service of this kit, and open http://localhost:18081. The first start downloads its image.
+
+docker compose up -d kafbat
+
+Observe: The cluster course is online with three brokers. In Topics there is no button to add a topic and Delete selected topics is disabled; in lab28, Produce Message is disabled. The console is read-only.
+
+4. Compare the lag through two windows
+In the console, open Consumers, then console, and expand lab28. Then ask the broker with the Kafka command-line tool.
+
+docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --describe --group console
+
+Observe: The console shows the group EMPTY with total lag 6. The tool says the group has no active members and shows LAG 2 on partitions 0, 1 and 2, with CURRENT-OFFSET 0 and LOG-END-OFFSET 2.
+
+5. Look, then check that nothing changed
+In the console, open Topics, then lab28, then Messages, and read the six records. Then list the groups and stop the console.
+
+docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --list
+docker compose stop kafbat
+
+Observe: The list shows console and the groups of other lessons; the console added none. Browsing is not consuming: no group moved.
+
+CHECKPOINT
+1. The team console runs with READONLY=true. What stops a script that uses the console’s credentials from deleting a topic?
+A. The read-only setting, which the broker enforces for those credentials
+B. Nothing, unless the broker denies it with ACLs for that principal
+C. The console, which intercepts every connection to the cluster
+Answer: B. Read-only lives in the console and filters only the console’s own actions. Authorization is the broker’s job: give the console’s principal read and describe permissions only.
+
+2. The console shows total lag 6 for a group; kafka-consumer-groups.sh --describe shows 2, 2 and 2. What does that mean?
+A. Both read the same committed offsets and log ends; the console adds the partitions
+B. The group is six seconds behind
+C. One of them is wrong: lag must be the same number in both
+Answer: A. Lag is counted per partition, in offsets. The total is a sum, and neither tool measures time.
+
+3. You browse the messages of lab28 in the console. What happens to the committed offsets of the group console?
+A. They move to the end, because the console read the messages
+B. They go back to the beginning
+C. They stay the same: browsing joins no group and commits nothing
+Answer: C. Only a member of a group commits that group’s offsets. Reading to inspect is not consuming on behalf of a team.
+
+
+26. Scale the right dimension
 =================================================================
 Storage, throughput, partitions and consumers are separate budgets.
 
@@ -1853,7 +1928,7 @@ C. Moves the old records of that key
 Answer: A. One key maps to one partition under the same partitioner. Changing the key design is a business decision about ordering.
 
 
-26. A second cluster is another system
+27. A second cluster is another system
 =================================================================
 Replication across clusters is a recovery design.
 
@@ -1927,7 +2002,7 @@ C. The producer and consumer timeouts
 Answer: A. They are business targets, and they are only real once a failover drill has met them.
 
 
-27. When work sharing is the goal
+28. When work sharing is the goal
 =================================================================
 Share groups use record acknowledgments instead of partition ownership.
 
@@ -2000,7 +2075,7 @@ C. Unavailable in any Kafka 4.x
 Answer: A. The course pins 4.1.2 deliberately. Check the readiness of the version you run before relying on share groups.
 
 
-28. Ship an order. Survive a failure.
+29. Ship an order. Survive a failure.
 =================================================================
 Bring the pieces together and defend your choices.
 
@@ -2086,7 +2161,7 @@ C. Exactly-once delivery to the kitchen API
 Answer: A. Name both the guarantee and its limit: three replicas, min ISR 2, one failure, this topology, this laptop.
 
 
-29. Read and write with Spring
+30. Read and write with Spring
 =================================================================
 A complete Java application. The same Kafka concepts.
 

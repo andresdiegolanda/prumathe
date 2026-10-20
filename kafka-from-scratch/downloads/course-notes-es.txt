@@ -1,5 +1,5 @@
 KAFKA DESDE CERO. APUNTES DEL CURSO
-Apache Kafka 4.1.2 | 2026-10-18 | v1.5.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.6.0
 
 QUÉ ES KAFKA
 =================================================================
@@ -143,7 +143,7 @@ El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene 
 
 docker compose build lab
 
-Observá: Se construye kafka-course-lab:1.5.0. La primera compilación descarga dependencias de Maven.
+Observá: Se construye kafka-course-lab:1.6.0. La primera compilación descarga dependencias de Maven.
 
 3. Levantá tres nodos
 Ejecutá desde labs. Se crea únicamente el proyecto Docker del curso. Los puertos 19092, 29092 y 39092 tienen que estar libres.
@@ -1785,7 +1785,82 @@ C. Reducir el lag de la partición más cargada
 Respuesta: A. Encontrá el límite antes de escalar. Más workers esperando a la misma dependencia esperan juntos.
 
 
-25. Escalá la dimensión correcta
+25. Mirar no es tocar
+=================================================================
+Una consola de equipo muestra el clúster; los permisos deciden qué puede cambiar.
+
+Una consola para todo el equipo
+Kafbat UI es una consola web open source (Apache 2.0) para administrar clústeres de Kafka. Muestra brokers, tópicos, particiones, grupos de consumidores con su lag y los mensajes mismos. Los lee con las mismas APIs de administración y de consumo que las herramientas de línea de comandos: suma una pantalla compartida, no información nueva.
+→ Una consola muestra el clúster; no reemplaza saber qué significa cada número.
+
+Solo lectura es una opción de la consola
+Con KAFKA_CLUSTERS_0_READONLY=true la consola rechaza sus propias acciones de escritura: no crea tópicos, no publica mensajes, no reinicia offsets. El broker nunca ve esa opción. Cualquier cliente con las mismas credenciales puede seguir escribiendo; lo que protege el clúster es la autenticación con ACL en el broker, como en la lección 23.
+→ Una consola de solo lectura es una comodidad; el mínimo privilegio vive en el broker.
+
+El mismo lag por otra ventana
+La consola calcula el lag como la herramienta de línea de comandos: offset de fin del log menos el offset confirmado del grupo, por partición, y suma las particiones para el total. Muestra una foto que se refresca, así que entre refrescos puede estar atrasada. Mirar mensajes no se une a ningún grupo ni confirma nada: mirar no mueve ningún señalador.
+→ Dos herramientas coinciden porque leen los mismos offsets, no porque una verifique a la otra.
+
+ACTIVIDAD DOCKER
+1. Prepará este laboratorio
+En una terminal, entrá a la carpeta labs descomprimida. Levantá el clúster y prepará los tópicos de esta lección. La preparación borra únicamente los tópicos de práctica de esta lección.
+
+docker compose up -d --wait
+docker compose run --rm lab prepare 28
+
+Observá: Tres brokers saludables y READY. Hacé primero la lección 00 si todavía no construiste la imagen del laboratorio.
+
+2. Dejá un grupo atrasado
+Publicá seis registros, dos por partición, y poné el señalador del grupo console al principio sin consumir nada.
+
+docker compose run --rm lab seed 28
+docker compose run --rm lab reset 28 console
+
+Observá: Seis líneas ACK en las particiones 0, 1 y 2, y después RESET console con offset 0 en cada partición.
+
+3. Abrí la consola en solo lectura
+Levantá Kafbat UI, un servicio opcional de este kit, y abrí http://localhost:18081. El primer arranque descarga su imagen.
+
+docker compose up -d kafbat
+
+Observá: El clúster course aparece en línea con tres brokers. En Topics no está el botón para agregar un tópico y Delete selected topics está deshabilitado; en lab28, Produce Message también. La consola está en solo lectura.
+
+4. Compará el lag por dos ventanas
+En la consola, abrí Consumers, después console, y desplegá lab28. Después preguntale al broker con la herramienta de línea de comandos de Kafka.
+
+docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --describe --group console
+
+Observá: La consola muestra el grupo EMPTY con lag total 6. La herramienta dice que el grupo no tiene miembros activos y muestra LAG 2 en las particiones 0, 1 y 2, con CURRENT-OFFSET 0 y LOG-END-OFFSET 2.
+
+5. Mirá y comprobá que nada cambió
+En la consola, abrí Topics, después lab28 y después Messages, y leé los seis registros. Después listá los grupos y detené la consola.
+
+docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --list
+docker compose stop kafbat
+
+Observá: La lista muestra console y los grupos de otras lecciones; la consola no agregó ninguno. Mirar no es consumir: ningún grupo avanzó.
+
+CONTROL
+1. La consola del equipo corre con READONLY=true. ¿Qué impide que un script con las credenciales de la consola borre un tópico?
+A. La opción de solo lectura, que el broker aplica a esas credenciales
+B. Nada, salvo que el broker se lo niegue con ACL para ese principal
+C. La consola, que intercepta toda conexión al clúster
+Respuesta: B. El solo lectura vive en la consola y filtra solo sus propias acciones. Autorizar es tarea del broker: dale al principal de la consola solo permisos de lectura y descripción.
+
+2. La consola muestra lag total 6 para un grupo; kafka-consumer-groups.sh --describe muestra 2, 2 y 2. ¿Qué significa?
+A. Las dos leen los mismos offsets confirmados y fines de log; la consola suma las particiones
+B. El grupo está seis segundos atrasado
+C. Una de las dos está mal: el lag tiene que ser el mismo número en ambas
+Respuesta: A. El lag se cuenta por partición y en offsets. El total es una suma, y ninguna de las dos mide tiempo.
+
+3. Mirás los mensajes de lab28 en la consola. ¿Qué pasa con los offsets confirmados del grupo console?
+A. Avanzan al final, porque la consola leyó los mensajes
+B. Vuelven al principio
+C. Quedan iguales: mirar no se une a ningún grupo ni confirma nada
+Respuesta: C. Solo un miembro del grupo confirma sus offsets. Leer para inspeccionar no es consumir en nombre de un equipo.
+
+
+26. Escalá la dimensión correcta
 =================================================================
 Almacenamiento, throughput, particiones y consumidores tienen presupuestos propios.
 
@@ -1853,7 +1928,7 @@ C. Mueve los mensajes viejos de esa clave
 Respuesta: A. Una clave va a una partición con el mismo particionador. Cambiar el diseño de la clave es una decisión de negocio sobre el orden.
 
 
-26. Un segundo clúster es otro sistema
+27. Un segundo clúster es otro sistema
 =================================================================
 Replicar entre clústeres requiere diseñar la recuperación.
 
@@ -1927,7 +2002,7 @@ C. Los timeouts del productor y del consumidor
 Respuesta: A. Son objetivos de negocio, y solo son reales cuando un ensayo de conmutación los cumplió.
 
 
-27. Cuando el objetivo es repartir tareas
+28. Cuando el objetivo es repartir tareas
 =================================================================
 Los share groups confirman mensajes en lugar de asignar particiones enteras.
 
@@ -2000,7 +2075,7 @@ C. No disponibles en ningún Kafka 4.x
 Respuesta: A. El curso fija 4.1.2 a propósito. Verificá la madurez de la versión que usás antes de apoyarte en share groups.
 
 
-28. Entregá un pedido. Sobreviví a una falla.
+29. Entregá un pedido. Sobreviví a una falla.
 =================================================================
 Juntá las piezas y defendé tus decisiones.
 
@@ -2086,7 +2161,7 @@ C. Entrega exactamente una vez a la API de cocina
 Respuesta: A. Nombrá la garantía y su límite: tres réplicas, ISR mínimo 2, una falla, esta topología, esta laptop.
 
 
-29. Leé y escribí con Spring
+30. Leé y escribí con Spring
 =================================================================
 Una aplicación Java completa. Los mismos conceptos de Kafka.
 

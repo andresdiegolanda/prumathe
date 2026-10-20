@@ -16,8 +16,11 @@ window.KAFKA_COURSE = (() => {
     B('Java with Spring', 'Java con Spring'),
   ];
   const lessons = [];
+  // First lesson of each unit. Unit 6 has five lessons since the console lesson (25) joined it.
+  const unitStarts = [0, 1, 5, 9, 13, 17, 21, 26, 30];
+  const unitOf = (id) => unitStarts.filter((first) => id >= first).length - 1;
   const add = (slug, title, intro, visual, frames, experiment, quiz, lab, source) =>
-    lessons.push({ id: lessons.length, unit: lessons.length === 0 ? 0 : Math.ceil(lessons.length / 4), slug, title, intro, visual, frames, experiment, quiz, lab, source });
+    lessons.push({ id: lessons.length, unit: unitOf(lessons.length), slug, title, intro, visual, frames, experiment, quiz, lab, source });
   const F = (title, text, rule) => ({ title, text, rule });
   const Q = (question, options, correct, explanation) => ({ question, options, correct, explanation });
   const S = (title, text, command, expected) => ({ title, text, command, expected });
@@ -158,7 +161,7 @@ window.KAFKA_COURSE = (() => {
         B('Build the client once', 'Construí el cliente una vez'),
         B('The supplied Java client exposes small, readable experiments. Its entire source is included. No Java installation is needed on your computer.', 'El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene con todo su código. No necesitás instalar Java en tu computadora.'),
         'docker compose build lab',
-        B('The image kafka-course-lab:1.5.0 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.5.0. La primera compilación descarga dependencias de Maven.'),
+        B('The image kafka-course-lab:1.6.0 is built. The first build downloads Maven dependencies.', 'Se construye kafka-course-lab:1.6.0. La primera compilación descarga dependencias de Maven.'),
       ),
       S(
         B('Start three nodes', 'Levantá tres nodos'),
@@ -1788,7 +1791,81 @@ window.KAFKA_COURSE = (() => {
     'monitoring',
   );
 
-  // 25 Scale the right dimension
+  // 25 Looking is not touching
+  add(
+    'admin-console',
+    B('Looking is not touching', 'Mirar no es tocar'),
+    B('A team console shows the cluster; permissions decide what can change.', 'Una consola de equipo muestra el clúster; los permisos deciden qué puede cambiar.'),
+    'console',
+    [
+      F(
+        B('A console for the whole team', 'Una consola para todo el equipo'),
+        B('Kafbat UI is an open source web console (Apache 2.0) for managing Kafka clusters. It shows brokers, topics, partitions, consumer groups with their lag, and the messages themselves. It reads them through the same Admin and consumer APIs as the command-line tools: it adds a shared screen, not new information.', 'Kafbat UI es una consola web open source (Apache 2.0) para administrar clústeres de Kafka. Muestra brokers, tópicos, particiones, grupos de consumidores con su lag y los mensajes mismos. Los lee con las mismas APIs de administración y de consumo que las herramientas de línea de comandos: suma una pantalla compartida, no información nueva.'),
+        B('A console shows the cluster; it does not replace knowing what each number means.', 'Una consola muestra el clúster; no reemplaza saber qué significa cada número.'),
+      ),
+      F(
+        B('Read-only is a console setting', 'Solo lectura es una opción de la consola'),
+        B('With KAFKA_CLUSTERS_0_READONLY=true the console refuses its own write actions: no new topics, no produced messages, no offset resets. The broker never sees that setting. Any client with the same credentials can still write; what protects the cluster is authentication plus ACLs on the broker, as in lesson 23.', 'Con KAFKA_CLUSTERS_0_READONLY=true la consola rechaza sus propias acciones de escritura: no crea tópicos, no publica mensajes, no reinicia offsets. El broker nunca ve esa opción. Cualquier cliente con las mismas credenciales puede seguir escribiendo; lo que protege el clúster es la autenticación con ACL en el broker, como en la lección 23.'),
+        B('A read-only console is a convenience; least privilege lives in the broker.', 'Una consola de solo lectura es una comodidad; el mínimo privilegio vive en el broker.'),
+      ),
+      F(
+        B('The same lag through another window', 'El mismo lag por otra ventana'),
+        B('The console computes lag as the command-line tool does: log end offset minus the group’s committed offset, per partition, and adds the partitions for a total. It shows a snapshot that refreshes, so between refreshes it can be behind. Browsing messages joins no group and commits nothing: looking moves no bookmark.', 'La consola calcula el lag como la herramienta de línea de comandos: offset de fin del log menos el offset confirmado del grupo, por partición, y suma las particiones para el total. Muestra una foto que se refresca, así que entre refrescos puede estar atrasada. Mirar mensajes no se une a ningún grupo ni confirma nada: mirar no mueve ningún señalador.'),
+        B('Two tools agree because they read the same offsets, not because one checks the other.', 'Dos herramientas coinciden porque leen los mismos offsets, no porque una verifique a la otra.'),
+      ),
+    ],
+    B('Switch the request from looking to changing and see where it stops. Then follow the other path: a client with the same credentials that never passes through the console.', 'Cambiá el pedido de mirar a modificar y mirá dónde se frena. Después seguí el otro camino: un cliente con las mismas credenciales que nunca pasa por la consola.'),
+    [
+      Q(
+        B('The team console runs with READONLY=true. What stops a script that uses the console’s credentials from deleting a topic?', 'La consola del equipo corre con READONLY=true. ¿Qué impide que un script con las credenciales de la consola borre un tópico?'),
+        [B('The read-only setting, which the broker enforces for those credentials', 'La opción de solo lectura, que el broker aplica a esas credenciales'), B('Nothing, unless the broker denies it with ACLs for that principal', 'Nada, salvo que el broker se lo niegue con ACL para ese principal'), B('The console, which intercepts every connection to the cluster', 'La consola, que intercepta toda conexión al clúster')],
+        1,
+        B('Read-only lives in the console and filters only the console’s own actions. Authorization is the broker’s job: give the console’s principal read and describe permissions only.', 'El solo lectura vive en la consola y filtra solo sus propias acciones. Autorizar es tarea del broker: dale al principal de la consola solo permisos de lectura y descripción.'),
+      ),
+      Q(
+        B('The console shows total lag 6 for a group; kafka-consumer-groups.sh --describe shows 2, 2 and 2. What does that mean?', 'La consola muestra lag total 6 para un grupo; kafka-consumer-groups.sh --describe muestra 2, 2 y 2. ¿Qué significa?'),
+        [B('Both read the same committed offsets and log ends; the console adds the partitions', 'Las dos leen los mismos offsets confirmados y fines de log; la consola suma las particiones'), B('The group is six seconds behind', 'El grupo está seis segundos atrasado'), B('One of them is wrong: lag must be the same number in both', 'Una de las dos está mal: el lag tiene que ser el mismo número en ambas')],
+        0,
+        B('Lag is counted per partition, in offsets. The total is a sum, and neither tool measures time.', 'El lag se cuenta por partición y en offsets. El total es una suma, y ninguna de las dos mide tiempo.'),
+      ),
+      Q(
+        B('You browse the messages of lab28 in the console. What happens to the committed offsets of the group console?', 'Mirás los mensajes de lab28 en la consola. ¿Qué pasa con los offsets confirmados del grupo console?'),
+        [B('They move to the end, because the console read the messages', 'Avanzan al final, porque la consola leyó los mensajes'), B('They go back to the beginning', 'Vuelven al principio'), B('They stay the same: browsing joins no group and commits nothing', 'Quedan iguales: mirar no se une a ningún grupo ni confirma nada')],
+        2,
+        B('Only a member of a group commits that group’s offsets. Reading to inspect is not consuming on behalf of a team.', 'Solo un miembro del grupo confirma sus offsets. Leer para inspeccionar no es consumir en nombre de un equipo.'),
+      ),
+    ],
+    [
+      prep(28),
+      S(
+        B('Leave a group behind', 'Dejá un grupo atrasado'),
+        B('Publish six records, two per partition, and place the bookmark of the group console at the beginning without consuming anything.', 'Publicá seis registros, dos por partición, y poné el señalador del grupo console al principio sin consumir nada.'),
+        run('seed 28') + '\n' + run('reset 28 console'),
+        B('Six ACK lines across partitions 0, 1 and 2, then RESET console with offset 0 on each partition.', 'Seis líneas ACK en las particiones 0, 1 y 2, y después RESET console con offset 0 en cada partición.'),
+      ),
+      S(
+        B('Open the console in read-only mode', 'Abrí la consola en solo lectura'),
+        B('Start Kafbat UI, an optional service of this kit, and open http://localhost:18081. The first start downloads its image.', 'Levantá Kafbat UI, un servicio opcional de este kit, y abrí http://localhost:18081. El primer arranque descarga su imagen.'),
+        'docker compose up -d kafbat',
+        B('The cluster course is online with three brokers. In Topics there is no button to add a topic and Delete selected topics is disabled; in lab28, Produce Message is disabled. The console is read-only.', 'El clúster course aparece en línea con tres brokers. En Topics no está el botón para agregar un tópico y Delete selected topics está deshabilitado; en lab28, Produce Message también. La consola está en solo lectura.'),
+      ),
+      S(
+        B('Compare the lag through two windows', 'Compará el lag por dos ventanas'),
+        B('In the console, open Consumers, then console, and expand lab28. Then ask the broker with the Kafka command-line tool.', 'En la consola, abrí Consumers, después console, y desplegá lab28. Después preguntale al broker con la herramienta de línea de comandos de Kafka.'),
+        'docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --describe --group console',
+        B('The console shows the group EMPTY with total lag 6. The tool says the group has no active members and shows LAG 2 on partitions 0, 1 and 2, with CURRENT-OFFSET 0 and LOG-END-OFFSET 2.', 'La consola muestra el grupo EMPTY con lag total 6. La herramienta dice que el grupo no tiene miembros activos y muestra LAG 2 en las particiones 0, 1 y 2, con CURRENT-OFFSET 0 y LOG-END-OFFSET 2.'),
+      ),
+      S(
+        B('Look, then check that nothing changed', 'Mirá y comprobá que nada cambió'),
+        B('In the console, open Topics, then lab28, then Messages, and read the six records. Then list the groups and stop the console.', 'En la consola, abrí Topics, después lab28 y después Messages, y leé los seis registros. Después listá los grupos y detené la consola.'),
+        'docker compose exec kafka1 /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka1:9092 --list\ndocker compose stop kafbat',
+        B('The list shows console and the groups of other lessons; the console added none. Browsing is not consuming: no group moved.', 'La lista muestra console y los grupos de otras lecciones; la consola no agregó ninguno. Mirar no es consumir: ningún grupo avanzó.'),
+      ),
+    ],
+    'kafbat',
+  );
+
+  // 26 Scale the right dimension
   add(
     'scaling',
     B('Scale the right dimension', 'Escalá la dimensión correcta'),
@@ -1856,7 +1933,7 @@ window.KAFKA_COURSE = (() => {
     'operations',
   );
 
-  // 26 A second cluster is another system
+  // 27 A second cluster is another system
   add(
     'mirroring',
     B('A second cluster is another system', 'Un segundo clúster es otro sistema'),
@@ -1930,7 +2007,7 @@ window.KAFKA_COURSE = (() => {
     'mirror',
   );
 
-  // 27 When work sharing is the goal
+  // 28 When work sharing is the goal
   add(
     'share-groups',
     B('When work sharing is the goal', 'Cuando el objetivo es repartir tareas'),
@@ -2004,7 +2081,7 @@ window.KAFKA_COURSE = (() => {
     'share',
   );
 
-  // 28 Ship an order. Survive a failure.
+  // 29 Ship an order. Survive a failure.
   add(
     'capstone',
     B('Ship an order. Survive a failure.', 'Entregá un pedido. Sobreviví a una falla.'),
@@ -2084,7 +2161,7 @@ window.KAFKA_COURSE = (() => {
     'transactions',
   );
 
-  // 29 Read and write with Spring
+  // 30 Read and write with Spring
   add(
     'spring-java',
     B('Read and write with Spring', 'Leé y escribí con Spring'),
@@ -2175,5 +2252,5 @@ window.KAFKA_COURSE = (() => {
     'spring',
   );
 
-  return { version: '1.5.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
+  return { version: '1.6.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
 })();

@@ -8,9 +8,9 @@ Una aplicación completa con Java 21 y Spring Boot 3.5.16 que escribe y lee `spr
 
 Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; la línea actual es Spring Boot 4.x. El ejemplo sigue en 3.5.16 porque es la versión que el curso validó; todo lo que usa (`KafkaTemplate`, `@KafkaListener`, `TopicBuilder`, `CommonContainerStoppingErrorHandler`, `JsonSerializer`) existe sin cambios en Spring Kafka 4, y pasar la lección a Boot 4.x está planificado.
 
-Course kit 1.5.0; image `kafka-course-spring:1.5.0`.
+Course kit 1.6.0; image `kafka-course-spring:1.6.0`.
 
-Kit del curso 1.5.0; imagen `kafka-course-spring:1.5.0`.
+Kit del curso 1.6.0; imagen `kafka-course-spring:1.6.0`.
 
 ## Run it / Ejecutalo
 

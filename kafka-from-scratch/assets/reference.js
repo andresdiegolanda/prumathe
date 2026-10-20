@@ -71,6 +71,10 @@ window.KAFKA_REFERENCE = {
       'Apache Kafka · Cross-cluster mirroring',
       'https://kafka.apache.org/41/operations/geo-replication-cross-cluster-data-mirroring/',
     ],
+    kafbat: [
+      'Kafbat UI · Configuration properties',
+      'https://ui.docs.kafbat.io/configuration/misc-configuration-properties',
+    ],
     share: [
       'Apache Kafka · Share consumer API (4.1 preview)',
       'https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaShareConsumer.html',
@@ -390,14 +394,14 @@ window.KAFKA_REFERENCE = {
       'RPO / RTO',
       'Tolerable data loss / tolerable recovery duration.',
       'Pérdida tolerable de datos / duración tolerable de recuperación.',
-      26,
+      27,
     ],
     [
       'Share group',
       'Share group',
       'A group using per-record acquisition and acknowledgment; preview in the pinned 4.1 lab, production-ready since Kafka 4.2.',
       'Un grupo con adquisición y confirmación por mensaje; preview en el laboratorio fijado en 4.1, production-ready desde Kafka 4.2.',
-      27,
+      28,
     ],
   ],
 };

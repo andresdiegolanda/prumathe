@@ -96,5 +96,33 @@ else if(suite==='integrations'){
     await until(s=>s.brokers.every(b=>b.up)&&topic(s,'lab9').partitions[0].isr.length===3,120000);
     console.log('PASS viewer page, read-only HTTP, brokers and controller, records with headers, group bookmarks, no groups or topics of its own, broker failure, leader change and recovery');
   }finally{docker(['stop','visor']);}
-}else throw new Error('Suite must be core, failures, integrations, spring or visor');
+}else if(suite==='kafbat'){
+  // The console lesson (25): Kafbat UI in read-only mode reports the same lag as the Kafka tool,
+  // refuses writes, and browsing messages creates no group and moves no bookmark.
+  const api='http://127.0.0.1:18081/api/clusters';
+  const json=async(u)=>{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status+' '+u);return r.json();};
+  async function until(fn,predicate,ms=120000){const end=Date.now()+ms;let v;do{try{v=await fn();if(predicate(v))return v;}catch(err){v=String(err);}await pause(2000);}while(Date.now()<end);throw new Error('Console condition not reached: '+JSON.stringify(v).slice(0,600));}
+  const tool=(...a)=>docker(['exec','kafka1','/opt/kafka/bin/'+a[0],'--bootstrap-server','kafka1:9092',...a.slice(1)]);
+  const groups=()=>tool('kafka-consumer-groups.sh','--list').split(/\r?\n/).map(x=>x.trim()).filter(Boolean).sort().join(',');
+  lab('prepare',28);lab('seed',28);expect(['reset',28,'console'],/RESET console/);
+  docker(['up','-d','kafbat'],{timeout:600000});
+  try{
+    await until(()=>json(api),c=>c.length===1&&c[0].name==='course'&&c[0].status==='ONLINE'&&c[0].readOnly===true&&c[0].brokerCount===3);
+    const before=groups();
+    const g=await until(()=>json(api+'/course/consumer-groups/console'),x=>x.consumerLag===6);
+    if(g.partitions.length!==3||!g.partitions.every(p=>p.topic==='lab28'&&p.currentOffset===0&&p.endOffset===2&&p.consumerLag===2))throw new Error('Console lag per partition: '+JSON.stringify(g.partitions));
+    const rows=tool('kafka-consumer-groups.sh','--describe','--group','console').split(/\r?\n/).filter(x=>/^console\s+lab28\s/.test(x)).map(x=>x.trim().split(/\s+/));
+    if(rows.length!==3||!rows.every(r=>r[3]==='0'&&r[4]==='2'&&r[5]==='2'))throw new Error('Tool lag per partition: '+JSON.stringify(rows));
+    for(const [method,url,body] of [['POST','/course/topics',{name:'lab28-console',partitions:1,replicationFactor:3}],['POST','/course/consumer-groups/console/offsets',{resetType:'EARLIEST',topic:'lab28'}],['DELETE','/course/topics/lab28']]){
+      const r=await fetch(api+url,{method,headers:{'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
+      if(r.status!==405)throw new Error(method+' '+url+' was not refused: HTTP '+r.status);
+    }
+    if(/lab28-console/.test(tool('kafka-topics.sh','--list')))throw new Error('The console created a topic');
+    const stream=await (await fetch(api+'/course/topics/lab28/messages/v2?mode=EARLIEST&limit=10')).text();
+    if((stream.match(/"type":"MESSAGE"/g)||[]).length!==6)throw new Error('The console did not show six records');
+    if(groups()!==before)throw new Error('Browsing changed the consumer groups: '+before+' -> '+groups());
+    if((await json(api+'/course/consumer-groups/console')).consumerLag!==6)throw new Error('Browsing moved the group console');
+    console.log('PASS read-only console: three brokers, lag 2+2+2 in console and tool, writes refused with 405, six records browsed, no new group, bookmark unchanged');
+  }finally{docker(['stop','kafbat']);}
+}else throw new Error('Suite must be core, failures, integrations, spring, visor or kafbat');
 console.log(`SUITE ${suite} PASSED (${log.length} operations). Evidence: .qa/labs-${suite}.json`);

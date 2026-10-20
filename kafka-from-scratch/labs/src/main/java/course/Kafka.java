@@ -35,10 +35,13 @@ final class Kafka {
 
   private Kafka() {}
 
-  /** Lesson topics are named lab1 to lab27; the setup lesson and the Spring lesson have none. */
+  /**
+   * Lesson topics are named lab1 to lab28; the setup lesson and the Spring lesson have none. The
+   * number is the topic's, not the displayed lesson's: lab28 belongs to the console lesson (25).
+   */
   static String topic(int n) {
-    if (n < 1 || n > 27) {
-      throw new IllegalArgumentException("Lesson ID must be 1..27");
+    if (n < 1 || n > 28) {
+      throw new IllegalArgumentException("Lesson ID must be 1..28");
     }
     return "lab" + n;
   }

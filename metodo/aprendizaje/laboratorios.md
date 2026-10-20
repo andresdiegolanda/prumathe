@@ -85,6 +85,20 @@ Control: `git status` limpio después de build, check y suites.
 Origen: Kafka invitaba a leer `Lab.java`, de 327 líneas con una de 708 caracteres (§6.1); la 1.1.0 lo partió en una clase por tema y lo formateó.
 Control: formateador antes de cada commit.
 
+### Una herramienta de terceros se prueba antes de escribir su lección
+
+Se corre la versión que se va a fijar contra el sistema del curso, y se contesta con evidencia lo que la documentación no dice: compatibilidad, qué bloquea, qué deja en el sistema, cuánta memoria usa. Lo que la lección espera observar nombra rótulos de esa interfaz, que pueden cambiar en la próxima versión: el `docs/TEACHING.md` del curso dice cómo revisarlos al actualizar.
+
+Origen: Kafbat UI en Kafka 1.6.0. La documentación no decía qué bloquea el modo de solo lectura ni si mirar mensajes crea grupos; se contestó leyendo su código (el filtro de la API) y corriendo la imagen contra el clúster del curso (405 en las escrituras, ningún grupo nuevo). La misma prueba mostró que su versión vigente se apoya en Spring Boot 3.5 y clientes de la línea 3.9, y quedó dicho en VALIDATION.
+Control: la suite de la lección, y una pasada a mano por la interfaz cada vez que cambia la versión fijada.
+
+### Cada servicio publicado tiene un puerto que ningún otro curso usa
+
+Quien cursa puede tener dos cursos levantados. Antes de publicar un puerto, se mira cuáles usan los demás.
+
+Origen: el 20/10, el puerto elegido para Kafbat UI (18091) ya lo usaba el visor del curso de Docker y Kubernetes, y la app de ese curso y la de Spring del de Kafka comparten 18080 (card en el [`tablero.md`](../../tablero.md)).
+Control: la lista de puertos en uso de esa card, hasta que exista un control automático.
+
 ### Una herramienta en vivo muestra el sistema real con el dibujo del curso
 
 Un visor local que lee el sistema cada medio segundo hace visible lo que el experimento cambia, con las mismas formas y palabras que los modelos. Lo sirve la imagen del laboratorio en 127.0.0.1, se abre en la lección 01 y cada lección dice qué seguir. Al pasar el mouse muestra el contenido, y al hacer clic, qué es el objeto, para qué sirve, qué muestra ahora y qué acciones soporta, con el comando y la lección (todo comando nombrado existe en una lección). Si el sistema no responde, muestra la última lectura buena marcada como vieja.

@@ -225,9 +225,9 @@ window.KafkaVisuals = (() => {
           13, C.ink, 'middle');
         range('phase', 'Cycle marker', 'Señalador del circuito', 0, 3, phase);
       } else {
-        s += pill(35, 374, 210, t('Full course: 00 to 29', 'Completo: 00 a 29'), C.mint);
+        s += pill(35, 374, 210, t('Full course: 00 to 30', 'Completo: 00 a 30'), C.mint);
         s += pill(265, 374, 210, t('Choose a unit', 'Elegí una unidad'), C.amber);
-        s += pill(495, 374, 230, t('Shortcuts: 13 or 29', 'Atajos: 13 o 29'), C.panelAlt);
+        s += pill(495, 374, 230, t('Shortcuts: 13 or 30', 'Atajos: 13 o 30'), C.panelAlt);
         s += txt(380, 432,
           t('One kit. A terminal. Free memory for the services.',
             'Un kit. Una terminal. Memoria libre para los servicios.'),
@@ -1348,6 +1348,59 @@ window.KafkaVisuals = (() => {
         late === 3 ? C.red : C.green,
       );
       range('n', 'Arrival scenario', 'Escenario de llegada', 1, 3, late);
+    } else if (type === 'console') {
+      s = heading(
+        t('A CONSOLE IS A WINDOW', 'UNA CONSOLA ES UNA VENTANA'),
+        t(
+          'Read-only lives in the console; permission lives in the broker.',
+          'El solo lectura vive en la consola; el permiso, en el broker.',
+        ),
+      );
+      s +=
+        box(
+          35, 120, 165, 90, t('Browser', 'Navegador'), t('the team', 'el equipo'), C.blue, 'browser',
+          t('People look at the cluster through the console instead of the command line.',
+            'Las personas miran el clúster por la consola en lugar de la línea de comandos.'),
+        ) +
+        arrow(200, 165, 262, 165, toggle ? C.red : C.blue) +
+        box(
+          265, 92, 215, 146, 'Kafbat UI',
+          toggle ? t('write: refused', 'escritura: rechazada') : t('read: allowed', 'lectura: permitida'),
+          toggle ? C.red : C.green, 'console',
+          t('READONLY=true makes the console refuse its own write requests. The broker never sees that setting.',
+            'READONLY=true hace que la consola rechace sus propios pedidos de escritura. El broker nunca ve esa opción.'),
+        ) +
+        pill(290, 198, 165, 'READONLY=true', toggle ? C.fail : C.mint);
+      s += toggle
+        ? txt(517, 174, '×', 30, C.red, 'middle', 'font-weight="700"')
+        : arrow(480, 165, 552, 165, C.green);
+      s += box(
+        555, 120, 170, 90, t('3 brokers', '3 brokers'), 'ACL', C.orange, 'cluster',
+        t('Authentication plus ACLs decide what each principal may do, whoever sends the request.',
+          'La autenticación con ACL decide qué puede hacer cada principal, mande quien mande el pedido.'),
+      );
+      s +=
+        box(
+          35, 300, 165, 80, 'Script', t('same credentials', 'mismas credenciales'), C.purple, 'script',
+          t('A client with the console credentials does not pass through the console; only the broker can refuse it.',
+            'Un cliente con las credenciales de la consola no pasa por la consola; solo el broker lo puede rechazar.'),
+        ) + arrow(200, 340, 638, 214, C.purple, true);
+      if (step === 2) {
+        s += pill(
+          250, 398, 470,
+          t('Console and CLI: log end minus committed = lag', 'Consola y CLI: fin del log menos confirmado = lag'),
+          C.amber,
+        );
+      } else {
+        s += txt(
+          470, 420,
+          step === 1
+            ? t('The broker decides; the console filters only its own buttons.', 'Decide el broker; la consola filtra solo sus propios botones.')
+            : t('Same APIs as the command line, on a shared screen.', 'Las mismas APIs que la línea de comandos, en una pantalla compartida.'),
+          13, C.muted, 'middle',
+        );
+      }
+      button('toggle', 'Look / try to change', 'Mirar / intentar modificar');
     } else if (type === 'security') {
       s = heading(
         t('IDENTITY ≠ PERMISSION', 'IDENTIDAD ≠ PERMISO'),

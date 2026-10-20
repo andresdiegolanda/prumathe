@@ -36,7 +36,7 @@
           'The log, partitions, replication, consumer groups, exactly once and its boundary, Connect, Streams, security and share groups, on a three-node KRaft cluster that runs in Docker on your computer.',
           'El log, las particiones, la replicación, los grupos de consumidores, exactly once y su frontera, Connect, Streams, seguridad y share groups, sobre un clúster KRaft de tres nodos que corre en Docker en tu computadora.',
         ),
-        stats: [B('30 lessons', '30 lecciones'), B('135 lab steps', '135 pasos de lab'), B('Java and Spring Boot', 'Java y Spring Boot')],
+        stats: [B('31 lessons', '31 lecciones'), B('140 lab steps', '140 pasos de lab'), B('Java and Spring Boot', 'Java y Spring Boot')],
         needs: B('Docker Desktop or Docker Engine with Compose v2.', 'Docker Desktop o Docker Engine con Compose v2.'),
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],

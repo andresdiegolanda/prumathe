@@ -35,6 +35,7 @@ final class Topics {
       case 20 -> Set.of("course-count-20");
       case 21 -> Set.of("course-window-21");
       case 23 -> Set.of("ops");
+      case 28 -> Set.of("console");
       default -> Set.of();
     };
   }
@@ -81,7 +82,7 @@ final class Topics {
           Thread.sleep(250);
         }
       }
-      int count = Set.of(3, 4, 6, 8, 23, 24, 27).contains(n) ? 3 : 1;
+      int count = Set.of(3, 4, 6, 8, 23, 24, 27, 28).contains(n) ? 3 : 1;
       Map<String, String> config = new HashMap<>();
       config.put("min.insync.replicas", n == 10 ? "3" : "2");
       if (n == 12) {

@@ -25,11 +25,13 @@
     lang = localStorage.getItem('kafka-course-language') || 'en';
     progress = JSON.parse(localStorage.getItem('kafka-course-progress') || '{}');
     if (!progress || typeof progress !== 'object' || Array.isArray(progress)) progress = {};
-    // Version 1.1 stored indices 0 to 28; lesson 00 now precedes those lessons.
+    // Version 1.1 stored indices 0 to 28. Those lessons are named here by slug, in their 1.1 order,
+    // because later versions inserted lessons before and among them.
+    const legacy = ['start', 'event-log', 'record', 'partitions', 'keys-order', 'producer', 'consumer-groups', 'offsets', 'rebalances', 'replication', 'durability', 'kraft', 'retention', 'compaction', 'delivery', 'idempotence', 'transactions', 'schemas', 'connect', 'cdc-outbox', 'streams', 'time-windows', 'security', 'operations', 'scaling', 'mirroring', 'share-groups', 'capstone', 'spring-java'];
     let migrated = false;
     for (const key of Object.keys(progress)) {
       if (!/^(0|[1-9]\d*)$/.test(key) || Number(key) > 28) continue;
-      const slug = course.lessons[Number(key) + 1].slug;
+      const slug = legacy[Number(key)];
       progress[slug] = { ...progress[key], ...progress[slug] };
       delete progress[key];
       migrated = true;

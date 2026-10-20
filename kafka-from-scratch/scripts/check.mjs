@@ -15,9 +15,9 @@ for (const name of ['curriculum', 'visuals', 'reference', 'about', 'forum']) {
 const course = ctx.window.KAFKA_COURSE;
 const visuals = ctx.window.KafkaVisuals;
 const { lessons, units } = course;
-assert.equal(lessons.length, 30);
+assert.equal(lessons.length, 31);
 assert.equal(units.length, 9);
-assert.equal(new Set(lessons.map((x) => x.slug)).size, 30);
+assert.equal(new Set(lessons.map((x) => x.slug)).size, 31);
 
 const supported = new Set([
   'help',
@@ -126,7 +126,7 @@ const unitStarts = [
 ];
 units.forEach((_, unit) => {
   const members = lessons.filter((l) => l.unit === unit);
-  assert.equal(members.length, unit === 0 || unit === 8 ? 1 : 4);
+  assert.equal(members.length, unit === 0 || unit === 8 ? 1 : unit === 6 ? 5 : 4);
   assert.equal(members[0].slug, unitStarts[unit]);
 });
 assert.equal(lessons[0].slug, 'before-you-start');
@@ -134,10 +134,11 @@ assert.equal(lessons[0].source, 'docker');
 assert.equal(lessons[0].lab.length, 4);
 assert.ok(lessons[0].lab.every((s) => !s.command.includes('prepare ')));
 assert.equal(lessons[1].slug, 'start');
-assert.equal(lessons[29].slug, 'spring-java');
+assert.equal(lessons[25].slug, 'admin-console');
+assert.equal(lessons[30].slug, 'spring-java');
 assert.equal(frames, lessons.length * 3);
 assert.equal(questions, lessons.length * 3);
-assert.equal(steps, 135);
+assert.equal(steps, 140);
 for (const lang of ['en', 'es']) {
   const notes = fs.readFileSync(path.join(root, 'downloads/course-notes-' + lang + '.txt'), 'utf8');
   for (const l of lessons)
@@ -256,7 +257,15 @@ assert.ok(/\n  visor:\n[\s\S]*?ports: \["127\.0\.0\.1:18090:18090"\]/.test(compo
 assert.ok(/\n  visor:\n[\s\S]*?image: kafka-course-lab:/.test(compose) && !compose.match(/kafka-course-lab:[\d.]+/g).some((x) => x !== 'kafka-course-lab:' + course.version), 'visor image tag disagrees with curriculum.js');
 assert.ok(java.includes('case "visor" -> Visor.run();'), 'Java dispatcher starts the viewer');
 assert.ok(lessons[1].lab.some((s) => s.command === 'docker compose up -d visor'), 'lesson 01 opens the viewer');
+// The console lesson: Kafbat UI pinned by digest, read-only, published only on 127.0.0.1, started
+// by lesson 25 and stopped by it.
+const kafbat = /\n  kafbat:\n([\s\S]*?)(?:\n  [a-z]|\n[a-z]|$)/.exec(compose)?.[1] || '';
+assert.ok(/image: ghcr\.io\/kafbat\/kafka-ui:v[\d.]+@sha256:[0-9a-f]{64}/.test(kafbat), 'kafbat image pinned by digest');
+assert.ok(/KAFKA_CLUSTERS_0_READONLY: "true"/.test(kafbat), 'kafbat is read-only');
+assert.ok(kafbat.includes('ports: ["127.0.0.1:18081:8080"]'), 'kafbat published on 127.0.0.1:18081');
+assert.ok(lessons[25].lab.some((s) => s.command === 'docker compose up -d kafbat'), 'lesson 25 starts the console');
+assert.ok(lessons[25].lab.some((s) => s.command.includes('docker compose stop kafbat')), 'lesson 25 stops the console');
 
 console.log(
-  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage, the live viewer and version consistency.`,
+  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage, the live viewer, the console lesson and version consistency.`,
 );
