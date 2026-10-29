@@ -1,0 +1,32 @@
+name: Validar entra-from-scratch
+on:
+  push:
+    paths: ['entra-from-scratch/**', '.github/workflows/validate-entra.yml']
+  pull_request:
+    paths: ['entra-from-scratch/**', '.github/workflows/validate-entra.yml']
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: entra-from-scratch
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: node scripts/build.mjs
+      - run: node scripts/check.mjs
+      - run: node labs/lab.mjs setup
+      - run: npm ci && npm run build
+        working-directory: entra-from-scratch/labs/frontend
+      - run: docker compose up -d --build --wait
+        working-directory: entra-from-scratch/labs
+      - run: node scripts/test-activities.mjs
+      - if: always()
+        run: docker compose stop
+        working-directory: entra-from-scratch/labs

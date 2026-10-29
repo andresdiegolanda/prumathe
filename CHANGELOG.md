@@ -2,6 +2,12 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-10-29]
+
+### Agregado
+
+- Curso [`entra-from-scratch/`](entra-from-scratch/) 1.0.0, íntegramente en inglés: 24 lecciones, 72 escenas, 72 preguntas, 97 pasos, glosario de 44 términos y cuatro apariencias. App Angular/MSAL, API Spring Security y PostgreSQL para recorrer autenticación y autorización hasta la fila; 50 aserciones locales, recorrido separado de tenant, apuntes, kit y rúbrica. [Validación](entra-from-scratch/docs/VALIDATION.md) y [revisión](reviews/2026-10-29-entra-from-scratch-v1.0.0.md) separan lo ejecutado de lo pendiente. Tarjeta en la portada, workflow de validación y pendientes de tenant y publicación en el tablero. Aprendizaje agregado: distinguir el emisor de credenciales de prueba de una prueba de autenticación real.
+
 ## [2026-10-20]
 
 ### Agregado

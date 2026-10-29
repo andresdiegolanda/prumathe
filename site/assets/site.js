@@ -19,7 +19,7 @@
     ),
     facts: [
       B('Open in a browser, no account', 'Se abre en un navegador, sin cuenta'),
-      B('English and Rioplatense Spanish', 'Inglés y español rioplatense'),
+      B('Languages indicated in each course', 'Idiomas indicados en cada curso'),
       B('Labs on your own machine', 'Laboratorios en tu propia máquina'),
       B('MIT license', 'Licencia MIT'),
     ],
@@ -29,6 +29,21 @@
       'Cada curso es una carpeta: abrila, seguí las lecciones en orden, ejecutá los laboratorios. La lección 00 de cada uno explica qué prueba el curso y qué necesita tu máquina.',
     ),
     courses: [
+      {
+        slug: 'entra-from-scratch',
+        tech: 'Microsoft Entra ID',
+        title: B('Microsoft Entra from scratch', 'Microsoft Entra desde cero'),
+        text: B(
+          'Follow authentication and authorization through an Angular client, a Spring API and PostgreSQL: PKCE, tokens, scopes, roles, ownership, row security and transaction boundaries. This course is entirely in English.',
+          'Seguí la autenticación y la autorización en una app Angular, una API Spring y PostgreSQL: PKCE, tokens, scopes, roles, propiedad de filas, RLS y transacciones. Este curso está íntegramente en inglés.',
+        ),
+        stats: [B('24 lessons', '24 lecciones'), B('50 local assertions', '50 aserciones locales'), B('English', 'Inglés')],
+        needs: B('Node.js 24 and Docker with Compose v2. An Entra practice tenant for the separate online workbook.', 'Node.js 24 y Docker con Compose v2. Un tenant de práctica de Entra para el recorrido en línea separado.'),
+        links: [
+          ['index.html', B('Open the course', 'Abrir el curso'), true],
+          ['what-entra-is.html', B('What it does', 'Qué hace'), false],
+        ],
+      },
       {
         slug: 'kafka-from-scratch',
         tech: 'Apache Kafka',
@@ -121,8 +136,8 @@
       {
         title: B('Two languages, the same content', 'En dos idiomas, el mismo contenido'),
         text: B(
-          'English and Rioplatense Spanish, with technical terms as they appear in the tools.',
-          'Inglés y español rioplatense, con los términos técnicos tal como aparecen en las herramientas.',
+          'Most courses offer English and Rioplatense Spanish, with technical terms as they appear in the tools. The Microsoft Entra course is in English.',
+          'La mayoría de los cursos ofrece inglés y español rioplatense, con los términos técnicos tal como aparecen en las herramientas. El curso de Microsoft Entra está en inglés.',
         ),
       },
       {

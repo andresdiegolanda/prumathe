@@ -1,5 +1,12 @@
 # Laboratorios
 
+### Un emisor de credenciales de prueba no verifica autenticación real
+
+Un laboratorio que fabrica tokens puede probar los validadores, permisos y consultas del recurso, pero no el inicio de sesión, el consentimiento ni las políticas del proveedor. La interfaz, el kit y la evidencia nombran esa separación. El modo real cambia explícitamente la raíz de confianza y nunca vuelve al emisor local como alternativa a una falla.
+
+Origen: Microsoft Entra 1.0.0, con un emisor local para casos negativos y un recorrido de tenant separado ([VALIDATION](../../entra-from-scratch/docs/VALIDATION.md)).
+Control: la suite local se niega a correr en modo Entra; el recorrido de tenant comprueba que una credencial local siga rechazada.
+
 Revisiones citadas: [Kafka](../../reviews/2026-10-17-kafka-from-scratch-v1.0.0.md), [Docker y Kubernetes](../../reviews/2026-10-18-docker-kubernetes-from-scratch-v1.0.0.md) y [GitHub](../../reviews/2026-10-18-github-from-scratch-v1.0.0.md), todas sobre la 1.0.0 de cada curso.
 
 ### Los comandos viven una sola vez y la suite ejecuta esos mismos

@@ -1,0 +1,1603 @@
+MICROSOFT ENTRA FROM SCRATCH
+Version 1.0.0 | Sources reviewed 2026-10-29
+Angular 21.2.25 | MSAL Browser 5.27.0 | Spring Boot 4.1.2 | PostgreSQL 18.6
+
+What Microsoft Entra ID does
+Identity is a starting point. A secure application carries that evidence across explicit boundaries.
+
+The identity provider in the picture
+Microsoft Entra is a family of identity and network access products. This course focuses on Microsoft Entra ID in a workforce tenant and the Microsoft identity platform used by applications. It does not survey every Entra product.
+
+Entra ID helps an organization manage identities, authenticate sign-ins and issue tokens for applications. Our Angular client uses that identity platform to obtain evidence for the Spring API. The API decides what the caller may do, and PostgreSQL enforces database privileges and row policy.
+
+Think of a purchase request: an employee can sign in, yet lack permission to approve it. An approver can have the right role, yet be forbidden to approve their own purchase. The distance between those statements is where this course spends its attention.
+
+The names and standards you will encounter
+Older documentation often says Azure Active Directory or Azure AD. Microsoft announced the Entra ID name in 2023; that rename did not turn it into Windows Server Active Directory. OAuth and OpenID Connect are separate standards used in the application protocol.
+
+2012 OAuth 2.0: RFC 6749 defines the authorization framework, including authorization-code and client-credentials grants.
+2014 OIDC: OpenID Connect Core 1.0 defines an identity layer on OAuth 2.0.
+2015 PKCE: RFC 7636 specifies a proof-key mechanism for authorization code exchange.
+2023 Entra ID: Microsoft announces the new name for Azure Active Directory.
+2025 OAuth BCP: RFC 9700 records updated OAuth security best current practice.
+
+Where it fits in this application
+These are the responsibilities practiced by the course.
+Workforce sign-in: Use a tenant identity and its applicable sign-in policies rather than collecting a company password inside the SPA.
+Resource-specific access: Acquire delegated access to an API and validate the token at that API.
+Managed assignment: Define a small app-role vocabulary and assign users through the organization's identity administration.
+
+What this course does not delegate to Entra
+The following are design judgments of this course, not a claim that an identity product solves every application requirement.
+Who owns request 42?: Record ownership is application data. Validated identity plus an API/database predicate.
+May a request approve itself?: A role cannot represent every relationship and state. An explicit business rule enforced atomically.
+May JDBC connect?: The database connection has a distinct principal and credential. Database authentication and least-privilege grants.
+Is this deployment secure?: A successful login does not test transport, supply chain or operational controls. Threat modeling and evidence from the deployed system.
+
+1. Which identities and tenants will this application accept?
+2. Which component receives each token, and which audience must it validate?
+3. What can the client do on behalf of the user, and what may that user do?
+4. How will tenant, owner and mutable state constrain every data path?
+5. What must happen when a role changes, a token expires or an identity service is unavailable?
+
+
+00. Before you start
+=================================================================
+Learn to explain a decision all the way from the browser to a row.
+Evidence route: local
+
+One application, one recurring question
+A research team buys equipment. Alice submits a purchase request. Bob submits another. An approver may approve somebody else's pending request in the same tenant. Angular presents the interface, Spring enforces the rules, PostgreSQL stores the records, and Microsoft Entra ID supplies identity and access tokens. Our recurring question is: who may do what to which record, and which component proves it?
+Rule: A successful sign-in is the start of the investigation.
+
+Three grades of evidence
+The diagrams are deterministic models. The local kit runs a real Angular client, Spring resource server and PostgreSQL database with a deliberately simple test-token dispenser. It does not authenticate people or implement Entra. The tenant workbook switches to actual Entra registrations and users. Keep a model prediction, a local assertion and a tenant observation distinct in your notes.
+Rule: Never promote fixture evidence into an Entra guarantee.
+
+Prepare, then investigate
+You need basic HTTP and JSON knowledge. Read the overview first if identity vocabulary is new. The static course works offline. For the kit use Node.js 24 and Docker with Compose v2; the first build downloads dependencies. Angular is compiled locally. No paid Entra feature is required for the core tenant exercise, but account permissions and organizational policy can restrict registration and consent.
+Rule: The checkpoint assesses the reason, not command recall.
+
+MODEL EXPERIMENT: Select a failed boundary. Which component should refuse the request?
+
+ACTIVITY
+1. Read the lab contract
+Extract downloads/entra-labs.zip. Open labs/README.md. Check the port list and the distinction between fixture and Entra modes.
+Observe: The kit includes the Angular source, Spring source, SQL, tenant workbook and capstone rubric.
+
+2. Prepare the configuration
+Open a terminal in labs. This copies a public example configuration only if none exists. It never overwrites tenant settings.
+Reference: node lab.mjs setup
+Observe: Frontend configuration present, Node version and the next startup steps.
+
+3. Start the API and database
+The project is named prumathe-entra. Only its API and fixture issuer publish loopback ports. The first build downloads images and Java dependencies; later builds reuse the cache.
+Reference: docker compose up -d --build
+Observe: The db, issuer and api services start. Read /health if startup is still in progress.
+
+4. Start the Angular client
+In the frontend subfolder run npm ci, then npm start. Open http://localhost:18094. Keep that terminal running. Run later lab commands from labs.
+Observe: Local fixture mode, Alice, and a Ready message. No person was signed in.
+
+5. Make a baseline observation
+Run the boundary scenario from labs. Predict what changes when a token is added.
+Reference: node lab.mjs boundary
+Observe: No token gives 401; Alice reading request 41 gives 200.
+
+CHECKPOINT
+1. A local test rejects a forged JWT. What did it establish?
+A. The tenant requires MFA
+B. Spring rejected this fixture signature
+C. The browser cannot suffer XSS
+
+2. What should your notebook contain?
+A. Prediction, observation, explanation and limit
+B. Only a copied command
+C. Only a screenshot of PASS
+
+3. Can you study without an Entra tenant?
+A. Yes, with local tests and explicitly labeled case studies
+B. Yes, including proof of tenant consent
+C. Only the glossary
+
+ANSWERS AND REASONS
+1. B: The test exercises the configured API validator. It says nothing about tenant sign-in policy or browser compromise.
+2. A: The useful evidence connects a prediction to an observed decision and states what remains untested.
+3. A: The case studies preserve the reasoning exercise, but cannot prove an online policy was enforced.
+
+SOURCES
+Microsoft Entra overview
+https://learn.microsoft.com/en-us/entra/fundamentals/what-is-entra
+
+01. Four components, four responsibilities
+=================================================================
+A request crosses boundaries; trust does not travel automatically.
+Evidence route: local
+
+The browser is controlled by its user
+Angular can improve navigation, hide unavailable actions and display an account name. A user can also inspect its bundle, change its JavaScript or send an HTTP request without it. The browser is a client of the API, not a protected extension of the API. Anything necessary for permission enforcement must survive a caller bypassing the interface.
+Rule: A route guard is a usability control, not an API boundary.
+
+The API owns the business decision
+Entra issues a token for a resource under its identity and consent policies. Spring validates that token and then applies the application's rules. Knowing that Alice authenticated does not tell Entra whether purchase request 42 is Bob's, whether it is pending, or whether this purchase exceeds a limit. Those facts belong to the application.
+Rule: Identity evidence is an input to authorization, not its complete answer.
+
+The database sees a connection
+PostgreSQL authenticates the application's database role. It does not automatically know which browser user caused a query. Our API carries validated tenant and subject context into a transaction and also constrains the SQL. These are separate connections with separate credentials. A token sent to the API is not forwarded as a PostgreSQL password.
+Rule: Name the principal at every hop.
+
+MODEL EXPERIMENT: Switch between sign-in, API and row failures. Notice where the request stops.
+
+ACTIVITY
+1. Predict before sending
+Will removing the token affect the static page, the API, or both?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs boundary
+Observe: 401 without a token, 200 for Alice reading her request.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The fixture proves a resource-server boundary. It does not prove how Entra authenticated Alice.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. An Angular button is hidden. Can the API assume the operation is protected?
+A. Yes, if the bundle was minified
+B. Yes, if the guard checked a role
+C. No, callers can bypass the UI
+
+2. Which component knows whether request 42 is still pending?
+A. The SPA registration
+B. The token signature
+C. The application and its database
+
+3. Which principal normally opens the database connection here?
+A. The API database role
+B. The browser user directly
+C. The SPA client ID
+
+ANSWERS AND REASONS
+1. C: The API must independently enforce the operation for every request.
+2. C: Business state is read and changed inside the application boundary.
+3. A: The JDBC connection authenticates app_runtime. End-user context must be handled separately.
+
+SOURCES
+Microsoft identity platform application types
+https://learn.microsoft.com/en-us/entra/identity-platform/v2-app-types
+
+02. Authentication and authorization
+=================================================================
+Who is represented? What is this caller allowed to do?
+Evidence route: local
+
+Two questions with different evidence
+Authentication establishes an identity according to a mechanism and its trust assumptions. Authorization evaluates whether an action is permitted. At sign-in, Entra authenticates the person. At the API, Spring authenticates the bearer request using a validated token. Neither operation proves the human is physically present for every subsequent HTTP request.
+Rule: A bearer request presents evidence; possession matters.
+
+Policy is a conjunction
+Our approval endpoint requires an access token for this API, a delegated Requests.Approve scope, the user app role Approver, the correct tenant, another person's request and a pending status. Each requirement contributes a distinct fact. Removing any necessary fact should deny the operation, even if every other condition is true.
+Rule: Write the policy as AND before writing annotations.
+
+Identity is necessary but insufficient
+Alice can be authenticated and still lack a role. An approver can have a role and still be forbidden to approve their own request. A correct identity can be associated with a record in another tenant. Denial is often the correct operation of a secure system, not a sign-in defect to fix by broadening permissions.
+Rule: A denial must be explained at the boundary that made it.
+
+MODEL EXPERIMENT: Toggle the scope, role or ownership condition. Can one successful check compensate for another failure?
+
+ACTIVITY
+1. Predict before sending
+Predict four statuses: anonymous read, own read, unprivileged approval, somebody else's read.
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs matrix
+Observe: 401, 200, 403 and 404, respectively.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+HTTP status explains the contract, not every internal reason. This API uses 404 to avoid revealing protected row existence.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. Alice signs in successfully but cannot approve. Is that necessarily a bug?
+A. Yes, sign-in grants all app actions
+B. Yes, because the token is signed
+C. No, authentication can succeed while authorization denies
+
+2. Which policy matches the sample?
+A. Any valid token
+B. Scope OR role
+C. Scope AND role AND resource rules
+
+3. What does a bearer token prove about presence?
+A. The person is using this keyboard
+B. The caller possesses accepted token evidence
+C. The browser cannot copy it
+
+ANSWERS AND REASONS
+1. C: The operation has requirements that are independent of sign-in.
+2. C: The checks represent different constraints; they are not substitutes.
+3. B: Bearer tokens can be replayed by anyone who obtains them, within the accepting API's checks.
+
+SOURCES
+Validate claims in applications and APIs
+https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation
+
+03. Tenant, application, service principal
+=================================================================
+Separate the application definition from its presence in a directory.
+Evidence route: tenant
+
+A directory boundary
+A workforce tenant contains identities and configuration for an organization. The tenant ID identifies that directory. Our baseline accepts one tenant with an explicit issuer. Replacing that issuer with common is not a safe shortcut to a multitenant application: onboarding, issuer validation and data partitioning would all need a design.
+Rule: A tenant is part of the trust boundary, not just a login hint.
+
+Definition and local instance
+An app registration creates an application object in its home directory. A service principal represents the application in a tenant; Enterprise applications is the administrative view used for many of those tenant-level settings. The application client ID identifies the app, while object IDs identify directory objects. Copying the wrong ID can create a configuration that looks plausible but names the wrong thing.
+Rule: Application ID and object ID are different identifiers.
+
+A stable application identity key
+A person's display name or email can change and can be reused. The API uses the validated pair tid and oid as its tenant-local identity key. Guest identities need attention: the object represented in the resource tenant is not interchangeable with an object from the person's home tenant. Define deprovisioning and data ownership explicitly.
+Rule: Readable names are labels; authorization uses validated identifiers.
+
+MODEL EXPERIMENT: Select client, API or tenant. Which identifier names the resource receiving the token?
+
+ACTIVITY
+1. Predict the boundary
+Which IDs would change if another organization adopted the application?
+Observe: Write a prediction before opening the tenant or reading the case.
+
+2. Follow the tenant workbook
+Inspect the Overview pages of the API and SPA registrations and their Enterprise application entries. Record identifier labels only. Use TENANT.md in the lab kit. Use a practice tenant and invented purchase requests.
+Observe: Two application client IDs and two distinct directory object identities, with the same chosen tenant ID.
+
+3. Account-free case study
+A ticket contains a client ID where an API audience is expected and a service-principal object ID where a client ID is expected. Draw the objects and diagnose the mismatch before changing anything.
+Observe: Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.
+
+4. Explain the result
+Draw the before and after. Mark what Entra decided, what Spring decided and what PostgreSQL could know. Keep raw tokens and personal data out of the notebook.
+Observe: State the observation route and one guarantee it cannot establish.
+
+CHECKPOINT
+1. Which pair identifies the user in this course's data model?
+A. Display name and email
+B. Validated tid and oid
+C. SPA client ID and email
+
+2. A service principal is best understood as what?
+A. An application's instance in a tenant
+B. The Java process ID
+C. Every user who signs in
+
+3. Does changing the authority to common finish multitenant support?
+A. Yes, because all users can sign in
+B. Yes, if CORS is enabled
+C. No, trust and data isolation still need explicit rules
+
+ANSWERS AND REASONS
+1. B: The directory and object IDs are the explicit identity key; labels are not stable authorization keys.
+2. A: It represents the application in that directory and carries tenant-local relationships.
+3. C: Accepted issuers and tenant onboarding must align with row ownership and operational policy.
+
+SOURCES
+Application objects and service principals
+https://learn.microsoft.com/en-us/entra/identity-platform/app-objects-and-service-principals
+
+04. Two registrations, one application experience
+=================================================================
+Angular is the client. Spring is the resource.
+Evidence route: tenant
+
+Register the recipient separately
+The API registration defines the resource: its application ID URI, delegated scopes and the user app role Approver. The SPA registration defines the public client and its allowed redirect URI. Keeping them separate makes the token's recipient visible. Requesting api://API_CLIENT_ID/Requests.Read expresses both a resource and a delegated permission.
+Rule: The access token audience names the API, not the interface.
+
+Public means unable to keep a secret
+The SPA client ID and tenant ID are public configuration. A client secret embedded in JavaScript would be readable by every visitor; it would not turn Angular into a confidential client. Register a Single-page application redirect path. The sample uses http://localhost:18094/redirect for local development and a dedicated MSAL redirect bridge.
+Rule: A browser application must not rely on a stored client secret.
+
+Make token expectations explicit
+Configure the API to request v2 access tokens with requestedAccessTokenVersion set to 2. The API validates the v2 issuer, its own client ID as audience, tenant, delegated scopes and allowed client. The version of the authorization endpoint alone does not choose the resource's access-token format. A registration is configuration, not deployed API code.
+Rule: A registration and a resource-server validator must agree.
+
+MODEL EXPERIMENT: Swap the ID token recipient and API recipient. Which boundary should reject the result?
+
+ACTIVITY
+1. Predict the boundary
+Predict what happens if an ID token intended for the SPA is sent to Spring.
+Observe: Write a prediction before opening the tenant or reading the case.
+
+2. Follow the tenant workbook
+Complete TENANT.md sections A through C. Set the API token version, expose both scopes, add the Approver user role and register the SPA callback. Use TENANT.md in the lab kit. Use a practice tenant and invented purchase requests.
+Observe: Two client IDs, the exact SPA redirect URI and delegated permissions referencing the API. No SPA secret exists.
+
+3. Account-free case study
+Given SPA ID S and API ID A, annotate the expected aud of an ID token and an API access token. Diagnose a request where Spring expects S.
+Observe: Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.
+
+4. Explain the result
+Draw the before and after. Mark what Entra decided, what Spring decided and what PostgreSQL could know. Keep raw tokens and personal data out of the notebook.
+Observe: State the observation route and one guarantee it cannot establish.
+
+CHECKPOINT
+1. Where should Requests.Read be exposed?
+A. Only in Angular source
+B. On the PostgreSQL user
+C. On the API app registration
+
+2. Where can Angular safely hide a client secret?
+A. Nowhere in shipped browser code
+B. In an environment file included in its build
+C. In a minified module
+
+3. What controls this API's expected access-token format?
+A. The resource configuration and its validation contract
+B. Only the version of the authorization endpoint the SPA calls
+C. Only whether the SPA requests the openid scope
+
+ANSWERS AND REASONS
+1. C: The resource defines the permissions clients can request.
+2. A: Anything shipped to the browser is available to its user.
+3. A: The resource requests a token version, and Spring must validate its corresponding claims and issuer.
+
+SOURCES
+Configure a single-page application
+https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-app-configuration
+Define app roles and receive them in tokens
+https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps
+Access tokens and token versions
+https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+
+05. Follow the authorization code
+=================================================================
+Understand the redirect without implementing an identity protocol yourself.
+Evidence route: local
+
+A request leaves the application
+MSAL creates a fresh verifier and its S256 challenge, then navigates to the tenant's authorization endpoint with the client, redirect URI and requested scopes. Entra handles sign-in and applicable policies. The application does not collect the Entra password. Returning to a registered callback does not by itself mean every later API operation is authorized.
+Rule: Let the identity provider handle the credentials.
+
+The code is exchanged
+The authorization response carries a short-lived code. The client redeems it with the original verifier. A captured code without the verifier should not suffice. State correlates the response with the initiated interaction; the OIDC nonce binds identity-token evidence to the authentication request. These defenses serve different purposes, and the library manages their lifecycle.
+Rule: PKCE binds code redemption to the initiating client instance.
+
+Know the defense's limit
+PKCE reduces the usefulness of intercepted authorization codes. It does not encrypt browser storage, prevent malicious script from acting inside the origin, or make a stolen bearer access token unusable. The fixture does not implement this flow. Its hashing exercise demonstrates the challenge relationship only; the tenant workbook observes a real redirect and exchange.
+Rule: A code-interception defense is not an XSS defense.
+
+MODEL EXPERIMENT: Change whether the original verifier is available. Follow the code, then the resulting access token.
+
+ACTIVITY
+1. Predict before sending
+Can a different verifier produce the same expected challenge in this experiment?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs pkce
+Observe: PASS and an S256 challenge length of 43. No code exchange occurs.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+Observe the real flow in TENANT.md. Do not export a browser network archive containing tokens, cookies or authorization codes.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. A code is intercepted without its verifier. What does PKCE address?
+A. Encrypting PostgreSQL rows
+B. Preventing every bearer-token replay
+C. Blocking redemption with the wrong verifier
+
+2. Where should the user enter their Entra password?
+A. In the Angular API form
+B. In Spring's request body
+C. At the trusted identity provider's sign-in page
+
+3. Does the local hash exercise prove an Entra code exchange succeeded?
+A. Yes, if the challenge has 43 characters
+B. No, it tests only the cryptographic relationship
+C. Yes, because it uses SHA-256
+
+ANSWERS AND REASONS
+1. C: The challenge is checked during code redemption; it is not a general browser security mechanism.
+2. C: The client redirects; it does not collect or forward the user's password.
+3. B: A protocol exchange requires the actual endpoints and state checks, not just a hash.
+
+SOURCES
+Authorization code flow with PKCE
+https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow
+
+06. Three token jobs
+=================================================================
+Identity, resource access and renewal are different jobs.
+Evidence route: local
+
+ID token: a client sign-in result
+An ID token belongs to the OIDC relationship between Entra and the client. It can help the client present the signed-in account. It is not the credential our API accepts. In the separate-registration design its audience identifies the SPA, which gives Spring a concrete reason to reject it even if the signature is genuine.
+Rule: A genuine token can be the wrong token for this recipient.
+
+Access token: evidence for a resource
+Angular acquires an access token for the purchase API and sends it in the Authorization header. The API validates it and evaluates permissions. A Microsoft Graph token targets Microsoft Graph; the purchase API must reject it. The client should treat access tokens as opaque credentials rather than basing business decisions on their decoded contents.
+Rule: Every access token has a recipient and a limited purpose.
+
+Renewal belongs to the client library
+A refresh token is used with the identity provider to obtain further tokens; it is not sent to the purchase API or database. MSAL manages the cache and renewal process. A JWT payload is base64url-encoded, not encrypted. Reading a payload proves neither its origin nor its validity. Keep raw tokens out of logs, URLs, screenshots and public decoding sites.
+Rule: Decoding is inspection. Validation is a security decision.
+
+MODEL EXPERIMENT: Choose ID, API or Graph token. Identify its recipient before looking at its claims.
+
+ACTIVITY
+1. Predict before sending
+Will the fixture ID-token-shaped credential work at the API?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs tokens
+Observe: Decoded fixture claims, then 401 for the SPA audience and 200 for the API audience.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The shape is illustrative. The test establishes the API's audience check, not complete Entra ID-token behavior.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. Which token should Angular send to the purchase API?
+A. The refresh token
+B. Any token with the user's name
+C. An access token issued for that API
+
+2. You decode a JWT and see Approver. What have you established?
+A. The payload contains that string
+B. The signature is trusted
+C. The operation is permitted
+
+3. Where is a refresh token used?
+A. With the identity provider through the client library
+B. In every API Authorization header
+C. As a JDBC password
+
+ANSWERS AND REASONS
+1. C: The resource requires an access token intended for its audience and accepted contract.
+2. A: Untrusted text can contain any role. Cryptographic validation and policy checks are still necessary.
+3. A: Renewal credentials have a different destination and must not be propagated to ordinary resource APIs.
+
+SOURCES
+Access token claims reference
+https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference
+Access token validation and lifetime
+https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+
+07. Scopes and consent
+=================================================================
+Permission granted to a client is not unlimited authority over a person's data.
+Evidence route: local
+
+A delegated permission
+A scope is a permission the resource exposes for a client acting with a signed-in user. Our two delegated scopes are Requests.Read and Requests.Approve. Entra puts granted delegated scopes in the access token's space-delimited scp claim. Spring maps them to SCOPE_ authorities. A scope is not an SQL row filter.
+Rule: A delegated scope describes permitted client activity, not ownership.
+
+Consent is a separate decision
+Consent records permission for the client to request access under the relevant tenant policies. Some permissions or policies need administrator consent; others may permit user consent. A prompt being accepted does not make the user an approver or transfer ownership of every purchase request. Our API still evaluates role, tenant and record state.
+Rule: Consent does not replace the application's authorization rules.
+
+Request only what the operation needs
+A production client can request scopes as features require them. The teaching client requests both course scopes so the experiment can isolate user roles and row rules. That choice is explicitly broader than a read-only feature needs. Removing an approval scope should deny approval while leaving a permitted read usable.
+Rule: Evaluate the requested permission set, not just whether a prompt appeared.
+
+MODEL EXPERIMENT: Remove the approval scope while retaining the Approver role. Predict the approval response.
+
+ACTIVITY
+1. Predict before sending
+What happens with Approver plus Requests.Read but without Requests.Approve?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs scopes
+Observe: Approval returns 403; reading the caller's own record still returns 200.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The fixture supplies claims directly. It cannot prove that tenant consent issued them.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. What does scp contain in a delegated access token?
+A. Granted delegated scope values
+B. Database table names
+C. Every user role
+
+2. An administrator grants client consent. Can every user now approve?
+A. No, the API still requires the user role and resource rules
+B. Yes, if the user signs in again
+C. Yes, consent overrides app rules
+
+3. Which should a read-only feature normally request?
+A. A database administrator role
+B. Every exposed scope
+C. The least access needed for that feature
+
+ANSWERS AND REASONS
+1. A: Scopes and roles have different claims and meanings.
+2. A: Consent enables a client permission; it is not a blanket business entitlement.
+3. C: Start with the operation's needs and broaden only for an explicit requirement.
+
+SOURCES
+Permissions and consent
+https://learn.microsoft.com/en-us/entra/identity-platform/permissions-consent-overview
+
+08. Roles and resource rules
+=================================================================
+A role grants a category of power; a record still has its own constraints.
+Evidence route: local
+
+An application role
+Approver is an app role defined on the API registration, with Users as its allowed member type for this course. Assign it to the practice approver through the API Enterprise application. The API-targeted access token can then carry Approver in roles. A tenant administrator role is a different kind of authority and does not automatically mean purchase approver.
+Rule: Define roles in the resource whose policy consumes them.
+
+Role membership is only one predicate
+Our approver can approve a colleague's pending request in the same tenant. They cannot approve their own request or an already approved request. Spring checks the scope and role; SQL atomically checks the tenant, ownership relation and current state. This combination is a useful example of role-based and attribute-based conditions working together.
+Rule: Role-based access still needs object-level authorization.
+
+Groups are not a free substitute
+Groups can help administrators assign roles. Building API policy directly around a long groups claim adds concerns such as overage and directory lookups. The course keeps the runtime contract small: one explicit user role. Existing tokens can retain older role information until renewal or expiry; an assignment change is not a synchronous rewrite of tokens already issued.
+Rule: A role assignment and an existing token can temporarily disagree.
+
+MODEL EXPERIMENT: Keep scope and role but select the caller's own request. Why should approval still fail?
+
+ACTIVITY
+1. Predict before sending
+Predict approval with no role, then self-approval with the role.
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs roles
+Observe: 403 without the role; 404 for self-approval despite scope and role.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+This API uses 404 for a row that does not qualify. That does not identify which row predicate failed.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. Why can a valid approver be denied?
+A. A role makes the JWT unsigned
+B. The record rule may forbid this action
+C. Approval always needs a database superuser
+
+2. Which role belongs in this API's contract?
+A. Any directory administration role
+B. A browser-local role string
+C. Approver defined for the purchase API
+
+3. Removing an assignment necessarily changes an already issued JWT immediately. True?
+A. No, token freshness and revocation behavior must be considered
+B. Yes, signatures update remotely
+C. Yes, every API request re-reads the assignment
+
+ANSWERS AND REASONS
+1. B: The role is necessary but the record must also satisfy the policy.
+2. C: App-specific roles should come from the resource's verified token contract.
+3. A: A signed token is a snapshot. Online policy changes need an explicit enforcement and renewal design.
+
+SOURCES
+Define app roles and receive them in tokens
+https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps
+
+09. Angular and MSAL
+=================================================================
+Let the library manage the protocol; keep the API destination explicit.
+Evidence route: tenant
+
+Initialize before asking for tokens
+The sample loads public configuration, initializes PublicClientApplication, handles the redirect result and sets the active account from that result. It does not silently choose an arbitrary cached account when no active account exists. Login is an explicit action. The /redirect path runs the MSAL bridge and does not bootstrap the application or put a guard in front of the callback.
+Rule: Account selection is part of the user experience and the request context.
+
+Acquire for the operation
+Before calling the API, the client asks acquireTokenSilent for the required API scopes and selected account. Silent acquisition may use the cache or contact Entra; it does not guarantee success without interaction. InteractionRequiredAuthError leads to an interactive redirect. Other failures are shown to the user rather than retried as a sign-in loop.
+Rule: Silent is an attempt, not an entitlement to a fresh token.
+
+Attach only to the intended destination
+The sample explicitly attaches the returned access token to a fixed API URL. An interceptor is another valid design when its protected-resource map is precise. Never attach the token to every outbound request. Session storage reduces persistence compared with local storage, but JavaScript running in the same origin can still act with the user's privileges.
+Rule: Token delivery is a destination policy, not a convenience header.
+
+MODEL EXPERIMENT: Trace the callback, then the API request. Which step actually sends the bearer credential?
+
+ACTIVITY
+1. Predict the boundary
+Predict which HTTP request carries the API access token.
+Observe: Write a prediction before opening the tenant or reading the case.
+
+2. Follow the tenant workbook
+Complete TENANT.md section D, open the Angular application, sign in and read an owned request. Inspect only destinations and statuses, not copied credentials. Use TENANT.md in the lab kit. Use a practice tenant and invented purchase requests.
+Observe: A callback to /redirect, return to the application and a bearer request to the API URL.
+
+3. Account-free case study
+Read frontend/src/main.ts. Mark initialize, handleRedirectPromise, acquireTokenSilent and the fixed fetch destination. Explain what changes when interaction is required.
+Observe: Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.
+
+4. Explain the result
+Draw the before and after. Mark what Entra decided, what Spring decided and what PostgreSQL could know. Keep raw tokens and personal data out of the notebook.
+Observe: State the observation route and one guarantee it cannot establish.
+
+CHECKPOINT
+1. Silent acquisition requires interaction. What should the app do?
+A. Use the library's supported interactive path
+B. Send an ID token instead
+C. Retry forever in the background
+
+2. Where should bearer tokens be attached?
+A. Only to explicitly intended resource URLs
+B. To all requests from the browser
+C. To static course assets
+
+3. Does session storage prevent same-origin malicious script from using the session?
+A. Yes, because it is per tab
+B. Yes, if PKCE was used
+C. No, script execution remains a threat
+
+ANSWERS AND REASONS
+1. A: Some policies require user participation. Repeated silent retries do not satisfy them.
+2. A: The token must not leak to unrelated hosts or resources.
+3. C: Storage lifetime and script isolation are different properties.
+
+SOURCES
+Initialize MSAL Browser
+https://learn.microsoft.com/en-us/entra/msal/javascript/browser/initialization
+MSAL redirect bridge
+https://learn.microsoft.com/en-us/entra/msal/javascript/browser/redirect-bridge
+MSAL v5 migration
+https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration
+
+10. Validate before trusting
+=================================================================
+A signature is one check in a larger resource-server contract.
+Evidence route: local
+
+Start from configured trust
+Spring uses the configured issuer's metadata and public signing keys. It must not choose a trusted issuer or key URL solely from an untrusted token. The signature protects the signed bytes; the audience binds those bytes to a recipient; the issuer binds them to an authority. Key rotation is normal, so the decoder uses a JWK source rather than a hand-copied permanent key.
+Rule: A key is trusted because of configuration and discovery, not because the token points to it.
+
+Validate the full contract
+The sample keeps Spring's issuer and timestamp validators, then adds audience, tenant, v2 format, allowed SPA client and a well-formed oid. It requires time claims rather than accepting a missing expiration. The timestamp validator allows a small clock skew; the tests use values well beyond it. A genuine token from a different client or for a different resource is still rejected.
+Rule: Custom validation must add to, not accidentally replace, the defaults.
+
+Validation has operational dependencies
+A decoder may cache public keys, but key discovery and refresh can require network access. Failure to obtain a key can prevent acceptance; that is not permission to skip verification. Diagnose issuer metadata, key ID, clock and audience without logging the credential. A production deployment needs explicit timeout, monitoring and availability decisions.
+Rule: An outage must not become a fail-open authentication path.
+
+MODEL EXPERIMENT: Change the audience or signature. Follow the rejection before any scope or SQL check.
+
+ACTIVITY
+1. Predict before sending
+Would a correctly shaped token with the wrong signing key pass?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs signature
+Observe: Forged signature: 401. Untrusted issuer: 401.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The fixture key and issuer are local. This verifies the configured Spring checks, not Entra signing-key rotation.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. A signature is valid but aud names Graph. What should Spring do?
+A. Reject it because this API is not the audience
+B. Accept it because Microsoft signed it
+C. Accept it if a permission name resembles this API's scope
+
+2. Adding an audience validator should do what to timestamp validation?
+A. Disable it during key rotation
+B. Replace it
+C. Preserve it
+
+3. Where should the decoder obtain its trusted issuer?
+A. From the configured trust policy
+B. From a caller-supplied query parameter
+C. From any iss in the request token
+
+ANSWERS AND REASONS
+1. A: A signature alone does not authorize token reuse at another resource.
+2. C: The checks are cumulative. Accidentally replacing defaults can accept expired tokens.
+3. A: Untrusted input cannot nominate its own authority.
+
+SOURCES
+Spring Security resource server JWT
+https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
+
+11. From claims to Spring authorities
+=================================================================
+Preserve the meaning of each claim while translating it into policy.
+Evidence route: local
+
+Claims are not annotations
+A decoded claim does not automatically activate a Spring method rule. The JwtAuthenticationConverter produces the authorities the policy evaluates. The standard scope converter creates SCOPE_Requests.Read and SCOPE_Requests.Approve. Our additional converter maps the recognized Approver value to ROLE_Approver without discarding the scopes.
+Rule: Trace the claim, conversion and policy as three separate steps.
+
+Be explicit about prefixes
+The method uses hasAuthority with exact strings. In Spring, hasRole conventionally adds the ROLE_ prefix, so mixing it carelessly with already prefixed names can create a mismatch. Only the recognized API role is mapped here. Directory-wide administrative claims and arbitrary browser state are not treated as purchase approval authority.
+Rule: The authority string must match the policy's vocabulary exactly.
+
+Reject the wrong access model
+The sample endpoints require delegated scopes, so an app-only token with roles but no scp cannot act as a person. This is a deliberate contract. A background job would need a separate application permission and a separately designed endpoint policy. Replacing AND with OR to make a failing call work would erase that distinction.
+Rule: A machine identity must not acquire user powers by a convenient mapping.
+
+MODEL EXPERIMENT: Try scope only, role only, then both. Predict the operation gate separately from the row gate.
+
+ACTIVITY
+1. Predict before sending
+Can a roles-only token approve through this delegated endpoint?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs delegation
+Observe: App-only token: 403. Wrong client: 401.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+These checks implement the chosen single-client contract. They are not universal requirements for every Entra API.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. What does ROLE_Approver represent in this sample?
+A. Any Entra administrator
+B. A mapped, recognized API app role
+C. A PostgreSQL role
+
+2. Why is an app-only role insufficient here?
+A. It always has an invalid signature
+B. Its JSON cannot be decoded
+C. It lacks the delegated scope required by these user endpoints
+
+3. A role mapping accidentally drops all scope authorities. What happens?
+A. Authorization becomes stronger automatically
+B. Every signed token works
+C. Delegated scope checks can fail despite the scp claim
+
+ANSWERS AND REASONS
+1. B: The converter has a narrow mapping from the token's Approver value.
+2. C: The authenticated token can still fail the endpoint's access-model policy.
+3. C: Policies evaluate converted authorities, not every raw claim directly.
+
+SOURCES
+Spring Security method authorization
+https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html
+
+12. Read a denial correctly
+=================================================================
+Separate invalid credentials, missing permission and hidden resources.
+Evidence route: local
+
+401: accepted authentication is missing
+The sample sends 401 when a protected request lacks an accepted bearer token: absent, expired, wrong audience or otherwise invalid. A resource-server response may contain a WWW-Authenticate challenge. Repeated sign-in is not the right fix for an API configured with the SPA audience; configuration errors require configuration changes.
+Rule: First identify whether the request carried the intended credential.
+
+403: the operation requirement failed
+A valid delegated token without Requests.Approve or Approver is authenticated but lacks a required operation authority. The API returns 403. A browser can also show 403 for a rejected CORS preflight, which occurs at a different boundary. Inspect the method and the request that actually failed before interpreting a number in isolation.
+Rule: Status, method and boundary belong together.
+
+404: avoid a record-existence oracle
+The read query only returns a row owned by the validated subject in the validated tenant. Missing and unauthorized records both produce 404. Approval also uses 404 when no row meets its complete predicate, including pending status and not-owning. This is the sample's deliberate disclosure policy, not a universal claim that every authorization failure must be 404.
+Rule: A public error contract can reveal less than the internal audit trail.
+
+MODEL EXPERIMENT: Choose the failing boundary and predict the status before revealing it.
+
+ACTIVITY
+1. Predict before sending
+Will the unauthenticated response challenge the caller? Will the hidden row reveal its description?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs http
+Observe: 401 with a Bearer challenge; 404 without the protected description.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The public response is not a complete audit record. Production telemetry should retain safe reason categories and correlation IDs.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. An expired token reaches a protected endpoint. Expected status here?
+A. 404
+B. 401
+C. 403
+
+2. A valid user token lacks Approver. Expected approval status?
+A. 401 because every denial is authentication
+B. 200 because sign-in succeeded
+C. 403
+
+3. A 404 for request 42 proves what to Alice?
+A. That request 42 never existed
+B. That her token expired
+C. That no qualifying row was returned to her
+
+ANSWERS AND REASONS
+1. B: The request has no accepted authentication evidence.
+2. C: The operation authority check fails after authentication.
+3. C: The response intentionally avoids revealing whether the row exists outside her policy.
+
+SOURCES
+HTTP semantics, RFC 9110
+https://www.rfc-editor.org/rfc/rfc9110.html
+
+13. Ownership is an authorization rule
+=================================================================
+Knowing an identifier does not entitle the caller to its row.
+Evidence route: local
+
+The tempting incomplete query
+A request arrives for /api/requests/42. SELECT by id alone answers which row was requested, but not whether the caller may read it. Sequential IDs make guessing easy; replacing them with UUIDs may reduce guessability but does not establish permission. This class of missing object-level check is often called IDOR or broken object-level authorization.
+Rule: An unpredictable ID is not a permission check.
+
+Derive identity from the accepted principal
+The sample query combines id with tenant_id and owner_oid taken from the validated Jwt principal. A caller cannot select their authority by supplying an email, owner header or tenant query parameter. Request 42 belongs to Bob, so Alice gets no qualifying row even though she has Requests.Read. Bob can retrieve it with his own accepted identity.
+Rule: Client input selects a target; trusted context constrains access.
+
+Carry policy through every data path
+Lists, exports, search, counts and nested resources need the same care as an individual read. A system that protects the detail page but leaks all descriptions through an export still leaks data. Write down whether approvers may read every request or only approve known targets; the sample's read endpoint intentionally remains owner-only.
+Rule: Check every route that can reveal or change the protected fact.
+
+MODEL EXPERIMENT: Select Alice, Bob or the other tenant, then choose a row. Which predicate changes the result?
+
+ACTIVITY
+1. Predict before sending
+Alice and Bob request the same ID. Will equal scopes produce equal results?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs owner
+Observe: Alice reading 42: 404. Bob reading 42: 200.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The exercise covers this endpoint. Inventory lists, exports and writes before claiming application-wide object isolation.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. What fixes an IDOR in this example?
+A. Making IDs longer only
+B. Constraining the query with validated tenant and owner
+C. Hiding the request ID in Angular
+
+2. Where should owner_oid come from?
+A. The accepted API principal
+B. A hidden HTML field
+C. An owner parameter chosen by the caller
+
+3. Does protecting GET by ID protect an export automatically?
+A. No, each data path must enforce equivalent constraints
+B. Yes, if both require sign-in
+C. Yes, if both use the same database
+
+ANSWERS AND REASONS
+1. B: The decisive control is object-level policy, independent of identifier guessability.
+2. A: A caller must not assert the identity used to authorize their own request.
+3. A: A separate query can bypass the protection unless the policy also reaches it.
+
+SOURCES
+OWASP broken object-level authorization
+https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization/
+
+14. PostgreSQL authenticates the API
+=================================================================
+Database authentication and end-user authorization are separate layers.
+Evidence route: local
+
+The connection has its own principal
+Spring obtains a JDBC connection as app_runtime. PostgreSQL authenticates that role using its configured mechanism; the local kit uses a deliberately local password over the isolated Compose network. There is no database port published on the host. Production needs secret management, encrypted transport and environment-specific database authentication.
+Rule: The API token is not automatically a database credential.
+
+Limit what the runtime role can do
+The runtime role is neither superuser nor BYPASSRLS and does not own the table. It has SELECT and UPDATE on the status column, not permission to create schema objects or rewrite ownership. Migrations use a separate administrative identity. Row filtering complements these grants; it does not replace table and column privileges.
+Rule: Separate migration power from application runtime power.
+
+Azure hosting is a separate choice
+Azure Database for PostgreSQL can support Microsoft Entra authentication with specific server configuration and identity mapping. That is a different database connection design and is not implemented by forwarding the purchase API token. Its resource, principal and lifetime requirements must be understood separately. The course's portable PostgreSQL baseline deliberately uses a normal database role.
+Rule: Same identity provider does not mean same audience or connection protocol.
+
+MODEL EXPERIMENT: Switch the database role. Which role can bypass the intended row boundary?
+
+ACTIVITY
+1. Predict before sending
+Which database principal is active? Can it rewrite owner_oid as freely as status?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs database
+Observe: Database principal app_runtime; owner_oid UPDATE is false and status UPDATE is true.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The runtime role is still part of the trusted application. Protecting the database connection and SQL construction remains necessary.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. Does PostgreSQL automatically see Alice because Spring accepted her JWT?
+A. Yes, JDBC forwards the principal
+B. No, the connection authenticates its database role
+C. Yes, if the table contains oid
+
+2. Which identity should own schema migrations?
+A. A separate administrative identity
+B. The browser
+C. Every signed-in user
+
+3. Can the same API access token be assumed valid for an Entra-enabled database?
+A. Yes, if the token is unexpired
+B. Yes, both products are Microsoft-compatible
+C. No, the database has a different resource contract
+
+ANSWERS AND REASONS
+1. B: The API must explicitly derive and apply user context to database operations.
+2. A: Runtime access should be narrower than schema-administration access.
+3. C: Audience and principal mapping must be appropriate for each resource independently.
+
+SOURCES
+PostgreSQL 18 client authentication
+https://www.postgresql.org/docs/18/client-authentication.html
+Azure Database for PostgreSQL Entra authentication
+https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts
+
+15. Row-level security as a second boundary
+=================================================================
+Let the database filter rows, and understand who can bypass the filter.
+Evidence route: local
+
+A policy on the table
+PostgreSQL row-level security evaluates a policy for ordinary row access. Our policy requires the tenant context to match and either the owner to match or the approver flag to be true. An unscoped SELECT under Alice's context can therefore still return only Alice's permitted rows. The API also includes predicates so its endpoint policy stays readable.
+Rule: RLS can protect against a missing predicate; test that exact failure.
+
+The database role matters
+A table owner normally bypasses RLS unless forced, and superusers and roles with BYPASSRLS bypass it. The sample enables and forces RLS and gives the runtime a separate, restricted role. Using the administrative connection to test a policy can produce a misleading result because that identity has powers the API must never use.
+Rule: Test policies as the runtime role, not as the migration administrator.
+
+Context is trusted application input
+The policy reads transaction-local settings established by Spring. Those strings are not cryptographic proof to PostgreSQL: an application with arbitrary SQL execution could set them differently. Parameterized queries and a trusted API remain essential. For writes, USING determines eligible existing rows and WITH CHECK constrains resulting rows; the sample also restricts writable columns.
+Rule: RLS here is defense in depth, not isolation from a compromised API.
+
+MODEL EXPERIMENT: Change the caller and tenant. Then compare runtime access with privileged database access.
+
+ACTIVITY
+1. Predict before sending
+What should an unfiltered query return with no context, then Alice's context?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs rls
+Observe: Zero rows, then row 41 only, while using the nonprivileged runtime role.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+The context is set by trusted application code. SQL injection or a compromised API remains outside this guarantee.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. Why test an unfiltered SELECT as app_runtime?
+A. To prove the API cannot be compromised
+B. To establish that RLS filters even a missing WHERE predicate
+C. To prove MFA occurred
+
+2. Can a superuser bypass this row policy?
+A. Yes
+B. No, FORCE applies to every possible role
+C. Only if Angular grants a role
+
+3. Does setting app.subject cryptographically authenticate Alice to PostgreSQL?
+A. Yes, because the setting has a name
+B. No, PostgreSQL trusts the application setting it
+C. Yes, if it uses a UUID
+
+ANSWERS AND REASONS
+1. B: That observation directly tests the additional database boundary.
+2. A: Superuser and BYPASSRLS powers remain privileged escape routes.
+3. B: The settings are context supplied by trusted code; they do not independently verify an Entra token.
+
+SOURCES
+PostgreSQL 18 row security policies
+https://www.postgresql.org/docs/18/ddl-rowsecurity.html
+PostgreSQL 18 transaction isolation
+https://www.postgresql.org/docs/18/transaction-iso.html
+
+16. Transactions, pools and races
+=================================================================
+Authorization must survive connection reuse and concurrent requests.
+Evidence route: local
+
+A pool reuses physical connections
+Connection pools make database access efficient by reusing connections across requests. A session-wide setting for Alice could remain when Bob later borrows that connection. Spring establishes the context inside the same transaction as the query using set_config with the local flag true. On transaction completion, that local setting no longer authorizes the next transaction.
+Rule: The lifetime of identity context must match the transaction that uses it.
+
+Check and change together
+A separate read of PENDING followed by an unconditional update invites a race: two callers can both observe the old state. The sample uses one UPDATE with tenant, not-owner and PENDING predicates. Under the normal PostgreSQL behavior used here, concurrent attempts cannot both change the same row from pending to approved. One succeeds; the other matches no eligible row.
+Rule: Put mutable authorization conditions into the atomic state transition.
+
+Define the boundary of the transaction
+The SQL update and its row context share a transaction. Sending an email or charging a card would add an external effect that a database rollback cannot automatically undo. A real approval service needs an explicit strategy such as a transactional outbox, idempotency and retry policy. A successful row transition does not prove exactly-once business delivery.
+Rule: Database atomicity ends at the database transaction boundary.
+
+MODEL EXPERIMENT: Switch between a transaction-local and a session-lived context. Which identity would the next borrower inherit?
+
+ACTIVITY
+1. Predict context reuse
+Predict the visible row count after committing Alice's transaction on the same SQL connection.
+Observe: Zero visible rows without fresh context.
+
+2. Observe connection and request isolation
+The scenario checks the same database session before and after COMMIT and alternates Alice and Bob API requests.
+Reference: node lab.mjs pool
+Observe: Context resets after commit; Alice receives 200 and Bob receives 404 for request 41.
+
+3. Race two approvals
+This scenario resets only fixture row 42 to PENDING, sends concurrent approvals and restores it after the assertions. It does not reset other course resources.
+Reference: node lab.mjs atomic
+Observe: Exactly one 200 and one 404; PostgreSQL stores APPROVED before the fixture reset.
+
+4. Extend the design on paper
+Add an email notification to the approval. Describe the crash point between committing the row and sending the email.
+Observe: A proposed outbox and idempotency boundary, with a stated limit on external effects.
+
+CHECKPOINT
+1. Which setting lifetime fits a pooled request transaction?
+A. Transaction-local context
+B. Permanent database setting
+C. A browser localStorage flag
+
+2. Why put status=PENDING in the UPDATE?
+A. It guarantees an email is sent once
+B. It makes every network retry safe
+C. It combines eligibility and mutation atomically
+
+3. Does one committed update guarantee one external notification?
+A. Yes, JDBC handles it
+B. Yes, if the token is valid
+C. No, external effects need their own delivery design
+
+ANSWERS AND REASONS
+1. A: The context must be cleared before a different request reuses the connection.
+2. C: The database can serialize the competing changes and re-evaluate the condition.
+3. C: The row transaction cannot atomically control an unrelated external service by itself.
+
+SOURCES
+PostgreSQL 18 transaction isolation
+https://www.postgresql.org/docs/18/transaction-iso.html
+
+17. Expiry, renewal and sign-out
+=================================================================
+A token is a time-bounded snapshot, not a live directory query.
+Evidence route: local
+
+The token has a validity interval
+The resource server checks expiration and not-before times, with bounded clock skew. Do not hard-code one universal Entra access-token lifetime into business policy. Issuance conditions and token types can differ. The fixture uses short-lived tokens to make the mechanism visible; its expiry values are teaching data, not evidence of tenant defaults.
+Rule: Read validity as a checked interval, not a promised constant.
+
+A changed role meets an older token
+When an administrator removes Approver, an already issued token may still carry it. A resource server doing local JWT validation does not automatically re-read every assignment on every request. MSAL renewal can obtain newer evidence. Systems needing faster permission withdrawal must explicitly design and test additional enforcement rather than assume the token is a live pointer.
+Rule: Assignment time, issuance time and request time are different clocks.
+
+Sign-out has more than one surface
+Clearing the application cache, ending the identity-provider session and preventing replay of a previously issued access token are different operations. Continuous access evaluation exists for supported resources and scenarios; a custom Spring API does not acquire all of that behavior merely by validating a JWT. The sample implements no claims-challenge or CAE integration.
+Rule: Do not promise instant revocation from a local sign-out button.
+
+MODEL EXPERIMENT: Move the request time across expiry. Then remove a role after token issuance and compare the two events.
+
+ACTIVITY
+1. Predict before sending
+What happens when exp is in the past or nbf is sufficiently in the future?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs time
+Observe: Both credentials receive 401, beyond the decoder's clock-skew allowance.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+These tests do not establish role-revocation latency or CAE support in a tenant.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. A JWT was issued before a role was removed. What should you assume?
+A. Its claims were rewritten remotely
+B. It may still contain the old role until other controls intervene
+C. The API reads the directory every time
+
+2. What does the local sign-out button guarantee about a copied access token?
+A. It is immediately invalid everywhere
+B. It stops working as soon as the original browser tab closes
+C. No universal immediate-revocation guarantee
+
+3. What does the expired fixture test establish?
+A. Spring enforces the configured timestamp check
+B. The tenant's exact lifetime policy
+C. CAE is active
+
+ANSWERS AND REASONS
+1. B: Token freshness and revocation behavior need explicit handling.
+2. C: Local cache removal does not itself change a signed token already held elsewhere.
+3. A: The fixture checks the local resource-server implementation, not tenant lifecycle behavior.
+
+SOURCES
+MSAL token lifetimes
+https://learn.microsoft.com/en-us/entra/msal/javascript/browser/token-lifetimes
+Continuous access evaluation: supported scenarios
+https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-continuous-access-evaluation
+
+18. Connect a real Entra tenant
+=================================================================
+Replace the source of identity evidence while preserving the application policy.
+Evidence route: tenant
+
+Switch trust deliberately
+The tenant workbook configures AUTH_MODE=entra, a real tenant ID and the two application client IDs. Spring then uses the fixed tenant v2 issuer and its discovered keys; the local fixture key is no longer trusted. The frontend configuration switches to Entra mode and refuses to proceed if the API reports a different mode. Never publish the fixture token service.
+Rule: A test issuer is a different trust root, not a fallback for failed sign-in.
+
+Provision the data deliberately
+Real users have different oid values from Alice and Bob in the fixture. The workbook seeds invented records under validated tenant user IDs obtained from the directory. It does not assign record ownership from an email submitted by the browser. The user without Approver should read their own request; the assigned approver should approve somebody else's pending request.
+Rule: A valid identity needs an explicit relationship to application data.
+
+Record only what you observed
+Observe successful sign-in, a token acquired for the API, an own-record read, a role denial and a permitted approval. Mark each result in TENANT-EVIDENCE.txt. If policy prevents registration or consent, use the case study and record the missing observation. Tenant configuration, licenses and organizational controls can change which administrative actions are available.
+Rule: An unexecuted tenant exercise stays unverified.
+
+MODEL EXPERIMENT: Compare fixture and Entra trust roots. Which private key could produce a token the API accepts now?
+
+ACTIVITY
+1. Predict the boundary
+Predict how the first real user's oid differs from the seeded Alice value.
+Observe: Write a prediction before opening the tenant or reading the case.
+
+2. Follow the tenant workbook
+Complete TENANT.md sections E and F. Recreate the API in Entra mode, provision invented rows for two practice identities and execute the acceptance matrix. Use TENANT.md in the lab kit. Use a practice tenant and invented purchase requests.
+Observe: Own read succeeds, missing role is denied, permitted non-owner approval succeeds, fixture credentials are rejected.
+
+3. Account-free case study
+A valid Entra token gets 404 for row 41. Given its different oid, explain why changing the API to accept arbitrary owner IDs would be the wrong fix.
+Observe: Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.
+
+4. Explain the result
+Draw the before and after. Mark what Entra decided, what Spring decided and what PostgreSQL could know. Keep raw tokens and personal data out of the notebook.
+Observe: State the observation route and one guarantee it cannot establish.
+
+CHECKPOINT
+1. Should a failing Entra sign-in fall back to the local token dispenser?
+A. Yes, to keep the demonstration working
+B. No, that would change the trust boundary
+C. Yes, if the user name matches
+
+2. Why can a real user receive 404 on fixture row 41?
+A. Entra cannot issue access tokens
+B. Angular always changes the audience
+C. The record's fixture owner is a different oid
+
+3. What proves the actual tenant role assignment worked?
+A. The local roles test alone
+B. A recorded tenant-issued request with the expected authorization result
+C. A diagram showing Approver
+
+ANSWERS AND REASONS
+1. B: Fixture and Entra modes are deliberately separate, not failover mechanisms.
+2. C: Authentication does not automatically transfer fixture data ownership.
+3. B: The tenant route needs its own direct evidence.
+
+SOURCES
+Configure a single-page application
+https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-app-configuration
+Define app roles and receive them in tokens
+https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps
+Access tokens and token versions
+https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+
+19. Users, workloads and downstream APIs
+=================================================================
+Choose the principal before choosing the grant.
+Evidence route: local
+
+A background job has no signed-in user
+Client credentials obtains access as an application using a confidential-client credential or another supported workload mechanism. Application permissions and administrative grant govern that access. It does not invent a human actor. The SPA must not run this flow with an embedded secret. Our user-oriented endpoints intentionally require delegated scopes and reject a roles-only fixture.
+Rule: Application access and delegated user access are different policies.
+
+Another API means another audience
+Suppose Spring must read Microsoft Graph on behalf of the user. The incoming purchase API access token is intended for Spring, not Graph. A properly configured confidential middle tier can use the on-behalf-of flow to request downstream delegated access. Consent and downstream permission requirements still apply. Simply forwarding the incoming token is not a valid audience conversion.
+Rule: A token does not become portable because one service calls another.
+
+Keep the extension outside the baseline
+The sample does not call Graph, implement OBO or accept workload approval. Those are design exercises with their own threat models. If a nightly job must close stale requests, define its permission, allowed tenant, audit identity and record rules separately. A broad OR between user scopes and application roles is usually too vague to review safely.
+Rule: Extend the contract deliberately and test both allowed and denied callers.
+
+MODEL EXPERIMENT: Switch from API token to Graph token or app-only token. Which recipient and policy should accept each?
+
+ACTIVITY
+1. Predict before sending
+Why should a roles-only workload fail this user approval endpoint?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs delegation
+Observe: App-only token receives 403, while a mismatched client receives 401.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+This is not an OBO implementation. Design a separate permission and evidence plan for a background job or downstream call.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. A scheduled daemon runs with client credentials. Who is acting?
+A. The application identity
+B. The last user who signed in
+C. Every user in the tenant
+
+2. Spring needs delegated Graph access. Can it forward the purchase API token?
+A. Yes, if it copies the same scopes
+B. Yes, if Microsoft signed it
+C. No, it needs a token intended for the downstream resource
+
+3. What does the sample prove about OBO?
+A. A successful downstream Graph request
+B. Administrator consent for Graph
+C. Nothing executed; the lesson is a design extension
+
+ANSWERS AND REASONS
+1. A: There is no signed-in user in that grant.
+2. C: Audience is recipient-specific. OBO is a distinct exchange with its own requirements.
+3. C: The implemented lab verifies the user endpoint rejects the wrong access model.
+
+SOURCES
+On-behalf-of flow
+https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow
+Client credentials flow
+https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow
+
+20. Browser threats and architecture choices
+=================================================================
+Understand what CORS, PKCE and a BFF each change.
+Evidence route: local
+
+CORS is a browser cooperation rule
+A cross-origin browser request may first send an OPTIONS preflight. Our API permits the exact local frontend origin, methods and Authorization header. CORS is not a substitute for token validation or authorization: a command-line caller can omit Origin entirely and still reach the API. It must face the same authentication and business checks.
+Rule: An allowed origin is not an authenticated principal.
+
+Browser script is inside the user's session
+XSS can execute within the application origin and act with the session's powers. CSP, safe rendering, dependency maintenance and careful token handling reduce risk; PKCE does not solve malicious script execution. The sample uses bearer headers and no cookie login, which is why its API disables CSRF protection. Adding cookie authentication would change that decision.
+Rule: A security setting is valid only under its stated architecture assumptions.
+
+A backend for frontend moves the boundary
+A BFF can keep OAuth tokens on the server and give the browser a Secure, HttpOnly session cookie with a deliberate SameSite and CSRF policy. That reduces direct exposure of tokens to browser code, while introducing session and server-side lifecycle responsibilities. XSS can still issue actions through an authenticated session. Choose the pattern based on the threat model and operational capacity.
+Rule: Moving a credential changes the risks; it does not remove authorization.
+
+MODEL EXPERIMENT: Block the browser origin, then imagine a non-browser client. Which checks remain necessary?
+
+ACTIVITY
+1. Predict before sending
+Will an allowed preflight make an unauthenticated read succeed?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs cors
+Observe: Allowed preflight, then 401 without a token, 200 with Alice, and rejected foreign-origin preflight.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+HTTP tests observe headers and statuses. Full browser behavior, CSP and production session design need separate validation.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. A caller sends no Origin header. Should a valid token still be required?
+A. No, CORS already protected the API
+B. Yes
+C. Only for browsers
+
+2. Why is CSRF disabled in this sample API?
+A. CSRF never affects Spring
+B. PKCE disables CSRF globally
+C. Its authentication uses explicit bearer headers, without cookie login
+
+3. What does a BFF eliminate?
+A. Every XSS consequence
+B. Neither of those; it changes token exposure and session design
+C. The need for API authorization
+
+ANSWERS AND REASONS
+1. B: Non-browser callers do not rely on CORS. The resource boundary must stand independently.
+2. C: That choice depends on the credential delivery model and must be reconsidered for cookie sessions.
+3. B: Server-side token custody does not make browser-origin actions harmless.
+
+SOURCES
+CORS: browser behavior
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
+OAuth 2.0 security best current practice, RFC 9700
+https://www.rfc-editor.org/rfc/rfc9700.html
+
+21. Debug without leaking credentials
+=================================================================
+Follow evidence in order instead of granting more power until the error disappears.
+Evidence route: local
+
+Start with the failed hop
+Write the method, destination, status and a correlation ID. Did sign-in fail before returning to Angular? Did token acquisition fail? Did an OPTIONS request fail before the API call? Did the actual API reject authentication or operation authority? A network symptom at one hop is not a reason to relax a different hop's policy.
+Rule: Locate the first failed boundary before changing configuration.
+
+Compare contracts, not secrets
+For a token rejection, compare expected issuer, audience, tenant, time and allowed client with safely inspected claim categories. Never paste a production credential into a support ticket. For a row denial, inspect the validated subject, tenant and relevant predicate under controlled access. Logs should avoid raw Authorization headers, cookies and unnecessary personal fields.
+Rule: Collect enough evidence to explain the decision, not enough credentials to replay it.
+
+Use a negative case to validate the fix
+If a wrong API audience caused 401, correct the configuration and keep a wrong-audience test that still fails. If an owner mismatch caused 404, provision the right record rather than removing the owner predicate. Every fix should restore the intended allowed path while preserving a nearby denied path. The lab matrix provides that discipline.
+Rule: A fix is credible when the neighboring denial still works.
+
+MODEL EXPERIMENT: Choose the first failing boundary, then identify a safe piece of evidence that would confirm it.
+
+ACTIVITY
+1. Predict before sending
+Which single configuration concept explains a valid signature with an API rejection?
+Observe: Write the expected decision and the component responsible for it.
+
+2. Run and inspect
+With the local stack running, use this scenario from the extracted labs folder. It sends requests to the real Spring API. Read the result before consulting the implementation.
+Reference: node lab.mjs audience
+Observe: Wrong audience: 401. Correct fixture audience: 200.
+
+3. Find the enforcing line
+Read api/src/main/java/course/entra/SecurityConfig.java, Requests.java or database/init.sql. Find the line that accounts for the observed decision. Follow the request in the Angular application at http://localhost:18094 as well.
+Observe: Name a validator, an authority check or a SQL predicate, and explain the input it trusts.
+
+4. State what remains unproven
+An audience fix must not widen acceptance to every token from the identity provider.
+Observe: Record prediction, observation, explanation and limit. A passing assertion does not certify your explanation.
+
+CHECKPOINT
+1. An own-read bug disappears after removing owner filtering. Is that a good fix?
+A. Yes, if the demo is green
+B. Yes, if sign-in still works
+C. No, it may have erased the data boundary
+
+2. What belongs in a diagnostic ticket?
+A. The full bearer token
+B. A refresh token for reproduction
+C. Sanitized request metadata and relevant mismatch categories
+
+3. What should accompany an allowed-path fix?
+A. A disabled audience validator
+B. A broader role assignment for everyone
+C. A nearby denied-path regression test
+
+ANSWERS AND REASONS
+1. C: The correct fix must preserve denial of somebody else's data.
+2. C: Credentials should not become debugging artifacts.
+3. C: The denied case establishes that the security boundary survived the fix.
+
+SOURCES
+Validate claims in applications and APIs
+https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation
+
+22. Review the whole design
+=================================================================
+Find the smallest counterexample that breaks an overbroad claim.
+Evidence route: local
+
+A deliberately weak proposal
+A teammate proposes one registration, an Angular role guard, acceptance of any Microsoft-signed JWT, a caller-supplied owner email and a PostgreSQL admin connection. They describe this as authenticated end to end. Review each statement by asking what an attacker-controlled client can change and which independent component would reject the change.
+Rule: A confident architecture description is not a chain of evidence.
+
+Repair the contract explicitly
+Specify a public SPA and a separate API resource, a fixed single-tenant issuer, the API audience, permitted client, required delegated scopes and app role, stable tenant-plus-object identities, parameterized row constraints and a restricted database role. The choice of AND, exact audience and record predicate should be visible to a reviewer without guessing.
+Rule: Write the acceptance rule so a denied example is easy to construct.
+
+Name the residual risks
+The improved design still trusts the API process, tenant administrators, identity-provider behavior, database operators and the frontend supply chain. The fixture does not test Conditional Access, tenant assignment propagation, production TLS, key rotation outages or a real deployment. A high-quality review names those dependencies and assigns evidence work rather than declaring the system universally secure.
+Rule: Precision about limits is part of a defensible design.
+
+MODEL EXPERIMENT: Find a case where sign-in succeeds but the correct final result is denial.
+
+ACTIVITY
+1. Threat-model the proposal
+Use the weak proposal in scene one. Draw a malicious browser, a valid token for another audience, an ordinary user and an administrator.
+Observe: At least five concrete failure paths with the enforcing component missing.
+
+2. Run one counterexample
+Use the fixture audience and ownership scenarios to replace two theoretical objections with observed denials in the corrected sample.
+Reference: node lab.mjs audience
+Observe: Wrong audience remains 401; another owner remains 404.
+
+3. Write the acceptance rule
+Express read and approve separately. Include caller type, resource audience, scope, role where required, tenant, ownership relation and mutable state.
+Observe: A reviewer can derive a positive and negative test from each condition.
+
+4. Write the risk register
+Use CAPSTONE.md. Prioritize tenant verification, deployment transport, secrets, monitoring and role-removal latency.
+Observe: Each unverified dependency has an owner, evidence to collect and an acceptance condition.
+
+CHECKPOINT
+1. Which counterexample defeats accept any Microsoft-signed JWT?
+A. An exact API audience
+B. A successful own-record read
+C. A valid Graph token presented to this API
+
+2. Which proposal erases a business boundary?
+A. Approving any row whenever Approver is present
+B. Validated tenant-plus-object identity
+C. Restricted runtime database role
+
+3. What does a good review say about untested production behavior?
+A. Assume the framework handles it
+B. Name the dependency and required evidence
+C. Mark it passed if local tests passed
+
+ANSWERS AND REASONS
+1. C: A trusted signer can issue tokens for many recipients. Recipient binding still matters.
+2. A: The role alone omits tenant, ownership and state requirements.
+3. B: The reviewer should distinguish implemented checks from external guarantees.
+
+SOURCES
+OAuth 2.0 security best current practice, RFC 9700
+https://www.rfc-editor.org/rfc/rfc9700.html
+
+23. Capstone: defend one request
+=================================================================
+Deliver an explanation that survives a skeptical review.
+Evidence route: local
+
+Trace the successful path
+Draw Alice, Angular, Entra, Spring and PostgreSQL. Label every network hop with the principal, credential or message, recipient and decision. For an own-record read, connect the access token's validated identity to the SQL predicate and resulting row. For approval, explain why the actor must be an approver and must not own the pending request.
+Rule: Every arrow must name both its evidence and its receiver.
+
+Defend the denied paths
+Present a wrong audience, forged signature, expired credential, missing scope, missing role, wrong owner, wrong tenant and concurrent approval. Predict each result and show the corresponding observed output. Then remove a hypothetical control on paper and state which test would catch the regression. Do not earn credit merely by reproducing the helper's PASS lines.
+Rule: A test is useful when you can explain which mistake it detects.
+
+Separate readiness from completion
+Run the local suite and review the source. If you have a tenant, attach the sanitized tenant evidence worksheet; otherwise label those criteria unverified. Propose the production work still required: protected hosting, TLS, secret management, monitored validation failures, identity lifecycle and a tested operational response. Finishing the course demonstrates reasoning and local evidence, not production certification.
+Rule: The final deliverable is a justified security contract with honest evidence.
+
+MODEL EXPERIMENT: Choose any denial. Explain it without naming a command, then locate the enforcing code.
+
+ACTIVITY
+1. Submit the architecture first
+Use CAPSTONE.md and WORKSHEET.txt. Predict all denial cases before executing the suite.
+Observe: A request diagram, policy matrix and predictions for every negative case.
+
+2. Collect the local evidence
+The suite runs real API and SQL checks, restores the approval fixture and leaves the three services running. It refuses Entra mode.
+Reference: node lab.mjs all
+Observe: 50 assertions pass. The evidence file is labs/runs/all.json.
+
+3. Attach tenant evidence separately
+Use TENANT-EVIDENCE.txt. State whether the real registration, consent, sign-in and role paths were executed.
+Observe: Sanitized observed results or explicit NOT EXECUTED entries.
+
+4. Defend the residual risk
+Use the rubric to explain a compromised browser, compromised API, a removed role with an existing token and an identity-provider outage. Stop the lab when finished with docker compose stop.
+Observe: A reviewer can see the guarantee, its assumptions and the next validation needed.
+
+CHECKPOINT
+1. What is the strongest capstone artifact?
+A. A terminal screenshot alone
+B. A traced policy with positive and negative evidence and stated limits
+C. A list of memorized commands
+
+2. A tenant activity was not run. How should it be recorded?
+A. Unverified, with the local alternative clearly labeled
+B. Passed because the fixture resembles Entra
+C. Omitted from the evidence
+
+3. Which statement can the local suite support?
+A. This production deployment is certified secure
+B. The tenant enforces every desired sign-in policy
+C. These specific API and database checks passed against fixture credentials
+
+ANSWERS AND REASONS
+1. B: The deliverable connects architecture, implementation and observation.
+2. A: Accurate evidence includes what has not been established.
+3. C: The scope of the evidence is the executed local system and its explicit assertions.
+
+SOURCES
+OAuth 2.0 security best current practice, RFC 9700
+https://www.rfc-editor.org/rfc/rfc9700.html
+
+GLOSSARY
+Authentication: Establishing an identity under a specified mechanism and trust policy.
+Authorization: Deciding whether a principal may perform an action on a resource.
+Principal: The identity represented at a security boundary: a user, application or database role.
+Trust boundary: A point where one component must decide which external assertions it accepts.
+Tenant: A directory boundary for identities and application configuration.
+Application object: The application definition in its home tenant.
+Service principal: The application representation inside a particular tenant.
+Client ID: The public application identifier, distinct from a directory object ID.
+Public client: A client such as a SPA that cannot keep an embedded credential secret.
+Confidential client: A server-side client able to protect credentials under its deployment assumptions.
+OAuth 2.0: An authorization framework for obtaining access to resources.
+OpenID Connect: An identity layer on OAuth 2.0, including the ID token sign-in result.
+Authorization code: A short-lived artifact redeemed at the token endpoint, with PKCE in the SPA flow.
+PKCE: A challenge and verifier binding the code redemption to the initiating client instance.
+State: A value used to correlate an authorization response with the initiated interaction.
+Nonce: An OIDC value that binds identity-token evidence to the authentication request.
+Redirect URI: The registered callback destination for an authorization response.
+ID token: The OIDC sign-in result intended for the client; not the purchase API credential.
+Access token: A credential intended for a resource, which validates it and enforces policy.
+Refresh token: A renewal credential used with the identity provider through the client library.
+Bearer: A credential whose possession permits its presentation; protect it from disclosure.
+JWT: A token format containing encoded claims and a signature; decoding is not validation.
+Issuer / iss: The authority that issued the token, checked against configured trust.
+Audience / aud: The intended recipient of a token; this API accepts its own resource identifier.
+Tenant ID / tid: The directory identifier, validated and used in the data boundary.
+Object ID / oid: The object identity inside a tenant; paired with tid for the user key here.
+Authorized party / azp: The client application identifier in a v2 token, checked by this API contract.
+Scope / scp: A delegated permission value; multiple values are space-delimited in scp.
+Consent: A grant enabling client access under tenant policy, distinct from business entitlement.
+App role / roles: An application-defined role granted to a principal and represented in roles.
+Authority: A permission string Spring evaluates after conversion from accepted claims.
+JWK set: A published set of public keys used to verify signatures within a trusted issuer policy.
+IDOR: A missing object-level authorization check; an identifier alone is not permission.
+Row-level security: Database policies filtering row access for non-bypassing roles.
+BYPASSRLS: A privileged PostgreSQL role attribute that bypasses row security.
+Connection pool: Reusable database connections that must not leak request identity context.
+Transaction-local context: Settings whose effective lifetime ends with the transaction.
+On-behalf-of: A middle tier obtaining a downstream delegated token rather than forwarding the wrong audience.
+Client credentials: Application access without a signed-in user.
+CORS: A browser cross-origin access mechanism, not caller authentication.
+CSRF: Unwanted authenticated actions induced through browser credential behavior; relevant to session design.
+XSS: Malicious script execution within an application origin.
+BFF: A backend for frontend that can retain OAuth tokens server-side and provide a browser session.
+CAE: Continuous access evaluation for supported resources and scenarios, not automatically provided by local JWT validation.

@@ -4,6 +4,9 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## Backlog
 
+- [ ] **Ejecutar el recorrido de tenant real de Microsoft Entra**: completar las dos registraciones, consentimiento, asignación del rol y la matriz de solicitudes con dos usuarios de práctica; conservar evidencia sin credenciales en la planilla del kit y registrar resultados en [VALIDATION.md](entra-from-scratch/docs/VALIDATION.md). El recorrido local no verifica esas políticas. **Andrés**
+- [ ] **Publicar Microsoft Entra 1.0.0 y verificar la entrega**: el curso y la tarjeta están integrados localmente; revisar la [revisión](reviews/2026-10-29-entra-from-scratch-v1.0.0.md), ejecutar el workflow remoto y comprobar versión, descargas y cabeceras después del despliegue. **Andrés**
+
 - [ ] **Ejecutar las prácticas de Kubernetes por la ruta de host**: las 48 prácticas de las lecciones 13 a 24 solo se ejecutaron dentro del nodo kind, porque en la máquina de validación un producto de seguridad intercepta TLS en el endpoint local; falta correr `npm run test:labs -- kubernetes` con kubectl 1.37.x desde el host en una máquina sin esa interceptación (o con la protección web pausada), reproducir los labs en Linux/macOS, comprobar la apertura por archivo en un navegador convencional y registrar todo en [VALIDATION.md](docker-kubernetes-from-scratch/docs/VALIDATION.md); §3.2 de la [revisión](reviews/2026-10-18-docker-kubernetes-from-scratch-v1.0.0.md). **Andrés**
 
 - [ ] **Medir tiempos por lección y memoria del clúster en una máquina real**: registrar plataforma, versiones, duración observada de cada lección y memoria del clúster de tres brokers sin servicios opcionales y con ellos; separar la primera descarga de las ejecuciones siguientes y llevar la evidencia a [VALIDATION.md](kafka-from-scratch/docs/VALIDATION.md). **Andrés**

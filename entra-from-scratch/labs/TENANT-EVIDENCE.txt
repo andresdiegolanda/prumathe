@@ -1,0 +1,25 @@
+ENTRA TENANT EVIDENCE
+Date:
+Observer:
+Route: REAL TENANT / CASE STUDY
+No tokens, secrets, passwords, cookies or personal fields belong here.
+
+For each entry record: EXECUTED with sanitized observation, or NOT EXECUTED.
+1. Two single-tenant registrations and exact SPA redirect URI:
+2. API v2 access-token configuration:
+3. Delegated scopes and required tenant consent:
+4. API user-role assignment:
+5. Real sign-in and callback:
+6. Alice own read 200:
+7. Alice other-owner read 404:
+8. Alice self-approval 404:
+9. Alice approves Bob's pending request 200:
+10. Repeated approval 404:
+11. Bob own read 200:
+12. Bob approval without role 403:
+13. Fixture credential rejected by Entra-mode API 401:
+14. Fixture restored / practice cloud objects reviewed for cleanup:
+
+What remains unverified:
+Do not infer MFA, Conditional Access, CAE, role-removal latency, key rotation
+behavior or production transport protection from the local suite.

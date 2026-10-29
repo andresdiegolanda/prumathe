@@ -1,0 +1,19 @@
+ONE REQUEST, ONE EXPLANATION
+Lesson:
+Evidence route: ILLUSTRATIVE MODEL / LOCAL FIXTURE / REAL TENANT / CASE STUDY
+
+Prediction (result and responsible component):
+Observation (status, row, claim category or configuration label):
+Explanation (the rule connecting the two):
+Limit (what this observation cannot establish):
+
+At each hop:
+Caller principal:
+Recipient:
+Credential or message:
+Validation performed:
+Operation permission:
+Resource constraint:
+
+Counterexample: change one input so the correct result becomes denial.
+Tomorrow: draw the mechanism again without reading your answer.

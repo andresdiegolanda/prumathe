@@ -1,0 +1,11 @@
+dist/
+release/
+.qa/
+labs/runs/
+labs/.env
+labs/frontend/node_modules/
+labs/frontend/dist/
+labs/frontend/.angular/
+labs/frontend/public/config.json
+labs/api/target/
+*.log
