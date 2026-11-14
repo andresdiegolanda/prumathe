@@ -19,27 +19,22 @@ const esc = (s) =>
   );
 
 /** The page shell. Content, language and skin are resolved by the scripts in the browser.
-    `page` is 'about' for the "What Cloudflare is" page, which also loads assets/about.js, and 'map'
-    for the map of Cloudflare, which also loads assets/map.js. */
+    `page` is 'about' for the "What Cloudflare is" page, which also loads assets/about.js. */
 const html = (lesson, page = null) => {
   const p = lesson ? '../' : '';
   const title = lesson
     ? `${lesson.title.en} · Cloudflare from scratch`
     : page === 'about'
       ? `${about.title.en} · Cloudflare from scratch`
-      : page === 'map'
-        ? 'The map of Cloudflare · Cloudflare from scratch'
-        : 'Cloudflare from scratch. A visual field guide';
+      : 'Cloudflare from scratch. A visual field guide';
   const description = lesson
     ? `${lesson.intro.en} Interactive visual explanations, a step-by-step lab on a local edge, and Rioplatense Spanish translation.`
     : page === 'about'
       ? `${about.lead.en} English and Rioplatense Spanish.`
-      : page === 'map'
-        ? 'Every piece of Cloudflare in one scene: DNS, the edge, Workers and their bindings, your origin. Scenarios that follow a request stop by stop. English and Rioplatense Spanish.'
-        : `Learn how Cloudflare sits in front of an application and runs code next to the user, through ${course.lessons.length} interactive visual lessons and hands-on labs with Workers on your machine. English and Rioplatense Spanish. Works offline.`;
+      : `Learn how Cloudflare sits in front of an application and runs code next to the user, through ${course.lessons.length} interactive visual lessons and hands-on labs with Workers on your machine. English and Rioplatense Spanish. Works offline.`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#21664e"><title>${esc(title)}</title><meta name="description" content="${esc(description)}"><link rel="icon" href="${p}assets/favicon.svg" type="image/svg+xml"><script src="${p}assets/theme.js"></script><link rel="stylesheet" href="${p}assets/course.css"></head>
-<body${lesson ? ` data-lesson="${lesson.id}"` : page ? ` data-page="${page}"` : ''}><div id="app"></div><noscript><main class="noscript"><h1>${esc(title)}</h1><p>This interactive course needs JavaScript. All scripts are included locally. Read the complete course notes instead.</p><p>Este curso interactivo necesita JavaScript. Todos los scripts están incluidos localmente. También podés leer los apuntes completos.</p><p><a href="${p}downloads/course-notes-en.txt">English notes</a> · <a href="${p}downloads/course-notes-es.txt">Apuntes en español</a></p></main></noscript><script src="${p}assets/curriculum.js"></script><script src="${p}assets/reference.js"></script><script src="${p}assets/visuals.js"></script>${page === 'about' ? `<script src="${p}assets/about.js"></script>` : ''}${page === 'map' ? `<script src="${p}assets/map.js"></script>` : ''}<script src="${p}assets/forum.js"></script><script src="${p}assets/app.js"></script></body></html>
+<body${lesson ? ` data-lesson="${lesson.id}"` : page ? ` data-page="${page}"` : ''}><div id="app"></div><noscript><main class="noscript"><h1>${esc(title)}</h1><p>This interactive course needs JavaScript. All scripts are included locally. Read the complete course notes instead.</p><p>Este curso interactivo necesita JavaScript. Todos los scripts están incluidos localmente. También podés leer los apuntes completos.</p><p><a href="${p}downloads/course-notes-en.txt">English notes</a> · <a href="${p}downloads/course-notes-es.txt">Apuntes en español</a></p></main></noscript><script src="${p}assets/curriculum.js"></script><script src="${p}assets/reference.js"></script><script src="${p}assets/visuals.js"></script>${page === 'about' ? `<script src="${p}assets/about.js"></script>` : ''}<script src="${p}assets/forum.js"></script><script src="${p}assets/app.js"></script></body></html>
 `;
 };
 
@@ -47,10 +42,25 @@ fs.mkdirSync(path.join(root, 'lessons'), { recursive: true });
 fs.mkdirSync(path.join(root, 'downloads'), { recursive: true });
 fs.writeFileSync(path.join(root, 'index.html'), html());
 fs.writeFileSync(path.join(root, 'what-cloudflare-is.html'), html(null, 'about'));
-fs.writeFileSync(path.join(root, 'cloudflare-map.html'), html(null, 'map'));
 for (const l of course.lessons) {
   fs.writeFileSync(path.join(root, 'lessons', l.slug + '.html'), html(l));
 }
+
+/** The big picture: one page drawn by assets/big-picture.js. For readers without JavaScript, the
+    same picture as text, in both languages. The data and the engine are checked by check.mjs. */
+const bp = { window: {} };
+for (const name of ['curriculum', 'big-picture-data', 'big-picture']) {
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', name + '.js'), 'utf8'), bp);
+}
+const picture = bp.window.BIG_PICTURE;
+const pictureText = (lang) => bp.window.BigPicture.outline(picture, course, lang, { query: `?lang=${lang}` });
+fs.writeFileSync(
+  path.join(root, 'big-picture.html'),
+  `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#21664e"><title>${esc(picture.title.en)} · Cloudflare from scratch</title><meta name="description" content="${esc(picture.subtitle.en)}: every piece of the course on one scene, and journeys that follow it stop by stop. English and Rioplatense Spanish."><link rel="icon" href="assets/favicon.svg"><script src="assets/theme.js"></script><link rel="stylesheet" href="assets/course.css"><link rel="stylesheet" href="assets/big-picture.css"></head>
+<body class="bp-page"><div id="bp"></div><noscript><main class="bp-noscript">${pictureText('en')}<hr>${pictureText('es')}</main></noscript><script src="assets/curriculum.js"></script><script src="assets/big-picture-data.js"></script><script src="assets/big-picture.js"></script></body></html>
+`,
+);
 
 /** Plain-text notes, one file per language, for reading without a browser. */
 for (const lang of ['en', 'es']) {
@@ -84,6 +94,10 @@ for (const lang of ['en', 'es']) {
       text += `${qi + 1}. ${q.question[lang]}\n${q.options.map((x, i) => `${letter(i)}. ${x[lang]}`).join('\n')}\n${lang === 'en' ? 'Answer' : 'Respuesta'}: ${letter(q.correct)}. ${q.explanation[lang]}\n\n`;
     }
     text += '\n';
+  }
+  text += `\n${picture.title[lang].toUpperCase()}\n${'='.repeat(65)}\n${picture.subtitle[lang]}\n\n`;
+  for (const j of picture.journeys) {
+    text += `${j.id}. ${j.title[lang]}\n${j.stops.map((s, i) => `  ${i + 1}. ${picture.nodes[s.node].label[lang]}: ${s.text[lang]}`).join('\n')}\n  → ${j.outcome[lang]}\n\n`;
   }
   fs.writeFileSync(path.join(root, `downloads/course-notes-${lang}.txt`), text);
 }
@@ -123,15 +137,14 @@ for (const l of course.lessons) {
   }
 }
 /** The live viewer names the lesson of each event from the lab steps (lessons.json) and shows the
-    cards of the map for the pieces it draws (pieces.json). */
-vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/map.js'), 'utf8'), context);
+    cards of the big picture for the pieces it draws (pieces.json). */
 const VISOR_PIECES = ['kit', 'dns', 'waf', 'access', 'cache', 'worker', 'ratelimit', 'kv', 'cacheapi', 'd1', 'r2', 'queue', 'dobj', 'workflow', 'hyperdrive', 'consumer', 'alarm', 'cron', 'api', 'postgres'];
 if (fs.existsSync(path.join(root, 'labs/visor/static'))) {
   fs.writeFileSync(
     path.join(root, 'labs/visor/static/lessons.json'),
     JSON.stringify({ version: course.version, lessons: course.lessons.map((l) => ({ id: l.id, title: l.title })), commands: visorCommands }, null, 1) + '\n',
   );
-  const cards = context.window.CFMap.cards;
+  const cards = { ...Object.fromEntries(Object.entries(picture.nodes).map(([id, n]) => [id, n.card])), ...picture.extraCards };
   fs.writeFileSync(
     path.join(root, 'labs/visor/static/pieces.json'),
     JSON.stringify({ version: course.version, pieces: Object.fromEntries(VISOR_PIECES.map((id) => [id, cards[id]])) }, null, 1) + '\n',
@@ -200,7 +213,7 @@ fs.writeFileSync(path.join(root, 'downloads/cloudflare-labs.zip'), Buffer.concat
 /** dist/ is the static site as Cloudflare Pages serves it. */
 const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });
-for (const entry of ['index.html', 'what-cloudflare-is.html', 'cloudflare-map.html', 'assets', 'lessons', 'downloads', '_headers', '404.html']) {
+for (const entry of ['index.html', 'what-cloudflare-is.html', 'big-picture.html', 'assets', 'lessons', 'downloads', '_headers', '404.html']) {
   if (fs.existsSync(path.join(root, entry))) {
     fs.cpSync(path.join(root, entry), path.join(dist, entry), { recursive: true });
   }

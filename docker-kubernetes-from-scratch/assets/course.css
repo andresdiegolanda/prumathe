@@ -766,8 +766,29 @@ header {
   line-height: 1.7;
   margin: 0 0 22px;
 }
+/* The entry to the big picture, on the home page: an outlined button with a small network mark. */
+.btn.picture {
+  border-color: var(--green);
+  color: var(--ink);
+  font-weight: 600;
+}
+.btn.picture svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.btn.picture circle {
+  fill: var(--mint);
+}
+.btn.picture:hover {
+  background: var(--mint);
+}
 .home-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
 }

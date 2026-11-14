@@ -12,13 +12,13 @@ npm run check
 npm run release
 ```
 
-`dist/` contiene el sitio estático (portada, página de presentación, mapa, lecciones, assets, apuntes, 404 y `_headers`) y las fuentes públicas de los laboratorios; no incluye `docs/` ni este README. La discusión de cada lección es el único contenido de terceros: giscus sobre GitHub Discussions, cargado a pedido, permitido por `_headers` en `script-src` y `frame-src`. `release/cloudflare-from-scratch.zip` contiene la carpeta portable completa. `release/cloudflare-pages.zip` contiene solo el sitio listo para un host estático. `downloads/cloudflare-labs.zip` contiene la carpeta `labs/` y sus instrucciones. Los ZIP excluyen `labs/.env`, `.dev.vars`, `node_modules`, el estado local de wrangler, la evidencia local y la salida de compilación.
+`dist/` contiene el sitio estático (portada, página de presentación, panorama, lecciones, assets, apuntes, 404 y `_headers`) y las fuentes públicas de los laboratorios; no incluye `docs/` ni este README. La discusión de cada lección es el único contenido de terceros: giscus sobre GitHub Discussions, cargado a pedido, permitido por `_headers` en `script-src` y `frame-src`. `release/cloudflare-from-scratch.zip` contiene la carpeta portable completa. `release/cloudflare-pages.zip` contiene solo el sitio listo para un host estático. `downloads/cloudflare-labs.zip` contiene la carpeta `labs/` y sus instrucciones. Los ZIP excluyen `labs/.env`, `.dev.vars`, `node_modules`, el estado local de wrangler, la evidencia local y la salida de compilación.
 
 ## Como carpeta de Prumathe
 
 Configurá el directorio raíz del build como `cloudflare-from-scratch`, el comando como `npm run build` y la salida como `dist`. Si la plataforma construye desde la raíz del repositorio, ejecutá `npm --prefix cloudflare-from-scratch run build` y elegí `cloudflare-from-scratch/dist`.
 
-El workflow de validación de la raíz construye el sitio y valida estructura, modelos y mapa. No levanta el kit. La suite de laboratorios requiere una máquina con Docker.
+El workflow de validación de la raíz construye el sitio y valida estructura, modelos y panorama. No levanta el kit. La suite de laboratorios requiere una máquina con Docker.
 
 ## Como copia independiente
 

@@ -34,7 +34,16 @@ for(const l of course.lessons){
   notes+='SOURCES\n'+[refs.sources[l.source],...(refs.more[l.source]||[])].map(([a,b])=>a+'\n'+b).join('\n')+'\n';
 }
 notes+='\nGLOSSARY\n'+refs.glossary.map(g=>g[0]+': '+g[2]).join('\n')+'\n';
+// The big picture: one page drawn by assets/big-picture.js, with the whole picture as text for
+// readers without JavaScript. The data and the engine are checked by check.mjs.
+const bp={window:{}};
+for(const name of ['curriculum','big-picture-data','big-picture'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),bp);
+const picture=bp.window.BIG_PICTURE;
+fs.writeFileSync(path.join(root,'big-picture.html'),`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><title>${esc(picture.title)} · Microsoft Entra from scratch | Prumathe</title><meta name="description" content="${esc(picture.subtitle)}: every piece of the course on one scene, and journeys that follow a request stop by stop."><link rel="icon" href="assets/favicon.svg"><script src="assets/theme.js"></script><link rel="stylesheet" href="assets/course.css"><link rel="stylesheet" href="assets/big-picture.css"></head><body class="bp-page"><div id="bp"></div><noscript><main class="bp-noscript">${bp.window.BigPicture.outline(picture,course,'en',{query:'?lang=en'})}</main></noscript><script src="assets/curriculum.js"></script><script src="assets/big-picture-data.js"></script><script src="assets/big-picture.js"></script></body></html>
+`);
+notes+='\nBIG PICTURE\n'+picture.journeys.map(j=>`${j.id}. ${j.title}\n`+j.stops.map((s,i)=>`  ${i+1}. ${picture.nodes[s.node].label}: ${s.text}`).join('\n')+'\n  '+j.outcome).join('\n')+'\n';
 fs.writeFileSync(path.join(root,'downloads/course-notes-en.txt'),notes);
 createZip(root);
-for(const item of ['index.html','what-entra-is.html','assets','lessons','downloads','404.html','_headers'])fs.cpSync(path.join(root,item),path.join(root,'dist',item),{recursive:true});
-console.log(`Built ${course.lessons.length} English lessons, ${course.lessons.length*3} scenes, ${course.lessons.length*3} questions, ${course.lessons.reduce((n,l)=>n+l.lab.length,0)} activity steps, notes and lab ZIP.`);
+for(const item of ['index.html','what-entra-is.html','big-picture.html','assets','lessons','downloads','404.html','_headers'])fs.cpSync(path.join(root,item),path.join(root,'dist',item),{recursive:true});
+console.log(`Built ${course.lessons.length} English lessons, the big picture (${picture.journeys.length} journeys, ${picture.journeys.reduce((n,j)=>n+j.stops.length,0)} stops), ${course.lessons.length*3} scenes, ${course.lessons.length*3} questions, ${course.lessons.reduce((n,l)=>n+l.lab.length,0)} activity steps, notes and lab ZIP.`);

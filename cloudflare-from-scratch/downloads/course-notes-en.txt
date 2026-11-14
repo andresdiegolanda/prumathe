@@ -1,9 +1,9 @@
 CLOUDFLARE FROM SCRATCH. COURSE NOTES
-WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.0.0
+WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.1.0
 
 WHAT CLOUDFLARE IS
 =================================================================
-What it is, where it came from, where it fits and where it does not. Read it once; the lessons and the map do the rest.
+What it is, where it came from, where it fits and where it does not. Read it once; the lessons and the big picture do the rest.
 
 A network in front of your application, and a place to run code in it
 Cloudflare runs a global network of data centers, 348 cities on its network map when this course was checked. For a domain you add to it, its DNS answers with addresses of that network, so requests from your users reach a nearby data center first. There the edge ends TLS, applies your rules, serves what it has cached and forwards the rest to your server, the origin. Your origin keeps doing its work; the edge decides what reaches it.
@@ -1963,4 +1963,159 @@ B. Because the event id is the primary key at the origin
 C. Because the consumer keeps a list in memory
 Answer: B. Idempotency lives where the effect is stored.
 
+
+
+BIG PICTURE
+=================================================================
+One request, from DNS to your origin, and what the edge decides on the way
+
+A. Through the edge
+  1. Shop app: The lab plays a client of the API: GET /api/shipments/R-1042, to the edge of the kit on 127.0.0.1:18097.
+  2. DNS: On Cloudflare the hostname is a proxied record: DNS answers with anycast addresses of Cloudflare, not with the address of the origin.
+  3. Anycast: The same addresses are announced from every data center, and routing takes the request to one, usually nearby. /cdn-cgi/trace names it in colo.
+  4. TLS: Leg 1 ends here, with a certificate Cloudflare manages for the zone. The encryption mode of the zone decides how leg 2 reaches the origin.
+  5. WAF: Custom, rate limiting and managed rules run in fixed phases. Nothing matches, so the request goes on.
+  6. Cache: No Access policy on this hostname. The API answers no-store, so no cache on the way may keep it.
+  7. Worker: The gateway of Rumbo, in a V8 isolate. The admin API would be refused here; this route goes on.
+  8. Rate limit: The budget of the key: 5 requests every 10 seconds. Without an x-api-key, every client shares the anonymous one.
+  9. cloudflared, Tunnel: In production the request reaches the origin through connections cloudflared opened from inside. In the kit the Worker calls origin:8080 on the Compose network.
+  10. API of Rumbo: The origin sees x-rumbo-edge and x-rumbo-request-id, added by the Worker. Called directly, with lab origin /echo, it sees neither.
+  11. Worker: On the way out the Worker adds x-rumbo-via: edge. After the answer, ctx.waitUntil records the last request in KV without making the client wait.
+  12. TLS: Back over leg 1. A site behind Cloudflare answers with server: cloudflare and a cf-ray, the Ray ID of the request.
+  → Every request meets the edge first, in the data center where it arrived: TLS, the rules, the cache and the Worker decide before the origin is called, and each leaves something you can read in a header.
+
+B. Around the edge
+  1. Someone else: Someone nobody invited: a bot, an attack, or a person who found the address of the origin.
+  2. DNS only: An old DNS-only record leaks it: Cloudflare answers with the real address, and requests go straight to that server, with no cache, no WAF and no Worker on the way.
+  3. Open port: If the origin still listens on a public port, this path never meets the edge. A tunnel adds a way in; it does not close the others.
+  4. API of Rumbo: The origin still asks for proof: its panel validates the token itself, so skipping the edge does not skip the check.
+  5. API of Rumbo: In the kit the origin publishes no port: port 8080 has no address on your machine. Only the edge does.
+  6. cloudflared, Tunnel: A way in from the inside: cloudflared, next to the service, opens outbound connections to Cloudflare, and the edge sends the requests for the hostname through them.
+  7. cloudflared, Tunnel: A quick tunnel, with no account: a trycloudflare.com name answers with server: cloudflare and the body of rumbo-origin. In the validation runs it took 14 to 41 seconds.
+  8. cloudflared, Tunnel: Registered tunnel connection: an outbound connection to a data center. A named tunnel keeps four, to two data centers, and survives restarts.
+  → The proxy hides the origin in DNS only. With no open port and an origin that checks who calls, finding its address is not enough.
+
+C. TLS in two legs
+  1. TLS: Leg 1, from the visitor to the edge, with a certificate Cloudflare manages for the zone. The padlock says nothing about leg 2.
+  2. TLS: Leg 2 depends on the encryption mode of the zone: Off, Flexible, Full, Full (strict) or Strict. lab tls plays the edge on that leg; an impostor answers with a self-signed certificate for the same name.
+  3. API of Rumbo: Flexible: leg 2 in plain HTTP. Whoever sits between the edge and the origin can read and change it.
+  4. API of Rumbo: Full: HTTPS without validating the certificate. A self-signed one is accepted, and so is any server that answers with one: encrypted, to the wrong server.
+  5. API of Rumbo: Full (strict) validates the certificate of the origin, signed by the test CA of the kit, which stands for the authorities it trusts.
+  6. API of Rumbo: The impostor under strict: rejected, DEPTH_ZERO_SELF_SIGNED_CERT. The name was right; nobody trusted signed it.
+  → Encrypted is not enough: leg 2 must also check who answers. Full (strict) validates the certificate of the origin; Full accepts any.
+
+D. A Worker in front
+  1. Wrangler: wrangler.jsonc names the Worker, its entry point, its compatibility date and nine bindings: COUNTERS, DB, FLAGS, LIMITER, MOVES, PG, PROOFS, RETURNS and SHIPMENTS.
+  2. Worker: vars are committed with the code; secrets go to the account, and locally to .dev.vars, read when wrangler dev starts. The lab prints only the length.
+  3. Worker: A V8 isolate inside a runtime that already runs: a module variable survives some requests. Restart the edge and the id changes: global state is not yours to keep.
+  4. Worker: A CORS preflight is answered at the edge, only for the shop that is allowed.
+  5. Worker: For another page there is no access-control-allow-origin: a browser there will not let its script read the answer.
+  6. Worker: The admin API is refused at the edge: the origin gets no load from it and never sees it.
+  7. KV: After an answer, ctx.waitUntil keeps working for up to 30 seconds: the gateway records the last request in KV. The refused and the preflight requests never got that far.
+  8. The kit: Tests run inside workerd with the bindings simulated: health, the admin API, CORS, maintenance, the forward to the origin and the 502 of a dead origin.
+  9. The kit: The origin is not part of the test: vi.spyOn replaces the global fetch, to answer as the origin would or to fail as a dead one.
+  → Each decision taken at the edge is one the origin does not have to take, and one it cannot get wrong. Global state is not yours to keep, and the tests run in the same runtime.
+
+E. Deploy and versions
+  1. The kit: A second Worker, rumbo-edge-demo, with no bindings so it fits the free plan: --dry-run builds it and stops.
+  2. Wrangler: With labs/.env, your account id and a token that can edit Workers. Optional, and never printed.
+  3. Worker: wrangler deploy uploads a version and deploys it to 100%: the Worker answers on workers.dev, with no zone of your own.
+  4. Worker: versions upload keeps a new version without serving it. A deployment can use only the last 100 uploaded versions.
+  5. Worker: versions deploy splits the traffic by percentage. Running it again moves the split, or rolls back.
+  6. TLS: Each request is routed on its own: most get v1, a few v2, and one user can see both, unless version affinity keeps a key on one.
+  → A version is code and configuration, kept; a deployment says which versions serve requests and in what share. Moving the split is how you roll forward or back.
+
+F. What the edge keeps
+  1. Browser: A customer opens the public tracking page, GET /track/R-1042: the same page for everyone who follows that shipment.
+  2. Worker: The page answers cache-control: max-age=60, public: the same for everyone, safe to share for a minute. A zone would not keep it by default, because it is HTML; Workers Cache would.
+  3. Cache: Workers Cache sits in front of the Worker and follows the Cache-Control of its answers: MISS, then HIT. A HIT does not run the Worker, so it uses no CPU, though it still counts as a request. wrangler dev does not run it, so this needs an account.
+  4. Cache: private, no-store or a Set-Cookie: nothing is kept. A 200 with no Cache-Control is kept by heuristic, for up to two hours.
+  5. Worker: A profile is personal, but this route marks it public, and the cache key is the URL: it does not include the user. Ana's profile is now stored.
+  6. Cache API: Beto asks for the same URL and gets the stored entry: Ana's profile, with her address. The kit plays the trap with the Cache API; the cache of a zone falls into it the same way.
+  7. Cache API: profile-safe answers private, no-store: nothing is kept, and each person gets their own answer.
+  8. Cache API: caches.default from the Worker: match, put and delete, under a key it chooses. The rate of a zone is kept for 60 seconds.
+  9. Cache API: delete purges only this data center: the Cache API does not replicate. To reach every data center, purge the zone, or Workers Cache by tag.
+  → The response decides what is kept: public only for what is the same for everyone, private or no-store for anything personal. Purging fixes the past; only a correct Cache-Control fixes the future.
+
+G. Rules and budgets
+  1. Shop app: GET /api/admin/users: a route no client should reach.
+  2. WAF: On a zone, a custom rule starts_with(http.request.uri.path, "/api/admin") with Block ends the request here: later phases and the Worker never see it. Blocks are sampled as security events.
+  3. Worker: The kit has no zone, so the gateway plays the rule: 403 before the origin, answered by the Worker alone.
+  4. Worker: /API/admin/users passes: the rule compares exact text, case included, and Spring Boot answers 404. A WAF expression that ignores case uses lower(http.request.uri.path).
+  5. Rate limit: A budget per x-api-key: 5 requests every 10 seconds. k1 gets five 200s, then 429 with retry-after: 10.
+  6. Rate limit: k2 has its own budget. The counts are per location and eventually consistent: approximate, not exact.
+  7. WAF: A rate limiting rule of the WAF runs in its own phase, before any Worker; the free plan includes one. The binding knows what a rule cannot, such as the tenant behind a key.
+  → A rule in the zone runs before any Worker; a rule in code runs only where your Worker runs, and both compare text exactly as written. A budget per key counts what a rule of the zone cannot see.
+
+H. Identity before the origin
+  1. Employee: Ana, of operations, opens the internal panel, from home, with no VPN.
+  2. Access: Cloudflare Access asks who she is: she signs in with the identity provider, and a policy allows the people of operations.
+  3. Access: The edge adds a signed JWT to the requests that pass: the Cf-Access-Jwt-Assertion header and the CF_Authorization cookie.
+  4. API of Rumbo: The kit has no Access. Without a token, the origin asks for one.
+  5. Worker: The edge of the kit serves a test issuer with its own ES256 key and the claims of Access: iss, aud rumbo-panel, Ana's email, and an expiry five minutes later.
+  6. API of Rumbo: Spring Security, as a resource server, validates four things: the signature with the published keys, the audience, the issuer and the expiry.
+  7. API of Rumbo: A token of another application, expired or changed gets 401, and the reason: the audience, Jwt expired, Invalid signature.
+  8. API of Rumbo: Called directly, skipping the edge, the origin still asks for proof. With Access only three values change: the URL of the keys, the issuer and the audience.
+  → Access checks who the person is at the edge; the origin validates the signed token itself. Reaching the origin another way does not skip the check.
+
+I. A flag and a counter
+  1. KV: Workers KV keeps the maintenance flag of Rumbo: written to central stores, cached in the data centers that read it.
+  2. Worker: The gateway reads the flag: on, so it answers 503, maintenance, and the origin is not called.
+  3. KV: Delete it and the next request reaches the origin. Locally the change is seen at once; on Cloudflare, other data centers can take a minute or more.
+  4. KV: Not a counter: 50 requests read the same old number, add one and write it back. KV has no atomic operations, and most increments are lost.
+  5. Durable Object: A Durable Object per counter, through the binding COUNTERS, lives in one place and handles one call at a time: the 50 increments arrive one after the other.
+  6. Durable Object: Its storage is strongly consistent. One object is one place, though, with a soft limit near 1,000 requests a second: split the state into more objects for more load.
+  7. Durable Object: An object exists because it was asked for: shipment R-1043, no movements yet, nobody watching.
+  → KV is for data read much more than written, and eventual. A counter needs one place that takes one call at a time: a Durable Object.
+
+J. Data next to the Worker
+  1. Worker: The edge computes a shipping quote by itself, without asking the origin.
+  2. D1: D1 is SQLite at the edge, with prepared statements and bind. Madrid, 2.5 kg: 12.0 + 1.6 x 2.5 = 16, stored as a new quote.
+  3. D1: The schema changes with numbered migrations, recorded in d1_migrations: applying twice does nothing.
+  4. R2: R2 keeps the proof of delivery as an object, proofs/R-1043.txt, with its etag. Bodies are streams: the Worker passes them on without loading them.
+  5. R2: Reading it out has no egress fee; storage and operations are what count. R-1044 has no proof: 404.
+  6. Hyperdrive: /direct reads the shipment from PostgreSQL through Hyperdrive, with an ordinary driver: Spring Boot is not involved.
+  7. PostgreSQL 18: The same database the origin uses. On Cloudflare, Hyperdrive pools connections near it and caches reads without invalidating them on writes; in the kit there is no pool and no cache.
+  8. API of Rumbo: The same status through the origin: two paths to one database, and the edge chooses.
+  → Each store has its own guarantee: SQL with migrations in D1, objects with no egress fees in R2, and your own Postgres through Hyperdrive, without moving the data.
+
+K. A carrier's webhook
+  1. Carrier: A carrier reports a movement: POST /webhooks/movement, event m-1, R-1042, delivered.
+  2. Worker: The Worker sends the movement to the queue and answers 202 at once: the carrier does not wait for the work.
+  3. Queue: At least once. The kit delivers a batch every 2 seconds, with max_retries 2 and a dead letter queue, movements-dead.
+  4. Worker: The queue handler of the same Worker takes the batch and posts each movement to the origin.
+  5. API of Rumbo: The event id is the primary key of the movements table: saved once.
+  6. Durable Object: The object of shipment R-1042 takes the new status and pushes it over its WebSocket to the browsers watching it.
+  7. API of Rumbo: The same message twice: the origin answers already saved, and nothing changes. The consumer has to be idempotent.
+  8. Queue: A status the origin rejects with 422: retried, three attempts, then movements-dead, in about eight seconds.
+  9. Durable Object: No movement in 8 seconds: the alarm of the object marks the shipment delayed and tells its watchers. A final status, delivered, cancels the alarm.
+  → The carrier gets 202 at once and the work happens later, at least once. The event id makes a repeat harmless, a dead letter queue keeps what failed, and the object of the shipment notices silence.
+
+L. A return that waits
+  1. Shop app: A return is requested for shipment R-1043: POST /returns/r-1.
+  2. Worker: The Worker creates an instance of the Workflow of returns with the id r-1.
+  3. Workflow: step.do stores the registration; step.waitForEvent waits for approved. While it waits, nothing runs and nothing is lost.
+  4. Workflow: Status running, output null: the instance waits for a person, for days if needed.
+  5. Workflow: Ana approves: an approved event with her name. The refund fails once on purpose, and only that step is retried.
+  6. Workflow: Registered, refunded, approved by ana, notified: the output of every step is stored.
+  7. Worker: The same id again is refused: instance.already_exists. A duplicate request is harmless.
+  → Each step of a Workflow stores its result, so waiting for a person or retrying a failed step loses nothing, and the id of an instance makes a repeated request harmless.
+
+M. The close at 03:00
+  1. Cron Trigger: A Cron Trigger, 0 3 * * *, in UTC: the daily close of Rumbo. After a change, the new schedule can take up to 15 minutes to reach the network.
+  2. Worker: wrangler dev does not fire Cron Triggers by itself: lab cron asks the Local Explorer to run the scheduled handler.
+  3. Hyperdrive: The handler reads the shipments by status from PostgreSQL, through Hyperdrive.
+  4. PostgreSQL 18: Three shipments, counted by status.
+  5. KV: The close is stored in KV, under close:last.
+  6. Worker: The other way: /cdn-cgi/local/scheduled, with an optional cron and time. Both answer only on the address of the edge itself, so the lab runs them inside it.
+  → A Cron Trigger runs the scheduled handler of the Worker at a time in UTC, with the same bindings as a request. Locally you run it by hand.
+
+N. An edge you can defend
+  1. Cache: What is cached, and why: the public page max-age=60, the API no-store, a profile private, the rate of a zone in the Cache API of each data center.
+  2. Worker: The admin API is refused at the edge, as a custom rule would, and the API is limited per key.
+  3. API of Rumbo: The origin listens on no public port, a tunnel is its way in, TLS to it is Full (strict), and it validates identity itself.
+  4. Queue: A queue for movements: at least once, an idempotent consumer, a dead letter queue.
+  5. Durable Object: A Durable Object per shipment and per counter: one place, one call at a time. KV for flags, D1 for quotes, R2 for proofs, a Workflow for returns.
+  6. The kit: Every claim backed by a span: the refused request answered by the Worker alone, the webhooks with queue send, the consumers with fetch to the origin and the object, and the race.
+  → Each decision is a header, a rule or a guarantee you can point to, and each claim has a command and a span behind it. All of it fits the free plan for a small load, except what the zone needs; R2 asks for a payment method.
 

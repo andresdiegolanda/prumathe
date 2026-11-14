@@ -6,7 +6,7 @@ Cada lección contiene tres escenas, una manipulación del modelo, al menos cuat
 
 ## Qué es, para qué sirve, qué no hace
 
-Cada pieza se presenta con las mismas tres preguntas: qué es, para qué sirve y qué no hace, y, cuando corresponde, qué da el plan gratuito. Las lecciones lo dicen en la primera escena; el mapa de Cloudflare lo dice en la ficha de cada pieza (`assets/map.js`), con la lección que la enseña y cómo la corre el kit: local, en parte o no está.
+Cada pieza se presenta con las mismas tres preguntas: qué es, para qué sirve y qué no hace, y, cuando corresponde, qué da el plan gratuito. Las lecciones lo dicen en la primera escena; el panorama lo dice en la ficha de cada pieza (`assets/big-picture-data.js`), con la lección que la enseña y cómo la corre el kit: local, en parte o no está.
 
 ## Tres clases de evidencia
 
@@ -25,7 +25,7 @@ El kit corre workerd, el runtime de Workers, con los bindings simulados por wran
 | Texto EN/ES, versión, fecha, recorrido, comandos, controles y expectativas | `assets/curriculum.js` |
 | Fuentes oficiales y glosario | `assets/reference.js` |
 | Modelos, controles y paletas de los dibujos | `assets/visuals.js` |
-| El mapa de Cloudflare: piezas, fichas y escenarios | `assets/map.js` |
+| El panorama: piezas con su ficha, líneas, elementos y recorridos | `assets/big-picture-data.js`; lo dibujan `assets/big-picture.js` y `assets/big-picture.css`, iguales en todos los cursos |
 | La página "Qué es Cloudflare" | `assets/about.js` |
 | Navegación, progreso y lectura | `assets/app.js` |
 | Apariencias y respuesta a tamaños de pantalla | `assets/course.css` y `assets/theme.js` |
@@ -37,17 +37,21 @@ El kit corre workerd, el runtime de Workers, con los bindings simulados por wran
 | El origen y la base | `labs/origin/`, `labs/db/init.sql` |
 | Evidencia ejecutada y limitaciones | `docs/VALIDATION.md` |
 
-La versión vive en `package.json` y en `curriculum.js`; `npm run check` exige coincidencia. Cambiar contenido requiere `npm run build`: genera el HTML de cada lección, la portada, la página de presentación, el mapa, los apuntes, el ZIP del kit y `dist/` (los documentos de `docs/` y este README no se publican). No edites a mano los apuntes ni las páginas generadas. El curso tiene cero dependencias de npm; el kit fija las suyas en `labs/edge/package-lock.json`. `check.mjs` también rechaza guiones largos, doble codificación UTF-8, comillas dobles dentro de comillas simples en los comandos (fallan en Windows PowerShell 5.1), un `?` sin comillas (en zsh es un patrón), comandos fuera del kit, pasos de cuenta que no sean opcionales, imágenes sin digest, puertos publicados fuera de 127.0.0.1, un `.env`, un `.dev.vars` o dependencias dentro del ZIP, y nombres de herramientas que produjeron el material o de otros cursos.
+La versión vive en `package.json` y en `curriculum.js`; `npm run check` exige coincidencia. Cambiar contenido requiere `npm run build`: genera el HTML de cada lección, la portada, la página de presentación, el panorama, los apuntes, el ZIP del kit y `dist/` (los documentos de `docs/` y este README no se publican). No edites a mano los apuntes ni las páginas generadas. El curso tiene cero dependencias de npm; el kit fija las suyas en `labs/edge/package-lock.json`. `check.mjs` también rechaza guiones largos, doble codificación UTF-8, comillas dobles dentro de comillas simples en los comandos (fallan en Windows PowerShell 5.1), un `?` sin comillas (en zsh es un patrón), comandos fuera del kit, pasos de cuenta que no sean opcionales, imágenes sin digest, puertos publicados fuera de 127.0.0.1, un `.env`, un `.dev.vars` o dependencias dentro del ZIP, y nombres de herramientas que produjeron el material o de otros cursos.
 
-## El mapa de Cloudflare
+## El panorama
 
-`cloudflare-map.html` muestra todas las piezas del curso en una escena: quien pide, cómo se encuentra el borde, las etapas del borde en su orden, los bindings, lo que corre después del pedido, tu infraestructura y tu cuenta. Siete escenarios la recorren parada por parada: el mapa por zonas, una página pública, una llamada a la API, un webhook, el panel interno, una devolución que espera aprobación y lo que pasa cuando algo falla. Cada parada nombra una pieza; cada pieza tiene una ficha. Los valores marcados como medidos salen de la corrida del kit registrada en VALIDATION. `check.mjs` exige siete escenarios, que cada parada apunte a una pieza que existe, una ficha bilingüe por pieza con su lección, y que la escena se dibuje en las cuatro apariencias y en los dos idiomas.
+`big-picture.html` es el curso visto desde arriba: quien pide, cómo un pedido encuentra el borde, las etapas de un data center en su orden, el Worker con sus bindings, tu infraestructura y tu máquina, en una escena. Catorce recorridos la siguen parada por parada: a través del borde, por fuera de él, TLS en dos tramos, un Worker adelante, despliegue y versiones, lo que guarda el borde, reglas y presupuestos, identidad antes del origen, una flag y un contador, datos al lado del Worker, el webhook de un transportista, una devolución que espera, el cierre de las 03:00 y la integradora. Cada parada dice qué se decide en esa pieza, nombra la lección que lo explica y, cuando el laboratorio lo muestra, el comando exacto de esa lección. La etiqueta dice cómo observarla: LABORATORIO en el kit, CUENTA con una cuenta gratuita, ZONA con un dominio propio, que las lecciones muestran como caso de estudio, y MODELO solo en las lecciones.
+
+El consumidor de la cola y el handler del cron son handlers del mismo Worker, y la alarma es un handler del Durable Object, que vive en el mismo script, así que el dibujo los muestra en esas piezas y en las paradas; el visor en vivo los dibuja aparte, con las fichas de `extraCards`. El panel interno es una ruta del origen. El camino rojo que rodea la escena por abajo es el que saltea el borde: un registro solo DNS y un puerto abierto.
+
+Cada pieza lleva su ficha (qué es, para qué sirve, qué no hace, el plan gratuito, la lección y cómo la corre el kit), la misma que muestra el visor: `build.mjs` escribe `labs/visor/static/pieces.json` a partir de ellas. `npm run check` corre la validación propia del motor (ids únicos, cada pieza dentro de su zona y separada de las demás, ninguna línea que cruce una pieza, los dos idiomas completos, cada lección real, cada par de paradas seguidas unido por una línea), exige que cada comando que muestra sea, letra por letra, uno que da una lección, y que `pieces.json` coincida con las fichas. La pasada de navegador mide cada rótulo dentro de su caja al tamaño en que se dibuja, en los dos idiomas.
 
 ## El visor en vivo
 
 `labs/visor/` sirve en http://127.0.0.1:18098 lo que pasa por el borde, evento por evento: cada pedido, mensaje de la cola, alarma y cron, dibujado sobre las piezas del kit con sus llamadas, sus tiempos y la ficha de cada pieza. Corre dentro del contenedor del borde, con la carpeta montada en solo lectura, y lee los spans de wrangler dev en 127.0.0.1:8787, como `lab spans`: solo responde GET, solo a pedidos dirigidos a la máquina, con una CSP sin código en línea. No llama al Worker ni cambia nada.
 
-Cada comando de lab empieza con un pedido a `/health?run=<comando>&poll=lab`. `lab spans` deja afuera lo que termina en `poll=lab`; el visor usa esa marca para decir qué comando y qué paso de la lección causaron lo que sigue, en el orden en que el explorador guardó los spans. Lo que no causó ningún comando de lab aparece bajo el último. `build.mjs` escribe `labs/visor/static/lessons.json` con los comandos de cada paso y `pieces.json` con las fichas del mapa (`assets/map.js`), así cada hecho tiene un solo dueño; `check.mjs` exige que estén al día. Cada lección, desde la 01, dice en el campo `visor` de `curriculum.js` qué mirar en el visor. `npm run test:visor` lo prueba con el kit levantado, después de una corrida completa de los laboratorios.
+Cada comando de lab empieza con un pedido a `/health?run=<comando>&poll=lab`. `lab spans` deja afuera lo que termina en `poll=lab`; el visor usa esa marca para decir qué comando y qué paso de la lección causaron lo que sigue, en el orden en que el explorador guardó los spans. Lo que no causó ningún comando de lab aparece bajo el último. `build.mjs` escribe `labs/visor/static/lessons.json` con los comandos de cada paso y `pieces.json` con las fichas del panorama (`assets/big-picture-data.js`), así cada hecho tiene un solo dueño; `check.mjs` exige que estén al día. Cada lección, desde la 01, dice en el campo `visor` de `curriculum.js` qué mirar en el visor. `npm run test:visor` lo prueba con el kit levantado, después de una corrida completa de los laboratorios.
 
 ## La página "Qué es Cloudflare"
 

@@ -1,5 +1,5 @@
 KAFKA FROM SCRATCH. COURSE NOTES
-Apache Kafka 4.1.2 | 2026-10-18 | v1.6.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.7.0
 
 WHAT KAFKA IS
 =================================================================
@@ -143,7 +143,7 @@ The supplied Java client exposes small, readable experiments. Its entire source 
 
 docker compose build lab
 
-Observe: The image kafka-course-lab:1.6.0 is built. The first build downloads Maven dependencies.
+Observe: The image kafka-course-lab:1.7.0 is built. The first build downloads Maven dependencies.
 
 3. Start three nodes
 Run from the labs folder. This creates only the course’s named Docker project. Ports 19092, 29092 and 39092 must be free.
@@ -2251,4 +2251,123 @@ B. Skips the record and commits
 C. Sends the record to a dead-letter topic automatically
 Answer: A. CommonContainerStoppingErrorHandler makes the failure visible and keeps the bookmark honest. Retries and a DLT are a separate design decision.
 
+
+
+BIG PICTURE
+=================================================================
+One order, from the producer to every reader
+
+A. Publish an order, then read it
+  1. HTTP client: POST /orders/order-42 with a JSON order. The client knows nothing about Kafka.
+  2. Spring producer: OrderProducer calls KafkaTemplate.send(topic, orderId, event): the key is the order ID.
+  3. Producer client: The partitioner hashes the key's bytes with murmur2, modulo 3: order-42 goes to partition 0, and stays there while the count is 3.
+  4. Producer client: JsonSerializer turned the order into bytes. The record waits in a batch for partition 0; linger.ms and batch.size decide when it leaves.
+  5. Orders topic: The leader of partition 0 appends the batch at the end of its log. The record gets its offset only now.
+  6. Follower replicas: The followers on the other two brokers fetch the new record. The replicas that keep up form the ISR.
+  7. Orders topic: With acks=all the leader answers once the in-sync replicas have it; the topic's min.insync.replicas=2 is the floor.
+  8. HTTP client: HTTP 202 Accepted, with topic, partition and offset. Stored, not processed: nobody has read it yet.
+  9. Orders topic: The record waits in partition 0. Reading it will not remove it.
+  10. Spring listener: Spring's listener, in group spring-kitchen, polls it and receives a ConsumerRecord<String, OrderPlaced>.
+  11. Group coordinator: The listener returned normally, so AckMode.RECORD commits the next offset: where the group resumes.
+  12. Spring listener: Send the same POST again and the topic gets a second record: a new send, even with the same event ID.
+  → The order was stored once, copied to the in-sync replicas and read by a group that committed its bookmark. Stored, read and processed are three different facts.
+
+B. Keys choose a lane
+  1. Producer client: The lab sends three orders with two keys: order-1, order-2, order-1. For each, the partitioner takes murmur2 of the key's bytes, made positive, modulo 3.
+  2. Orders topic: order-1 lands in partition 1, both times: same key, same partition, in the order they were sent.
+  3. Orders topic: order-2 lands in partition 0.
+  4. Orders topic: Each partition keeps its own order and its own offsets: offset 0 exists in every lane. Across partitions there is no global order.
+  5. Orders topic: Expand to four partitions and send again: the modulo changes, so order-1 now lands in partition 2 and order-2 in the new partition 3. Their earlier records stay where they were.
+  6. Kitchen group: Partitions also set the ceiling of a group: three partitions keep at most three members of a group busy.
+  → Keys draw the ordering boundary. Changing the partition count moves keys; existing records stay where they were.
+
+C. Two teams, one history
+  1. Orders topic: Six orders sit in the topic's three partitions. Reading them will not remove them.
+  2. Kitchen group: In the kitchen group, the coordinator gives each partition to one member at a time. The member reads the orders of its partitions.
+  3. Side effects: It prints the kitchen ticket: an effect outside Kafka.
+  4. Group coordinator: Then the kitchen commits the next offset. The coordinator keeps it in __consumer_offsets under the group ID kitchen.
+  5. Billing group: Billing, another group ID, reads the same orders from the same log. Nothing was taken away.
+  6. Group coordinator: Billing commits its own bookmark. Neither group knows how far the other has read.
+  → A topic is not a queue that empties. Each group reads the whole retained history and keeps its own bookmark.
+
+D. A bookmark, not a receipt
+  1. Kitchen group: A member reads three records and commits offset 3. That means resume at 3, not record 3 is done.
+  2. Group coordinator: The bookmark is durable: it survives the member.
+  3. Kitchen group: The member restarts, asks for its committed offset and resumes there. auto.offset.reset does not override a valid bookmark.
+  4. Orders topic: Lag is the log end offset minus the committed offset: a distance in offsets, not in seconds.
+  5. Group coordinator: To replay, stop the group's members and move its offsets back on purpose.
+  6. Kitchen group: A member joins or leaves and the group redistributes partitions; the new owner resumes from the committed offset. A member that does not poll within max.poll.interval.ms loses its partitions.
+  → The committed offset is where to resume after a restart. Lag is a distance in offsets. Neither proves that the business work finished.
+
+E. A broker falls
+  1. Orders topic: The lesson's topic has one partition with three replicas: kafka1 leads, two followers copy, all three in the ISR.
+  2. Orders topic: Stop kafka1: for a moment the partition has no leader.
+  3. KRaft controllers: The two remaining controllers are still a majority. They choose a new leader among the in-sync replicas and record it in the metadata log.
+  4. Follower replicas: An in-sync follower becomes the leader, and the ISR shrinks to two.
+  5. Orders topic: Clients refresh their metadata and retry against the new leader. The records remain readable.
+  6. Producer client: With acks=all, a write needs at least min.insync.replicas in the ISR. Lesson 11's topic asks for 3, so with one broker down the write fails; a topic asking for 2 would keep writing.
+  7. KRaft controllers: Metadata still changes with two of three controllers: a new topic can be created. Lose another one and it cannot.
+  8. Follower replicas: Start the broker again: it catches up from the leader and rejoins the ISR.
+  → Replicas keep the data readable and the controllers keep the map. min.insync.replicas turns a weaker write into an explicit error.
+
+F. History has a horizon
+  1. Orders topic: Records go into the active segment of each partition. Older segments can be deleted by time or by size per partition.
+  2. Orders topic: When a segment is deleted, the earliest offset moves up. The other offsets keep their numbers.
+  3. Kitchen group: A group whose bookmark now points before the start has no valid offset: auto.offset.reset decides where it begins.
+  4. Orders topic: A compacted topic interprets keys as rows: it eventually keeps at least the latest value of each key.
+  5. Orders topic: A null value for key B is a tombstone: the table rebuilt from the topic drops B, even before the cleaner runs.
+  6. Orders topic: The cleaner runs later. It leaves gaps, and the surviving records keep their offsets and their order.
+  → Retention bounds how far back anyone can replay; compaction keeps the latest value per key. Offsets are never renumbered.
+
+G. The crash between two actions
+  1. Orders topic: Three input events wait in the lesson's topic.
+  2. Processor: A consumer in group delivery-demo reads them. Its plan: write an effect for each one, then commit the input offsets.
+  3. Output topics: The first effect is written to lab14-effects...
+  4. Processor: ...and the process crashes before committing anything.
+  5. Group coordinator: The group's bookmark never moved.
+  6. Processor: On restart it resumes from the old bookmark and reads the first event again.
+  7. Output topics: The first effect is written again: at least once, with a duplicate.
+  8. Processor: An idempotent sink stores the event ID with its effect in one database transaction, and a unique constraint refuses the repeat. The lab shows the idea with an in-memory set.
+  → Commit after the effect and a crash repeats it; commit before and a crash loses it. Choose, then make the effect safe to repeat by event ID.
+
+H. Exactly once inside Kafka
+  1. Processor: The processor has a stable transactional.id. initTransactions fences any older instance with the same ID.
+  2. Transaction coordinator: The transaction coordinator registers it; a transaction begins.
+  3. Orders topic: It reads the input with read_committed and auto-commit off.
+  4. Output topics: It writes the outputs. They are in the log, but read_committed readers do not see them yet.
+  5. Transaction coordinator: sendOffsetsToTransaction puts the next input offsets inside the same transaction.
+  6. Group coordinator: The offsets reach the group coordinator as part of the transaction.
+  7. Transaction coordinator: Commit: the coordinator writes commit markers for the outputs and the offsets. With abort, both would be discarded together.
+  8. Output topics: Now read_committed readers see the outputs, exactly once per input.
+  9. Processor: The capstone checks one committed output per input and no lag left. That proves the Kafka boundary, not an external effect.
+  → Output records and input offsets commit together, or neither does. The boundary is Kafka to Kafka; an email or a payment stays outside it.
+
+I. From a database row to an event
+  1. orders + outbox: One database transaction writes the order row and an outbox row with event ID outbox-E42. No Kafka call yet.
+  2. Outbox relay: The relay polls the unsent outbox rows.
+  3. Orders topic: It publishes the event, and Kafka acknowledges it.
+  4. Outbox relay: Crash before marking the row sent: the event is in Kafka and the row is still pending.
+  5. orders + outbox: The next run finds the same pending row, with the same event ID.
+  6. Orders topic: It publishes it again: two records share one event ID.
+  7. Kitchen group: A reader that records event IDs with its effects applies it once and skips the copy.
+  → The order and its event commit together in the database. The relay is at least once, so the stable event ID makes a repeat harmless.
+
+J. A stream becomes a table
+  1. Orders topic: Keyed events arrive in the input topic.
+  2. Processor: A Kafka Streams topology in a Java process: stream, groupByKey, count. Its application.id names its group and its internal topics.
+  3. State store: The count per key lives in the local store order-counts.
+  4. Output topics: Each change also goes to a changelog topic, so a lost store can be rebuilt.
+  5. Output topics: The updated counts are written to lab20-counts: a stream of table updates.
+  6. Processor: Windows: a count per 10-second window by the record's timestamp, with 5 seconds of grace. A record later than that is dropped.
+  → Kafka Streams runs inside your Java process. Its state is local and backed by changelog topics; windows close by stream time, not by the wall clock.
+
+K. Around the cluster
+  1. Kafka Connect: Kafka Connect starts a source connector. The worker runs its tasks; a task reads a file and produces records.
+  2. Orders topic: Its records land in the topic like any producer's.
+  3. Kafka Connect: Check the tasks too: a connector can be RUNNING while one of its tasks has FAILED.
+  4. Kafbat UI: Kafbat UI shows brokers, topics, groups and lag. In read-only mode it refuses its own writes; the broker never sees that setting.
+  5. Orders topic: Browsing messages joins no group and commits nothing: looking is not consuming.
+  6. Second cluster: A second cluster receives a copy in its own topic: source offset 0 became destination offset 1.
+  7. Second cluster: Run the copy again and the records are added again: this copy is at least once. IDs, not offsets, connect copies of the same event.
+  → Connect moves data without a custom loop, the console looks without touching, and a second cluster is another system with its own offsets.
 

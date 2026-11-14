@@ -46,6 +46,22 @@ for (const l of course.lessons) {
   fs.writeFileSync(path.join(root, 'lessons', l.slug + '.html'), html(l));
 }
 
+/** The big picture: one page drawn by assets/big-picture.js. For readers without JavaScript, the
+    same picture as text, in both languages. The data and the engine are checked by check.mjs. */
+const bp = { window: {} };
+for (const name of ['curriculum', 'big-picture-data', 'big-picture']) {
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', name + '.js'), 'utf8'), bp);
+}
+const picture = bp.window.BIG_PICTURE;
+const pictureText = (lang) => bp.window.BigPicture.outline(picture, course, lang, { query: `?lang=${lang}` });
+fs.writeFileSync(
+  path.join(root, 'big-picture.html'),
+  `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#21664e"><title>${esc(picture.title.en)} · LLMs, RAG and MCP from scratch</title><meta name="description" content="${esc(picture.subtitle.en)}: every piece of the course on one scene, and journeys that follow it stop by stop. English and Rioplatense Spanish."><link rel="icon" href="assets/favicon.svg"><script src="assets/theme.js"></script><link rel="stylesheet" href="assets/course.css"><link rel="stylesheet" href="assets/big-picture.css"></head>
+<body class="bp-page"><div id="bp"></div><noscript><main class="bp-noscript">${pictureText('en')}<hr>${pictureText('es')}</main></noscript><script src="assets/curriculum.js"></script><script src="assets/big-picture-data.js"></script><script src="assets/big-picture.js"></script></body></html>
+`,
+);
+
 /** Plain-text notes, one file per language, for reading without a browser. */
 for (const lang of ['en', 'es']) {
   const letter = (i) => String.fromCharCode(65 + i);
@@ -77,6 +93,10 @@ for (const lang of ['en', 'es']) {
       text += `${qi + 1}. ${q.question[lang]}\n${q.options.map((x, i) => `${letter(i)}. ${x[lang]}`).join('\n')}\n${lang === 'en' ? 'Answer' : 'Respuesta'}: ${letter(q.correct)}. ${q.explanation[lang]}\n\n`;
     }
     text += '\n';
+  }
+  text += `\n${picture.title[lang].toUpperCase()}\n${'='.repeat(65)}\n${picture.subtitle[lang]}\n\n`;
+  for (const j of picture.journeys) {
+    text += `${j.id}. ${j.title[lang]}\n${j.stops.map((s, i) => `  ${i + 1}. ${picture.nodes[s.node].label[lang]}: ${s.text[lang]}`).join('\n')}\n  → ${j.outcome[lang]}\n\n`;
   }
   fs.writeFileSync(path.join(root, `downloads/course-notes-${lang}.txt`), text);
 }
@@ -188,7 +208,7 @@ fs.writeFileSync(path.join(root, 'downloads/llm-rag-mcp-labs.zip'), Buffer.conca
 /** dist/ is the static site as Cloudflare Pages serves it. */
 const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });
-for (const entry of ['index.html', 'what-llms-rag-and-mcp-are.html', 'assets', 'lessons', 'downloads', '_headers', '404.html']) {
+for (const entry of ['index.html', 'what-llms-rag-and-mcp-are.html', 'big-picture.html', 'assets', 'lessons', 'downloads', '_headers', '404.html']) {
   if (fs.existsSync(path.join(root, entry))) {
     fs.cpSync(path.join(root, entry), path.join(dist, entry), { recursive: true });
   }

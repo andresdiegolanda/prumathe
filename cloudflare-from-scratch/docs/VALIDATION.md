@@ -2,6 +2,14 @@
 
 Este documento registra evidencia ejecutada y límites por versión; los modelos del navegador siguen siendo ilustrativos. Cada sección dice qué se ejecutó, en qué plataforma y qué quedó fuera.
 
+## Versión 1.1.0, 14 de noviembre de 2026
+
+El mapa de Cloudflare pasa a ser el panorama del curso, con el motor común a los demás cursos: `big-picture.html`, que se abre con un botón de la portada y con el enlace del encabezado. 29 piezas, 29 líneas, 8 elementos, 14 recorridos y 108 paradas, en inglés y español; las fichas de las piezas son las del mapa, con el mismo texto, y `pieces.json` del visor se genera ahora desde ellas, sin cambios. El consumidor de la cola, la alarma de un objeto, el panel interno y el panel de Cloudflare dejan de ser piezas propias: el consumidor es el handler queue del Worker, la alarma un handler del Durable Object y el panel una ruta del origen, y el panel de Cloudflare lo cubren las paradas de cuenta y de zona. `assets/map.js` y `cloudflare-map.html` salen del curso. `npm run check` valida los datos con el motor (ids, geometría, los dos idiomas, lecciones, recorridos que solo se mueven por líneas), encuentra cada comando que muestra entre los comandos de las lecciones y compara `pieces.json` con las fichas.
+
+Pasada de navegador en Chromium con la CSP de `_headers`: cada parada de cada recorrido con el teclado en 1440x900 (Clásica, inglés), 1366x768 (Oscura, español), 390x844 (Clásica, español) y 1920x1080 (Proyector, inglés). En cada una: el panel nombra la parada, la pieza actual queda marcada, la burbuja queda dentro de la escena y no tapa la pieza de la parada (en un teléfono la burbuja le deja el lugar al panel), sin errores de consola ni desborde horizontal. Cada rótulo medido dentro de su caja en los dos idiomas y en las cuatro apariencias; en 1440x900 la escena se dibuja a 0,76, los nombres a 11,3 px.
+
+No ejecutado: el laboratorio. El panorama no corre ningún comando ni cambia el kit; los números de las paradas son los de las lecciones, medidos en la corrida de la 1.0.0, y las imágenes del kit conservan la etiqueta 1.0.0.
+
 ## Versión 1.0.0, 14 de noviembre de 2026
 
 ### Resultado

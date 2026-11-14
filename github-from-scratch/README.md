@@ -14,6 +14,7 @@ Open [index.html](index.html?lang=en) or start with [Before you start](lessons/b
 - Una página de cinco minutos, "Qué son Git y GitHub": qué son, de dónde salieron, dónde encajan y dónde no, con sus fuentes. / A five minute "What Git and GitHub are" page: what they are, where they came from, where they fit and where they do not, with its sources.
 - Una discusión por lección, en la pestaña Profundizá: hilos en GitHub Discussions, cargados solo cuando los abrís en el sitio publicado; leer es abierto, publicar pide una cuenta de GitHub. / A discussion per lesson, in the Go deeper tab: threads on GitHub Discussions, loaded only when you open them on the published site; reading is open, posting needs a GitHub account.
 - 60 preguntas sobre predicción, explicación y límites, con distractores plausibles y devolución. / 60 questions about prediction, explanation and limits, with plausible distractors and feedback.
+- Un panorama, desde un botón de la portada: todas las piezas del curso en una escena, las computadoras de Ana y de Bruno a los lados y GitHub en el medio, con 10 recorridos y 62 paradas (registrar, ramas y conflictos, publicar e integrar, issue y pull request, fork, revisión y Actions, reglas e integración, deshacer, release, secretos), una ficha por pieza y una versión en texto. / A big picture, from a button on the home page: every piece of the course on one scene, Ana's and Bruno's computers on the sides and GitHub in the middle, with 10 journeys and 62 stops (record, branches and conflicts, publish and integrate, issue and pull request, fork, review and Actions, rules and integration, undo, release, secrets), a card for every piece and a text version.
 - 14 experimentos locales con Git real y 41 aserciones. / 14 local experiments using real Git with 41 assertions.
 - 6 actividades de GitHub, cada una con alternativa de caso de estudio sin cuenta. / 6 GitHub activities, each with an account-free case-study alternative.
 - 81 pasos de actividad, cuaderno de predicción y rúbrica final. / 81 activity steps, a prediction worksheet and a final rubric.
@@ -48,9 +49,9 @@ GitHub activities need an account, your own practice repository and appropriate 
 
 ## Edición y evidencia / Editing and evidence
 
-Versión del curso: **1.4.0**, 20/10/2026. Referencias oficiales revisadas el 18/10/2026. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
+Versión del curso: **1.5.0**, 14/11/2026. Referencias oficiales revisadas el 18/10/2026. GitHub es un servicio, no una versión fijable del kit. La plataforma ejecutada y los límites de validación están en [docs/VALIDATION.md](docs/VALIDATION.md). No se declara ejecutada ninguna actividad en una cuenta de GitHub.
 
-Course version: **1.4.0**, 20 October 2026. Official references were reviewed on 18 October 2026. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
+Course version: **1.5.0**, 14 November 2026. Official references were reviewed on 18 October 2026. GitHub is a service, not a pinnable kit version. The executed platform and validation limits are in [docs/VALIDATION.md](docs/VALIDATION.md). No activity in a GitHub account is claimed as executed.
 
 ```text
 npm run build

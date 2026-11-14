@@ -1,6 +1,14 @@
 # Validation record
 
-Release 1.0.0. Validation date: 29 October 2026.
+Release 1.1.0. Validation date: 29 October 2026; the big picture was validated on 14 November 2026.
+
+## Big picture (1.1.0)
+
+- `node scripts/check.mjs` validates the data with the engine: 23 pieces, 29 lines, 8 tokens and keys, 11 journeys and 101 stops; ids, geometry, texts, lessons, lab commands and that each journey moves only along lines.
+- Browser pass in Chromium under the course CSP from `_headers`: every stop of every journey walked with the keyboard at 1440x900 (Classic), 1366x768 (Dark), 390x844 (Classic) and 1920x1080 (Projector). In each: the panel names the stop, the current piece is marked, the bubble stays inside the scene and never covers the current piece, no console error or warning, no horizontal overflow.
+- Every label of the scene measured inside its box; zone labels clear of lines and pieces; legend text inside the legend. At 1440x900 the scene is drawn at 0.83: piece names at 12.4 px, subtitles at 10 px.
+- Dialogs (tokens and keys, legend, text version, how to use), piece and token cards, "Where they live", deep links (`?j=B&s=7`, `?piece=decoder`, `?item=A`) and Reading checked by screenshot.
+- The big picture runs no lab and calls no service. Its claims come from the lessons and the kit source; tags mark which stops the kit executes.
 
 ## Executed evidence
 

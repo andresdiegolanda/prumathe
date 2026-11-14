@@ -8,8 +8,8 @@ window.CF_ABOUT = (() => {
     eyebrow: B('A FIVE MINUTE READ', 'CINCO MINUTOS DE LECTURA'),
     title: B('What Cloudflare is', 'Qué es Cloudflare'),
     lead: B(
-      'What it is, where it came from, where it fits and where it does not. Read it once; the lessons and the map do the rest.',
-      'Qué es, de dónde salió, dónde encaja y dónde no. Se lee una vez; el resto lo hacen las lecciones y el mapa.',
+      'What it is, where it came from, where it fits and where it does not. Read it once; the lessons and the big picture do the rest.',
+      'Qué es, de dónde salió, dónde encaja y dónde no. Se lee una vez; el resto lo hacen las lecciones y el panorama.',
     ),
     what: {
       title: B('A network in front of your application, and a place to run code in it', 'Una red delante de tu aplicación, y un lugar donde correr código en ella'),

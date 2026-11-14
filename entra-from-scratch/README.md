@@ -2,11 +2,12 @@
 
 **Understand authentication and authorization by following one request through Angular, Spring and PostgreSQL.** Entirely in English.
 
-Open [index.html](index.html) in a browser. Start with [What Microsoft Entra ID does](what-entra-is.html), then lesson 00. No server, account, external scripts or network connection is required for the course itself. The downloadable application lab declares its own dependencies.
+Open [index.html](index.html) in a browser. Start with [What Microsoft Entra ID does](what-entra-is.html), then lesson 00. The [big picture](big-picture.html) shows every piece of the course on one scene and follows a request through it, stop by stop. No server, account, external scripts or network connection is required for the course itself. The downloadable application lab declares its own dependencies.
 
 - 24 lessons in 7 units, 72 scenes and 72 conceptual questions.
 - 8 interactive model families: component boundaries, registration objects, PKCE, tokens, permission predicates, rows, database connections and token lifetime.
 - 97 guided activity steps, 44 glossary terms, four display modes and browser-local progress.
+- A big picture: 23 pieces on one scene, 11 journeys with 101 stops (sign-in, 200, approval race, 401, 403, 404, RLS, a removed role, tenant setup, browser threats, another API), a card for every piece and every token, and a text version.
 - A complete Angular/MSAL client, Spring Security resource server and PostgreSQL database with explicit owner/tenant rules and RLS.
 - 50 local assertions, including invalid tokens, scope/role failures, object isolation, pooled context and concurrent approval.
 - A real Entra tenant workbook with an account-free case study, a separate evidence sheet and a capstone rubric.
@@ -31,6 +32,6 @@ Preview: http://127.0.0.1:4175. Build generates lesson shells, English notes, `d
 
 The local suite leaves its services running. Its concurrency case resets only practice row 42. Stop with `docker compose stop` from labs; stop Angular with Ctrl+C. Do not run fixture checks against a tenant exercise in progress.
 
-Version 1.0.0. Sources reviewed 29 October 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
+Version 1.1.0. Sources reviewed 29 October 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
 
 See [teaching and editing](docs/TEACHING.md), [deployment](docs/DEPLOYMENT.md), [validation](docs/VALIDATION.md) and the [MIT license](LICENSE).

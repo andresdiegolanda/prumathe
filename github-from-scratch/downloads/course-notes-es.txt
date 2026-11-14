@@ -1,5 +1,5 @@
 GITHUB DESDE CERO. APUNTES DEL CURSO
-Git + GitHub | 2026-10-20 | v1.4.0
+Git + GitHub | 2026-10-20 | v1.5.0
 
 QUÉ SON GIT Y GITHUB
 =================================================================
@@ -1402,4 +1402,101 @@ C. Un despliegue verificado
 Respuesta: A. Podés seguir aprendiendo y mantener la evidencia correctamente identificada.
 
 GitHub Docs · GitHub flow: https://docs.github.com/en/get-started/using-github/github-flow
+
+
+PANORAMA
+=================================================================
+Un cambio, del escritorio de Ana a una historia aceptada
+
+A. Registrar un cambio
+  1. Working tree: Ana cambia el horario de apertura de 09:00 a 10:00 y empieza una nota sin terminar. Las dos ediciones están solo en su escritorio.
+  2. Staging area: git add guide.txt prepara ese contenido para el próximo commit: el contenido, no solo el nombre del archivo.
+  3. Working tree: Edita otra vez, a 11:00. El contenido preparado sigue en 10:00 hasta que vuelva a hacer add.
+  4. Staging area: Dos comparaciones: git diff muestra 10:00 a 11:00; git diff --staged muestra 09:00 a 10:00.
+  5. Commits y ramas: git commit registra el index como una instantánea, con un mensaje, metadatos y un enlace a su padre.
+  6. Commits y ramas: El contenido que no cambió se reutiliza por dentro, no se copia. El mensaje dice por qué: Fix hours after winter schedule change.
+  → Guardar, preparar y registrar son tres actos distintos. Un commit registra el index, así que prepará exactamente la decisión que querés explicar.
+
+B. Ramas, merges, conflictos
+  1. Commits y ramas: main nombra la historia aceptada. git switch -c hours le da un segundo nombre al mismo commit; no hace falta una versión nueva.
+  2. Working tree: Con hours seleccionada, Ana cambia los horarios.
+  3. Commits y ramas: Su commit adelanta hours, adonde apunta HEAD; main queda donde estaba.
+  4. Commits y ramas: Si main no se movió, el merge de hours es un fast-forward: main avanza hasta la punta, sin commit de merge.
+  5. Commits y ramas: Si las dos líneas avanzaron, Git las combina desde su ancestro común y registra un commit de merge con dos padres.
+  6. Working tree: Ana escribió 10:00 y Bruno 11:00 en la misma línea: un conflicto. Git no puede decidir el horario de la biblioteca.
+  7. Staging area: Acuerdan 10:30, reemplazan las marcas con eso y hacen add del resultado.
+  8. Commits y ramas: El commit de merge registra la decisión. Después revisá el sentido: un taller a las 09:30 ahora contradiría la guía.
+  → Las ramas son nombres; el merge combina historias; un conflicto es una pregunta que solo pueden responder personas. Un texto que se combina sin conflicto puede igual decir dos cosas a la vez.
+
+C. Publicar, traer, integrar
+  1. Commits y ramas: Ana hizo commit de 10:00 en main.
+  2. Repositorio Faro: git push propone mover main en GitHub a su commit. Es un fast-forward, así que se acepta.
+  3. origin/main: El origin/main de Ana registra que main en GitHub ahora es su commit: su última vista, hasta el próximo fetch o push.
+  4. origin/main de Bruno: Bruno corre git fetch. Su origin/main se mueve; su main y sus archivos, no.
+  5. Commits de Bruno: Integra con git merge --ff-only origin/main: su guía ahora dice 10:00.
+  6. Working tree de Bruno: Agrega un archivo de contacto, sin volver a hacer fetch.
+  7. Commits de Bruno: Hace commit en main.
+  8. Repositorio Faro: Mientras tanto Ana publicó 11:00. Su push se rechaza por non-fast-forward: perdería el commit de ella, y main en GitHub no se mueve.
+  9. origin/main de Bruno: Vuelve a hacer fetch.
+  10. Commits de Bruno: Hace merge de origin/main: su historia ahora tiene el trabajo de los dos.
+  11. Repositorio Faro: Su push ahora incluye el commit de Ana: se acepta.
+  → Fetch se entera, integrar decide, push propone. El push rechazado protegió el trabajo de Ana; la solución fue integrar, no forzar.
+
+D. De un issue a un pull request
+  1. Issue: Una persona llegó a las 09:00 y encontró la biblioteca cerrada. El issue registra qué se vio, qué se esperaba y quién puede confirmar el horario real.
+  2. Pull request: Ana abre un pull request: base main, head winter-hours. Abrirlo no hace ningún merge.
+  3. Repositorio Faro: Su head es la rama winter-hours que publicó en el repositorio.
+  4. Pull request: Cada commit nuevo en winter-hours actualiza la propuesta: la conversación sigue a una evidencia que cambia.
+  5. Pull request: Su descripción cuenta el problema, qué cambia, cómo se comprobó y qué issue lo motivó.
+  → El issue acuerda el problema; el pull request propone una diferencia y sigue cambiando hasta el merge. Ninguno cambia main por sí solo.
+
+E. Una contribución desde un fork
+  1. Repositorio Faro: Una persona voluntaria quiere corregir los horarios pero no tiene permiso de escritura en Faro.
+  2. Fork: Le hace fork: otro repositorio en GitHub, en su cuenta, enlazado al original en una red de forks.
+  3. Fork: Su clon llama origin al fork y upstream al original. Su push actualiza el fork; el original no cambia.
+  4. Pull request: Propone el cambio desde una rama de su fork hacia main en Faro.
+  → Un fork le da a quien contribuye un repositorio propio donde publicar; el original solo cambia si quienes lo mantienen hacen el merge de la propuesta.
+
+F. Revisión y evidencia automática
+  1. Pull request: Un commit nuevo en el pull request es un evento.
+  2. Actions: Dispara el workflow: un job en un runner, sus steps en orden. El control espera que el README contenga 10:00, y todavía dice 09:00.
+  3. Pull request: El pull request muestra el control fallido.
+  4. Actions: Corregí el texto y hacé push: esta ejecución pasa. Verde significa que esta afirmación pasó para esta revisión, nada más.
+  5. Revisión: Quien revisa lee propósito, cambio y evidencia: ¿10:00 es el horario real de apertura? ¿El aviso del taller lo contradice?
+  6. Revisión: Aprobar, o pedir cambios. Quien escribió el pull request no puede aprobarlo.
+  7. Pull request: Un commit posterior puede cambiar lo revisado; si la aprobación sigue valiendo lo deciden las reglas.
+  → Un control prueba la afirmación que hace, para una revisión; una revisión juzga el propósito y el sentido. Cada uno cubre lo que el otro no puede.
+
+G. Reglas e integración
+  1. Pull request: La propuesta está aprobada y su control está en verde.
+  2. Repositorio Faro: El merge actualizaría main.
+  3. Ruleset sobre main: El ruleset sobre main exige un pull request, una aprobación y el control. Nombra su rama destino y quién lo puede saltear.
+  4. Repositorio Faro: Commit de merge: dos padres conservan el punto de encuentro y los commits individuales.
+  5. Repositorio Faro: Squash: un commit nuevo con el cambio combinado; los commits de la rama no son sus ancestros.
+  6. Repositorio Faro: Rebase: los commits se reaplican sobre main como commits nuevos con identificadores nuevos. Los tres terminan con los mismos archivos.
+  → Las reglas convierten acuerdos en condiciones en el destino. Merge, squash y rebase pueden dar los mismos archivos con tres historias distintas; elegí la historia que querés conservar.
+
+H. Deshacer sin perder la historia
+  1. Commits y ramas: Se registró y publicó un commit con el horario equivocado.
+  2. Commits y ramas: git revert registra un commit nuevo que revierte su efecto. El error queda en la historia, como su padre.
+  3. Repositorio Faro: La corrección se publica con un push normal: nadie tiene que mover main hacia atrás.
+  4. Commits y ramas: En una rama que nadie más usa, git reset --soft mueve la rama hacia atrás y deja el cambio preparado.
+  5. Working tree: Un reset hard puede descartar ediciones. Los reflogs registran movimientos locales por un tiempo; no son un respaldo.
+  → Primero decí qué estado querés recuperar. Para trabajo publicado, revert agrega una corrección que otros pueden traer; reset mueve una rama y es para historia que nadie más usa.
+
+I. Tag, release, despliegue
+  1. Commits y ramas: git tag -a v1.0 nombra un commit elegido. Cuando main avanza, el tag se queda.
+  2. Repositorio Faro: El tag se publica en GitHub.
+  3. Release v1.0: Una release construida sobre el tag agrega notas: qué cambió para quien la usa, límites conocidos, cómo actualizar.
+  4. Despliegue: Ejecutarla es otro paso, solo si algo está configurado para hacerlo. Anotá qué revisión corre en qué entorno.
+  → El tag nombra el punto de origen, la release lo explica y un despliegue lo pone a correr. Tres pasos, tres hechos distintos.
+
+J. La historia recuerda lo que quitás
+  1. Working tree: practice.env guarda FAKE_NOT_A_SECRET, un marcador inconfundiblemente falso.
+  2. Staging area: Se le hace add...
+  3. Commits y ramas: ...y commit.
+  4. Commits y ramas: Una regla de .gitignore agregada después no deja de seguir un archivo ya registrado.
+  5. Commits y ramas: git rm y un commit nuevo lo quitan de la instantánea actual. El commit anterior lo sigue conteniendo.
+  6. Repositorio Faro: Una vez publicado, cada clon y cada fork pueden tener ese commit. Una credencial real se revoca o se rota primero; reescribir un repositorio no llega a todas las copias.
+  → Borrar un archivo registra una instantánea nueva; los commits anteriores lo siguen conteniendo. Con una credencial real, revocala o rotala primero, y después seguí el proceso de limpieza del servicio.
 

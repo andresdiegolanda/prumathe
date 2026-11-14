@@ -54,4 +54,15 @@ assert.ok(entries.includes('labs/TENANT.md')&&entries.includes('labs/frontend/pa
 assert.ok(!entries.some(n=>/node_modules|\/dist\/|\/runs\/|\/target\/|\/\.env|\/config\.json/.test(n)));
 assert.ok(!fs.existsSync(path.join(root,'dist/labs')),'dist should expose only the downloadable kit');
 assert.ok(read('_headers').includes("connect-src 'none'"));
-console.log(`PASS 24 lessons / 72 scenes / 72 questions / ${refs.glossary.length} terms; all model states in four themes; ${commands} scenario commands; ${entries.length} clean ZIP entries; encoding, syntax and pinned versions.`);
+// The big picture: the shared engine validates its own data (ids, geometry, every text, journeys
+// that move only along lines), and every lab command it names exists.
+const bp={window:{}};
+for(const name of ['curriculum','big-picture-data','big-picture'])vm.runInNewContext(read('assets/'+name+'.js'),bp);
+const picture=bp.window.BIG_PICTURE,BigPicture=bp.window.BigPicture;
+const labCommand=(command)=>{const [, file, scenario]=command.split(' ');if(file==='lab.mjs')return runner.includes('async '+scenario+'()');return ['configure.mjs','tenant-probe.mjs'].includes(file)&&fs.existsSync(path.join(root,'labs',file));};
+const pictureErrors=[...BigPicture.validate(picture,bp.window.ENTRA_COURSE,{icons:BigPicture.icons(),lab:labCommand})];
+assert.equal(pictureErrors.length,0,pictureErrors.join('\n'));
+assert.ok(read('big-picture.html').includes('assets/big-picture.js')&&read('big-picture.html').includes('<noscript>'));
+assert.ok(fs.existsSync(path.join(root,'dist/big-picture.html')),'dist publishes the big picture');
+assert.ok(read('assets/app.js').includes('big-picture.html'),'the course links the big picture');
+console.log(`PASS 24 lessons / 72 scenes / 72 questions / ${refs.glossary.length} terms; big picture with ${picture.journeys.length} journeys and ${Object.keys(picture.nodes).length} pieces; all model states in four themes; ${commands} scenario commands; ${entries.length} clean ZIP entries; encoding, syntax and pinned versions.`);

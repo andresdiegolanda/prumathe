@@ -266,6 +266,29 @@ assert.ok(kafbat.includes('ports: ["127.0.0.1:18081:8080"]'), 'kafbat published 
 assert.ok(lessons[25].lab.some((s) => s.command === 'docker compose up -d kafbat'), 'lesson 25 starts the console');
 assert.ok(lessons[25].lab.some((s) => s.command.includes('docker compose stop kafbat')), 'lesson 25 stops the console');
 
+// The big picture: the shared engine validates its data (ids, geometry, both languages, journeys
+// that move only along lines), every lab command it shows is one the lessons give, and the
+// partitions it names for its example keys are the standard partitioner's.
+const bp = { window: {} };
+for (const name of ['curriculum', 'big-picture-data', 'big-picture']) {
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', name + '.js'), 'utf8'), bp);
+}
+const picture = bp.window.BIG_PICTURE;
+const BigPicture = bp.window.BigPicture;
+const lessonCommands = new Set(lessons.flatMap((l) => l.lab.flatMap((s) => (s.command || '').split('\n').map((x) => x.trim()))));
+const pictureErrors = [
+  ...BigPicture.validate(picture, bp.window.KAFKA_COURSE, { icons: BigPicture.icons(), lab: (c) => lessonCommands.has(c) }),
+];
+assert.equal(pictureErrors.length, 0, pictureErrors.join('\n'));
+assert.deepEqual(
+  [murmur('order-42') % 3, murmur('order-1') % 3, murmur('order-2') % 3, murmur('order-1') % 4, murmur('order-2') % 4],
+  [0, 1, 0, 2, 3],
+  'the partitions named in the big picture',
+);
+const pictureHtml = fs.readFileSync(path.join(root, 'big-picture.html'), 'utf8');
+assert.ok(pictureHtml.includes('assets/big-picture.js') && pictureHtml.includes('<noscript>'), 'big-picture.html');
+assert.ok(fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8').includes('big-picture.html'), 'the home page links the big picture');
+
 console.log(
-  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage, the live viewer, the console lesson and version consistency.`,
+  `PASS: ${lessons.length} pages, ${frames} bilingual scenes, ${steps} bilingual lab steps, ${questions} checkpoint questions, the What Kafka is page, all diagram variants in ${visuals.themes.length} skins, local links, real Murmur2 vectors, lab command coverage, the live viewer, the console lesson, the big picture (${picture.journeys.length} journeys, ${picture.journeys.reduce((n, j) => n + j.stops.length, 0)} stops) and version consistency.`,
 );

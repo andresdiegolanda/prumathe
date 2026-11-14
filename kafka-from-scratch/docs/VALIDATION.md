@@ -4,6 +4,20 @@ Two layers of evidence: what the Docker suites proved on the platform, and what 
 
 Dos capas de evidencia: lo que las suites Docker probaron sobre la plataforma, y lo que las verificaciones estáticas y las pasadas de navegador probaron sobre el sitio. Cada entrada dice cuándo corrió y contra qué versión, y las verificaciones no ejecutadas figuran como tales.
 
+## 1.7.0, 14 November 2026 / 1.7.0, 14 de noviembre de 2026
+
+The big picture: `big-picture.html`, opened from a button on the home page. 20 pieces, 23 lines, 7 items, 11 journeys and 81 stops, in English and Spanish. `npm run check` validates the data with the shared engine (ids, geometry, both languages, lessons, journeys that move only along lines), finds every command it shows among the lessons' commands and checks its partitions with the real Murmur2: order-42 and order-2 in partition 0 and order-1 in partition 1 of three; order-1 in partition 2 and order-2 in partition 3 of four.
+
+Browser pass in Chromium under the CSP of `_headers`: every stop of every journey walked with the keyboard at 1440x900 (Classic, English), 1366x768 (Dark, Spanish), 390x844 (Classic, Spanish) and 1920x1080 (Projector, Spanish). In each: the panel names the stop, the current piece is marked, the bubble stays inside the scene and does not cover the lane or piece of the stop (on a phone the bubble gives way to the panel), no console error, no horizontal overflow. Every label measured inside its box in both languages; at 1440x900 the scene is drawn at 0.78, names at 11.8 px.
+
+Not executed: the lab. The big picture runs no command and changes nothing in the kit; the image tags move to 1.7.0 only because they carry the course version.
+
+El panorama: `big-picture.html`, que se abre con un botón de la portada. 20 piezas, 23 líneas, 7 elementos, 11 recorridos y 81 paradas, en inglés y español. `npm run check` valida los datos con el motor común (ids, geometría, los dos idiomas, lecciones, recorridos que solo se mueven por líneas), encuentra cada comando que muestra entre los comandos de las lecciones y comprueba sus particiones con el Murmur2 real: order-42 y order-2 en la partición 0 y order-1 en la 1 de tres; order-1 en la 2 y order-2 en la 3 de cuatro.
+
+Pasada de navegador en Chromium con la CSP de `_headers`: cada parada de cada recorrido con el teclado en 1440x900 (Clásica, inglés), 1366x768 (Oscura, español), 390x844 (Clásica, español) y 1920x1080 (Proyector, español). En cada una: el panel nombra la parada, la pieza actual queda marcada, la burbuja queda dentro de la escena y no tapa el carril ni la pieza de la parada (en un teléfono la burbuja le deja el lugar al panel), sin errores de consola ni desborde horizontal. Cada rótulo medido dentro de su caja en los dos idiomas; en 1440x900 la escena se dibuja a 0,78, los nombres a 11,8 px.
+
+No ejecutado: el laboratorio. El panorama no corre ningún comando ni cambia nada del kit; las etiquetas de imagen pasan a 1.7.0 solo porque llevan la versión del curso.
+
 ## 1.6.0, 20 October 2026 / 1.6.0, 20 de octubre de 2026
 
 Lesson 25, Looking is not touching: Kafbat UI as the optional `kafbat` service of `labs/compose.yaml` (image `ghcr.io/kafbat/kafka-ui:v1.5.0` pinned by digest `sha256:7cda86a3...6fd1`, read-only, 127.0.0.1:18081, `JAVA_OPTS=-Xmx256m`), a new `console` model, five lab steps on topic `lab28` with the group `console`, three questions and the source `kafbat`. Lessons 25 to 29 became 26 to 30; unit 6 has five lessons, declared in `unitStarts`; the glossary entries of mirroring and share groups, the live viewer's lesson table and the progress migration of 1.1 (now by slug) follow the new numbering. The Java client accepts topic 28 (three partitions, six records spread by hand, known group `console`). Image tags, `package.json` and both `pom.xml` move to 1.6.0: 31 lessons, 93 scenes, 140 steps, 93 questions.

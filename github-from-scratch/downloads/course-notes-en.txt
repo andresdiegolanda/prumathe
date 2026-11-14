@@ -1,5 +1,5 @@
 GITHUB FROM SCRATCH. COURSE NOTES
-Git + GitHub | 2026-10-20 | v1.4.0
+Git + GitHub | 2026-10-20 | v1.5.0
 
 WHAT GIT AND GITHUB ARE
 =================================================================
@@ -1402,4 +1402,101 @@ C. A verified deployment
 Answer: A. Learning can continue while evidence remains accurately labeled.
 
 GitHub Docs · GitHub flow: https://docs.github.com/en/get-started/using-github/github-flow
+
+
+BIG PICTURE
+=================================================================
+One change, from Ana's desk to an accepted history
+
+A. Record a change
+  1. Working tree: Ana changes the opening hour from 09:00 to 10:00 and starts an unfinished note. Both edits are only on her desk.
+  2. Staging area: git add guide.txt prepares that content for the next commit: the content, not just the file name.
+  3. Working tree: She edits again, to 11:00. The prepared content is still 10:00 until she adds again.
+  4. Staging area: Two comparisons: git diff shows 10:00 to 11:00; git diff --staged shows 09:00 to 10:00.
+  5. Commits and branches: git commit records the index as a snapshot, with a message, metadata and a link to its parent.
+  6. Commits and branches: Unchanged content is reused inside, not copied. The message says why: Fix hours after winter schedule change.
+  → Saving, preparing and recording are three different acts. A commit records the index, so prepare exactly the decision you want to explain.
+
+B. Branches, merges, conflicts
+  1. Commits and branches: main names the accepted history. git switch -c hours gives the same commit a second name; no new version is needed.
+  2. Working tree: With hours checked out, Ana changes the hours.
+  3. Commits and branches: Her commit advances hours, where HEAD points; main stays where it was.
+  4. Commits and branches: If main has not moved, merging hours is a fast-forward: main moves to the tip, with no merge commit.
+  5. Commits and branches: If both lines advanced, Git combines them from their shared ancestor and records a merge commit with two parents.
+  6. Working tree: Ana wrote 10:00 and Bruno 11:00 on the same line: a conflict. Git cannot decide the library's schedule.
+  7. Staging area: They agree on 10:30, replace the markers with it and add the result.
+  8. Commits and branches: The merge commit records the decision. Then check the meaning: a workshop at 09:30 would now contradict the guide.
+  → Branches are names; merging combines histories; a conflict is a question only people can answer. Text that merges cleanly can still say two things at once.
+
+C. Publish, fetch, integrate
+  1. Commits and branches: Ana has committed 10:00 on main.
+  2. Repository Faro: git push proposes moving main on GitHub to her commit. It is a fast-forward, so it is accepted.
+  3. origin/main: Ana's origin/main records that main on GitHub is now her commit: her last view, until the next fetch or push.
+  4. Bruno's origin/main: Bruno runs git fetch. His origin/main moves; his main and his files do not.
+  5. Bruno's commits: He integrates with git merge --ff-only origin/main: his guide now says 10:00.
+  6. Bruno's working tree: He adds a contact file, without fetching again.
+  7. Bruno's commits: He commits it on main.
+  8. Repository Faro: Meanwhile Ana published 11:00. His push is rejected as non-fast-forward: it would drop her commit, and main on GitHub does not move.
+  9. Bruno's origin/main: He fetches again.
+  10. Bruno's commits: He merges origin/main: his history now has both authors' work.
+  11. Repository Faro: His push now includes Ana's commit: accepted.
+  → Fetch learns, integration decides, push proposes. The rejected push protected Ana's work; the fix was to integrate, not to force.
+
+D. From an issue to a pull request
+  1. Issue: A visitor arrived at 09:00 and found the library closed. The issue records what was seen, what was expected and who can confirm the real schedule.
+  2. Pull request: Ana opens a pull request: base main, head winter-hours. Opening it merges nothing.
+  3. Repository Faro: Its head is the branch winter-hours she pushed to the repository.
+  4. Pull request: Each new commit on winter-hours updates the proposal: the conversation follows evidence that evolves.
+  5. Pull request: Its description says the problem, what changes, how it was checked and which issue motivated it.
+  → The issue agrees on the problem; the pull request proposes one difference and keeps changing until it is merged. Neither one changes main by itself.
+
+E. A contribution from a fork
+  1. Repository Faro: A volunteer wants to fix the hours but has no write access to Faro.
+  2. Fork: She forks it: another repository on GitHub, under her account, linked to the original in a fork network.
+  3. Fork: Her clone calls the fork origin and the original upstream. Her push updates the fork; the original stays unchanged.
+  4. Pull request: She proposes the change from a branch of her fork to main in Faro.
+  → A fork gives a contributor a repository of their own to publish to; the original only changes if its maintainers merge the proposal.
+
+F. Review and automated evidence
+  1. Pull request: A new commit on the pull request is an event.
+  2. Actions: It triggers the workflow: a job on a runner, its steps in order. The check expects README to contain 10:00, and it still says 09:00.
+  3. Pull request: The pull request shows the failing check.
+  4. Actions: Fix the text and push: this run passes. Green means this assertion passed for this revision, nothing more.
+  5. Review: A reviewer reads purpose, change and evidence: is 10:00 the real opening time? Does the workshop notice contradict it?
+  6. Review: Approve, or request changes. The author cannot approve their own pull request.
+  7. Pull request: A later commit can change what was reviewed; whether the approval still counts is up to the rules.
+  → A check proves the assertion it makes, for one revision; a review judges purpose and meaning. Each covers what the other cannot.
+
+G. Rules and integration
+  1. Pull request: The proposal is approved and its check is green.
+  2. Repository Faro: Merging would update main.
+  3. Ruleset on main: The ruleset on main requires a pull request, an approval and the status check. It names its target branch and who may bypass it.
+  4. Repository Faro: Merge commit: two parents keep the meeting point and the individual commits.
+  5. Repository Faro: Squash: one new commit with the combined change; the feature commits are not its ancestors.
+  6. Repository Faro: Rebase: the commits are replayed onto main as new commits with new identifiers. All three end with the same files.
+  → Rules turn agreements into conditions at the destination. Merge, squash and rebase can produce the same files with three different histories; choose the history you want to keep.
+
+H. Undo without losing the story
+  1. Commits and branches: A commit with the wrong hours was recorded and published.
+  2. Commits and branches: git revert records a new commit that reverses its effect. The mistake stays in history, as its parent.
+  3. Repository Faro: The correction is published with an ordinary push: nobody has to move main backward.
+  4. Commits and branches: On a branch nobody else uses, git reset --soft moves the branch back and keeps the change prepared.
+  5. Working tree: A hard reset can discard edits. Reflogs record local movements for a while; they are not a backup.
+  → First say which state you want back. For published work, revert adds a correction others can pull; reset moves a branch and belongs to history nobody else uses.
+
+I. Tag, release, deploy
+  1. Commits and branches: git tag -a v1.0 names a chosen commit. When main advances, the tag stays.
+  2. Repository Faro: The tag is pushed to GitHub.
+  3. Release v1.0: A release built on the tag adds notes: what changed for users, known limits, how to upgrade.
+  4. Deployment: Running it is another step, only if something is configured to do it. Record which revision runs in which environment.
+  → The tag names the source point, the release explains it, and a deployment puts it to run. Three steps, three different facts.
+
+J. History remembers what you remove
+  1. Working tree: practice.env holds FAKE_NOT_A_SECRET, an unmistakably fake marker.
+  2. Staging area: It is added...
+  3. Commits and branches: ...and committed.
+  4. Commits and branches: A .gitignore rule added afterwards does not untrack a file already recorded.
+  5. Commits and branches: git rm and a new commit remove it from the current snapshot. The older commit still contains it.
+  6. Repository Faro: Once pushed, every clone and fork can hold that commit. A real credential must be revoked or rotated first; rewriting one repository cannot reach every copy.
+  → Deleting a file records a new snapshot; older commits still contain it. With a real credential, revoke or rotate it first, then follow the host's cleanup process.
 

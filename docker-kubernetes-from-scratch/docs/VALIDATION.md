@@ -2,6 +2,14 @@
 
 Este documento registra evidencia ejecutada y límites por versión; los modelos del navegador siguen siendo ilustrativos. Cada sección dice qué se ejecutó, en qué plataforma y qué quedó fuera.
 
+## Versión 1.5.0, 14 de noviembre de 2026
+
+El panorama: `big-picture.html`, que se abre con un botón de la portada. 23 piezas, 26 líneas, 8 elementos, 12 recorridos y 78 paradas, en inglés y español. `npm run check` valida los datos con el motor común (ids, geometría, los dos idiomas, lecciones, recorridos que solo se mueven por líneas) y encuentra cada comando que muestra entre los comandos de las lecciones.
+
+Pasada de navegador en Chromium con la CSP de `_headers`: cada parada de cada recorrido con el teclado en 1440x900 (Clásica, inglés), 1366x768 (Oscura, español), 390x844 (Clásica, español) y 1920x1080 (Proyector, inglés). En cada una: el panel nombra la parada, la pieza actual queda marcada, la burbuja queda dentro de la escena y no tapa la pieza de la parada (en un teléfono la burbuja le deja el lugar al panel), sin errores de consola ni desborde horizontal. Cada rótulo medido dentro de su caja en los dos idiomas; en 1440x900 la escena se dibuja a 0,78, los nombres a 11,8 px.
+
+No ejecutado: el laboratorio. El panorama no corre ningún comando ni cambia el kit; la imagen del visor pasa a `prumathe-visor:1.5.0` solo porque lleva la versión del curso.
+
 ## Versión 1.4.0, 20 de octubre de 2026
 
 Visor en vivo: el servicio `visor` de `labs/compose.yaml`, con perfil propio y publicado solo en 127.0.0.1:18091. Su imagen, `prumathe-visor:1.4.0`, se construye desde `labs/visor/` sobre la misma base Python fijada por digest que la app y usa solo la biblioteca estándar. Lee Docker por el socket y el clúster de la lección 13 por la red `kind`, con el kubeconfig del curso montado en solo lectura. La lección 01 suma el paso que lo levanta y la 13 el que lo conecta al clúster (102 pasos en total); cada lección desde la 01 dice en su pestaña de laboratorio qué seguir en él, y la 08 avisa que `docker compose ps` también lo lista. `package.json`, `curriculum.js` y la etiqueta de la imagen pasan a 1.4.0; las etiquetas de la aplicación didáctica no cambian.

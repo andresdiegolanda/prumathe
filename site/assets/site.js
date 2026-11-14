@@ -42,6 +42,7 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-entra-is.html', B('What it does', 'Qué hace'), false],
+          ['big-picture.html', B('Big picture', 'Panorama'), false],
         ],
       },
       {
@@ -57,6 +58,7 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-kafka-is.html', B('What it is', 'Qué es'), false],
+          ['big-picture.html', B('Big picture', 'Panorama'), false],
         ],
       },
       {
@@ -72,6 +74,7 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-docker-and-kubernetes-are.html', B('What they are', 'Qué son'), false],
+          ['big-picture.html', B('Big picture', 'Panorama'), false],
         ],
       },
       {
@@ -87,6 +90,7 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-git-and-github-are.html', B('What they are', 'Qué son'), false],
+          ['big-picture.html', B('Big picture', 'Panorama'), false],
         ],
       },
       {
@@ -102,6 +106,7 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-llms-rag-and-mcp-are.html', B('What they are', 'Qué son'), false],
+          ['big-picture.html', B('Big picture', 'Panorama'), false],
         ],
       },
       {
@@ -117,6 +122,7 @@
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
           ['what-cloudflare-is.html', B('What it is', 'Qué es'), false],
+          ['big-picture.html', B('Big picture', 'Panorama'), false],
         ],
       },
     ],

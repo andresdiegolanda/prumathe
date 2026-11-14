@@ -83,3 +83,24 @@ Los modelos se dibujan en cada escena y en cada valor de sus controles, en los d
 
 Origen: Cloudflare 1.0.0: en las capturas, `movements-dead` se salía de su caja, una leyenda quedaba fuera de su panel y el mapa cortaba el subtítulo del WAF; la medición de todos los estados encontró una caja más ([VALIDATION](../../cloudflare-from-scratch/docs/VALIDATION.md)).
 Control: la pasada de navegador que registra VALIDATION; todavía no es un control de `check.mjs`.
+
+### El panorama de un curso usa el motor común y se valida con él
+
+Las piezas, las líneas y los recorridos son datos del curso (`assets/big-picture-data.js`); el motor que los dibuja (`assets/big-picture.js` y `big-picture.css`) es el mismo archivo en todos los cursos, y `check.mjs` valida los datos con ese motor: ids, cada pieza dentro de su zona y separada de las otras, ninguna línea que cruce una pieza, los dos idiomas, lecciones, recorridos que solo se mueven por líneas y cada comando entre los de las lecciones.
+
+Origen: el panorama de los seis cursos; el mapa de Cloudflare 1.0.0 tenía motor propio y en la 1.1.0 pasó al común, con las mismas fichas ([CHANGELOG](../../CHANGELOG.md), 2026-11-14).
+Control: `check.mjs` de cada curso; que las copias del motor sean iguales todavía se compara a mano.
+
+### Los rótulos de zona y las burbujas no tapan lo que explican
+
+Un rótulo de zona no toca líneas ni piezas, y la burbuja de una parada no tapa la pieza ni el carril de esa parada; si no entra, el rótulo se mueve o se acorta, y en un teléfono la burbuja le deja el lugar al panel.
+
+Origen: en LLMs, RAG y MCP 1.1.0 y Cloudflare 1.1.0 la medición encontró rótulos de zona cruzados por líneas y textos fuera de su caja; se corrigieron moviendo rótulos, ensanchando piezas y acortando subtítulos ([VALIDATION de LLMs, RAG y MCP](../../llm-rag-mcp-from-scratch/docs/VALIDATION.md), [de Cloudflare](../../cloudflare-from-scratch/docs/VALIDATION.md)).
+Control: la pasada de navegador que recorre cada parada con el teclado en cuatro tamaños de pantalla y mide cada rótulo en las cuatro apariencias; todavía no es un control de `check.mjs`.
+
+### Una fila de botones se prueba con un botón más
+
+Toda fila de botones lleva `flex-wrap`, porque el próximo botón que se sume la desborda en un teléfono.
+
+Origen: el botón del panorama desbordó en 390 px la fila de la portada de los cursos que no tenían `flex-wrap` en `.home-actions` (todos menos Cloudflare).
+Control: pasada de navegador en 390 px de ancho, sin desborde horizontal.

@@ -1,5 +1,5 @@
 DOCKER & KUBERNETES FROM SCRATCH. COURSE NOTES
-Kubernetes 1.37.0 | 2026-10-20 | v1.4.0
+Kubernetes 1.37.0 | 2026-10-20 | v1.5.0
 
 WHAT DOCKER AND KUBERNETES ARE
 =================================================================
@@ -1801,4 +1801,123 @@ B. Only an image digest
 C. A tested backup and restoration plan
 Answer: C. Replicas and images do not replace data backups.
 
+
+
+BIG PICTURE
+=================================================================
+From a build context to a Pod behind a Service
+
+A. Build an image
+  1. You: docker build with the folder app as context, and a tag for the result.
+  2. Build context: The engine receives the context. COPY can only read files from it; .dockerignore leaves out what the image does not need.
+  3. Docker Engine: Each instruction is a step. Unchanged inputs reuse the cache; changing server.py rebuilds from its COPY on.
+  4. Base image: FROM names the base by digest: exactly that content, whatever the tag points to today.
+  5. Docker Engine: USER 10001 and CMD become the image's defaults; APP_VERSION is a build argument with no secret in it. EXPOSE documents 8080 and publishes nothing.
+  6. Image: prumathe-signal:1.0.0: layers plus configuration. The tag is a name; another tag can point to the same image ID.
+  → The image is an artifact with layers and defaults, built from a context you chose and a base pinned by digest. Running it is the next step.
+
+B. Run Signal with Compose
+  1. You: docker compose up -d --wait app, in the project prumathe-dk.
+  2. Docker Engine: Compose asks the engine for the project network, the volume and the container app, with 0.5 CPU and 128 MiB.
+  3. Container app: Its main process is server.py as UID 10001, with an isolated view of processes, network and files, on the host's kernel.
+  4. Container app: The image's health check probes /health; --wait returned once the service was healthy.
+  5. Container app: Create /tmp/fail-live and /health answers 503.
+  6. Docker Engine: The engine reports unhealthy, and running: it does not restart a container for being unhealthy.
+  7. Container app: Remove the file and the next checks recover.
+  → A container is a process with boundaries and limits. Healthy is a property one probe measures; running is another, and Docker does not restart a container for being unhealthy.
+
+C. Names and ports
+  1. Your browser: Your browser asks 127.0.0.1:18080.
+  2. Container app: Compose published loopback port 18080 to container port 8080, where Signal listens on 0.0.0.0.
+  3. toolbox: Inside toolbox, localhost is toolbox itself.
+  4. Container app: The name app resolves on the project network, so app:8080 reaches Signal from any container on it.
+  5. Container app: Check one layer at a time: the name, the connection, the status, the text. probe.py asserts the status and the expected text.
+  6. toolbox: A shared network lets the request through; it does not authenticate it.
+  → The browser uses the published host port; containers on the project network use the service name and the internal port. Reachable is not authorized.
+
+D. Data that outlives a container
+  1. Container app: Write a marker in /data, where Compose mounts the named volume signal-data.
+  2. Volume signal-data: The bytes land in the volume, not in the container's writable layer.
+  3. Docker Engine: Recreate the container: the old one and its writable layer are removed.
+  4. Container app: The new container mounts the same volume at /data.
+  5. Volume signal-data: The marker is still there.
+  6. Volume signal-data: docker compose down keeps named volumes; down -v deletes them. Neither a volume nor a bind mount is a backup.
+  → The writable layer dies with its container; the named volume does not. Keeping data is not backing it up.
+
+E. Into the cluster
+  1. kubectl: Every command names the course kubeconfig and the context kind-prumathe-dk: the destination is explicit.
+  2. API server: The API server answers: a control-plane node and a worker, both Docker containers on your computer.
+  3. kubelet: On each node, a kubelet runs the Pods assigned to it through the node's container runtime.
+  4. containerd: The worker's containerd has its own image store: your local image is not there yet.
+  5. Image: prumathe-signal:1.0.0 exists in your Docker Engine.
+  6. containerd: kind load docker-image copies it into the node. With imagePullPolicy: Never, a missing import fails visibly instead of downloading.
+  → The cluster runs in containers on your computer: real Kubernetes, one shared failure domain. Its nodes have their own image store.
+
+F. Declare a Deployment
+  1. kubectl: apply sends the desired state: a Deployment of two replicas and a Service.
+  2. API server: The API server authenticates, authorizes and validates the request, then accepts it. Accepted means stored, not running.
+  3. etcd: The objects are stored in etcd.
+  4. Deployment signal: The Deployment signal: a Pod template labeled app=signal and replicas: 2.
+  5. Controllers: The Deployment controller creates a ReplicaSet; the ReplicaSet controller creates two Pod objects to match the count.
+  6. Scheduler: The scheduler finds Pods with no node and binds them where their requests fit: 50m CPU and 32Mi each.
+  7. kubelet: The worker's kubelet sees two Pods bound to its node.
+  8. containerd: containerd starts their containers from the loaded image.
+  9. signal Pods: The startup probe passes, then readiness: two Pods Ready.
+  → You declared what should exist; the control plane made it so and keeps doing so after kubectl exits. Accepted, scheduled, running and ready are four different moments.
+
+G. A request through a Service
+  1. signal Pods: kubectl exec runs probe.py inside a signal Pod: GET http://signal.
+  2. Service signal: The name signal resolves to the Service's virtual IP, on port 80.
+  3. Service signal: It selects Pods labeled app=signal; its EndpointSlice lists their addresses and whether each is ready.
+  4. signal Pods: The request reaches a ready Pod on targetPort 8080.
+  5. kubelet: In the lab's probe Pod, /ready starts failing. The kubelet marks the Pod not ready and leaves its container running.
+  6. Service signal: The not-ready Pod is marked not ready in the EndpointSlice: its Service stops sending it traffic.
+  7. kubelet: Remove the file and readiness passes again. A failing liveness probe, on /health, would restart the container instead.
+  → The Service gives clients a stable name over Pods that come and go; readiness decides which of them receive traffic, without restarting anything.
+
+H. Pods replaced, Pods pending
+  1. kubectl: Delete the signal Pods.
+  2. API server: The API server records the deletion.
+  3. kubelet: The kubelet stops their containers. What they wrote in their writable layers is gone.
+  4. Controllers: The ReplicaSet sees 0 of 2 and creates two new Pods: the desired count never changed.
+  5. Scheduler: The new Pods are bound to the worker.
+  6. signal Pods: Two Pods again, with new names, UIDs and IPs. The Service keeps finding them by label.
+  7. Scheduler: Now a Pod that requests 1000 CPUs: no node fits, so it stays Pending and describe shows FailedScheduling with the reason.
+  → Controllers keep the count, not the instances: replacements are new Pods. And a desired count needs real capacity: what fits nowhere waits Pending.
+
+I. Roll out, roll back
+  1. Docker Engine: Build version 1.1.0.
+  2. Image: prumathe-signal:1.1.0 exists in your Docker Engine.
+  3. containerd: Load it into the node. Forgetting this leaves the new Pods unable to start.
+  4. kubectl: set image changes the Deployment's Pod template.
+  5. Controllers: A new template means a new ReplicaSet, scaled up one Pod at a time: maxSurge 1, maxUnavailable 0.
+  6. signal Pods: Each new Pod must be ready before an old one goes. The probe now sees 1.1.0.
+  7. kubectl: rollout undo restores the previous template. It does not undo a migration, external data or a separate ConfigMap.
+  → A rollout replaces Pods through a new ReplicaSet, never below the desired count here. Rollback restores a template, not the data or the configuration around it.
+
+J. Configuration and secrets
+  1. kubectl: apply a ConfigMap and a Secret.
+  2. ConfigMap, Secret: signal-settings holds MESSAGE. demo-token holds a fake token, base64 encoded, and not encrypted in etcd by default.
+  3. kubectl: set env --from adds references to its keys in the Deployment's Pod template.
+  4. Controllers: A changed template means a rollout.
+  5. signal Pods: The new Pods read MESSAGE when they start.
+  6. ConfigMap, Secret: Changing only the ConfigMap would change no running process: environment is read at start. Mounted files can update eventually, if the application rereads them.
+  → Configuration reaches a process when it starts, so changing it means a rollout. A Secret has its own access controls, but base64 is not encryption.
+
+K. Storage beyond a Pod
+  1. kubectl: apply a claim and a Pod that uses it.
+  2. PVC notebook: PVC notebook asks for 64Mi, ReadWriteOnce. kind's local provisioner creates a volume and binds it.
+  3. Pod writer: Pod writer mounts the claim at /data and writes a marker.
+  4. Pod writer: Delete only the Pod. Nothing recreates a bare Pod.
+  5. PVC notebook: The claim and its volume remain.
+  6. Pod writer: Apply the manifest again: a new writer Pod with the same claim reads the marker.
+  → The claim and its volume outlive the Pod that wrote to them. This storage lives in the local kind environment: it is not replicated and not a backup.
+
+L. Who may do what
+  1. kubectl: apply the ServiceAccount observer, the Role pod-reader and a RoleBinding between them.
+  2. API server: Ask as observer: the administrator impersonates it with --as, which needs permission too.
+  3. RBAC authorizer: RoleBinding observer-reads-pods gives observer the Role pod-reader: get, list and watch on Pods in dk-lab.
+  4. RBAC authorizer: Nothing grants secrets, and RBAC has no deny rules: what is not granted is refused.
+  5. API server: Deleting Pods is refused too. Authorization says nothing about network reach or the application's own login.
+  → The observer may read Pods in dk-lab and nothing else. Grant the verbs a workload needs; what nobody granted is refused.
 

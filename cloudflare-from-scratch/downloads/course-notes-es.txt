@@ -1,9 +1,9 @@
 CLOUDFLARE DESDE CERO. APUNTES DEL CURSO
-WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.0.0
+WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.1.0
 
 QUÉ ES CLOUDFLARE
 =================================================================
-Qué es, de dónde salió, dónde encaja y dónde no. Se lee una vez; el resto lo hacen las lecciones y el mapa.
+Qué es, de dónde salió, dónde encaja y dónde no. Se lee una vez; el resto lo hacen las lecciones y el panorama.
 
 Una red delante de tu aplicación, y un lugar donde correr código en ella
 Cloudflare opera una red global de data centers, 348 ciudades en su mapa de red cuando se verificó este curso. Para un dominio que le agregás, su DNS responde con direcciones de esa red, así los pedidos de tus usuarios llegan primero a un data center cercano. Ahí el borde termina TLS, aplica tus reglas, sirve lo que tiene en cache y reenvía el resto a tu servidor, el origen. Tu origen sigue haciendo su trabajo; el borde decide qué le llega.
@@ -1963,4 +1963,159 @@ B. Porque el id del evento es la clave primaria en el origen
 C. Porque el consumidor guarda una lista en memoria
 Respuesta: B. La idempotencia vive donde se guarda el efecto.
 
+
+
+PANORAMA
+=================================================================
+Un pedido, del DNS a tu origen, y lo que decide el borde en el camino
+
+A. A través del borde
+  1. App de la tienda: El lab hace de cliente de la API: GET /api/shipments/R-1042, al borde del kit en 127.0.0.1:18097.
+  2. DNS: En Cloudflare el nombre es un registro con proxy: el DNS responde con direcciones anycast de Cloudflare, no con la dirección del origen.
+  3. Anycast: Las mismas direcciones se anuncian desde todos los data centers, y el ruteo lleva el pedido a uno, en general cercano. /cdn-cgi/trace lo nombra en colo.
+  4. TLS: El tramo 1 termina acá, con un certificado que Cloudflare administra para la zona. El modo de cifrado de la zona decide cómo llega el tramo 2 al origen.
+  5. WAF: Las reglas propias, de rate limiting y administradas corren en fases fijas. Nada coincide, así que el pedido sigue.
+  6. Cache: No hay política de Access en este nombre. La API responde no-store, así que ninguna cache en el camino la puede guardar.
+  7. Worker: El gateway de Rumbo, en un isolate de V8. La API de administración se rechazaría acá; esta ruta sigue.
+  8. Rate limit: El presupuesto de la clave: 5 pedidos cada 10 segundos. Sin x-api-key, todos los clientes comparten el anónimo.
+  9. cloudflared, Tunnel: En producción el pedido llega al origen por conexiones que cloudflared abrió desde adentro. En el kit el Worker llama a origin:8080 en la red de Compose.
+  10. API de Rumbo: El origen ve x-rumbo-edge y x-rumbo-request-id, que agregó el Worker. Llamado directo, con lab origin /echo, no ve ninguno.
+  11. Worker: A la salida el Worker agrega x-rumbo-via: edge. Después de la respuesta, ctx.waitUntil registra el último pedido en KV sin hacer esperar al cliente.
+  12. TLS: De vuelta por el tramo 1. Un sitio detrás de Cloudflare responde con server: cloudflare y un cf-ray, el Ray ID del pedido.
+  → Cada pedido se encuentra primero con el borde, en el data center donde llegó: TLS, las reglas, la cache y el Worker deciden antes de llamar al origen, y cada uno deja algo que se puede leer en un encabezado.
+
+B. Por fuera del borde
+  1. Alguien más: Alguien a quien nadie invitó: un bot, un ataque, o una persona que encontró la dirección del origen.
+  2. Solo DNS: Un registro viejo solo DNS la filtra: Cloudflare responde con la dirección real, y los pedidos van directo a ese servidor, sin cache, sin WAF y sin Worker en el camino.
+  3. Puerto abierto: Si el origen sigue escuchando en un puerto público, este camino nunca pasa por el borde. Un túnel agrega una entrada; no cierra las otras.
+  4. API de Rumbo: El origen igual pide prueba: su panel valida el token por su cuenta, así que saltear el borde no saltea el control.
+  5. API de Rumbo: En el kit el origen no publica ningún puerto: el 8080 no tiene dirección en tu máquina. Solo el borde la tiene.
+  6. cloudflared, Tunnel: Una entrada desde adentro: cloudflared, al lado del servicio, abre conexiones salientes hacia Cloudflare, y el borde manda por ellas los pedidos del nombre.
+  7. cloudflared, Tunnel: Un quick tunnel, sin cuenta: un nombre de trycloudflare.com responde con server: cloudflare y el cuerpo de rumbo-origin. En las corridas de validación tardó entre 14 y 41 segundos.
+  8. cloudflared, Tunnel: Registered tunnel connection: una conexión saliente hacia un data center. Un túnel con nombre mantiene cuatro, hacia dos data centers, y sobrevive reinicios.
+  → El proxy esconde el origen solo en el DNS. Con ningún puerto abierto y un origen que controla quién llama, encontrar su dirección no alcanza.
+
+C. TLS en dos tramos
+  1. TLS: El tramo 1, del visitante al borde, con un certificado que Cloudflare administra para la zona. El candado no dice nada del tramo 2.
+  2. TLS: El tramo 2 depende del modo de cifrado de la zona: Off, Flexible, Full, Full (strict) o Strict. lab tls hace de borde en ese tramo; un impostor responde con un certificado autofirmado para el mismo nombre.
+  3. API de Rumbo: Flexible: el tramo 2 en HTTP plano. Quien esté entre el borde y el origen lo puede leer y cambiar.
+  4. API de Rumbo: Full: HTTPS sin validar el certificado. Uno autofirmado se acepta, y también cualquier servidor que responda con uno: cifrado, hacia el servidor equivocado.
+  5. API de Rumbo: Full (strict) valida el certificado del origen, firmado por la CA de prueba del kit, que representa a las autoridades en las que confía.
+  6. API de Rumbo: El impostor con strict: rechazado, DEPTH_ZERO_SELF_SIGNED_CERT. El nombre era el correcto; no lo firmó nadie de confianza.
+  → Cifrado no alcanza: el tramo 2 también tiene que controlar quién responde. Full (strict) valida el certificado del origen; Full acepta cualquiera.
+
+D. Un Worker adelante
+  1. Wrangler: wrangler.jsonc nombra el Worker, su punto de entrada, su fecha de compatibilidad y nueve bindings: COUNTERS, DB, FLAGS, LIMITER, MOVES, PG, PROOFS, RETURNS y SHIPMENTS.
+  2. Worker: Las vars se commitean con el código; los secretos van a la cuenta, y en local a .dev.vars, que se lee cuando arranca wrangler dev. El lab muestra solo el largo.
+  3. Worker: Un isolate de V8 dentro de un runtime que ya corre: una variable de módulo sobrevive a algunos pedidos. Reiniciá el borde y el id cambia: el estado global no es tuyo.
+  4. Worker: Una preflight de CORS se responde en el borde, solo para la tienda permitida.
+  5. Worker: Para otra página no hay access-control-allow-origin: un navegador ahí no deja que su script lea la respuesta.
+  6. Worker: La API de administración se rechaza en el borde: el origen no recibe su carga y nunca la ve.
+  7. KV: Después de una respuesta, ctx.waitUntil sigue trabajando hasta 30 segundos: el gateway registra el último pedido en KV. Los pedidos rechazados y las preflight nunca llegaron hasta ahí.
+  8. El kit: Las pruebas corren dentro de workerd con los bindings simulados: health, la API de administración, CORS, mantenimiento, el reenvío al origen y el 502 de un origen caído.
+  9. El kit: El origen no es parte de la prueba: vi.spyOn reemplaza el fetch global, para responder como lo haría el origen o fallar como uno caído.
+  → Cada decisión que se toma en el borde es una que el origen no tiene que tomar, y una que no puede tomar mal. El estado global no es tuyo, y las pruebas corren en el mismo runtime.
+
+E. Desplegar y versiones
+  1. El kit: Un segundo Worker, rumbo-edge-demo, sin bindings para que entre en el plan gratuito: --dry-run lo arma y se detiene.
+  2. Wrangler: Con labs/.env, el id de tu cuenta y un token que puede editar Workers. Opcional, y nunca se imprime.
+  3. Worker: wrangler deploy sube una versión y la despliega al 100%: el Worker responde en workers.dev, sin una zona propia.
+  4. Worker: versions upload guarda una versión nueva sin atender pedidos con ella. Un despliegue puede usar solo las últimas 100 versiones subidas.
+  5. Worker: versions deploy reparte el tráfico por porcentaje. Correrlo de nuevo mueve el reparto, o vuelve atrás.
+  6. TLS: Cada pedido se enruta por su cuenta: la mayoría recibe v1, algunos v2, y una persona puede ver las dos, salvo que la afinidad de versión deje una clave en una.
+  → Una versión es código y configuración, guardados; un despliegue dice qué versiones atienden pedidos y en qué proporción. Mover el reparto es cómo avanzás o volvés atrás.
+
+F. Qué guarda el borde
+  1. Navegador: Una clienta abre la página pública de seguimiento, GET /track/R-1042: la misma página para todos los que siguen ese envío.
+  2. Worker: La página responde cache-control: max-age=60, public: igual para todos, segura de compartir por un minuto. Una zona no la guardaría por defecto, porque es HTML; Workers Cache sí.
+  3. Cache: Workers Cache está delante del Worker y sigue el Cache-Control de sus respuestas: MISS, después HIT. Un HIT no corre el Worker, así que no usa CPU, aunque sigue contando como pedido. wrangler dev no lo ejecuta, así que esto necesita una cuenta.
+  4. Cache: private, no-store o un Set-Cookie: no se guarda nada. Un 200 sin Cache-Control se guarda por heurística, hasta dos horas.
+  5. Worker: Un perfil es personal, pero esta ruta lo marca public, y la clave de la cache es la URL: no incluye al usuario. El perfil de Ana queda guardado.
+  6. Cache API: Beto pide la misma URL y recibe la entrada guardada: el perfil de Ana, con su dirección. El kit muestra la trampa con la Cache API; la cache de una zona cae igual.
+  7. Cache API: profile-safe responde private, no-store: no se guarda nada, y cada persona recibe su propia respuesta.
+  8. Cache API: caches.default desde el Worker: match, put y delete, con una clave que elige. La tarifa de una zona se guarda 60 segundos.
+  9. Cache API: delete purga solo este data center: la Cache API no se replica. Para llegar a todos, purgá la zona, o Workers Cache por tag.
+  → La respuesta decide qué se guarda: public solo para lo que es igual para todos, private o no-store para cualquier cosa personal. Purgar arregla el pasado; solo un Cache-Control correcto arregla el futuro.
+
+G. Reglas y presupuestos
+  1. App de la tienda: GET /api/admin/users: una ruta a la que ningún cliente debería llegar.
+  2. WAF: En una zona, una regla propia starts_with(http.request.uri.path, "/api/admin") con Block termina el pedido acá: las fases siguientes y el Worker nunca lo ven. Los bloqueos quedan, muestreados, como eventos de seguridad.
+  3. Worker: El kit no tiene zona, así que el gateway hace de regla: 403 antes del origen, respondido solo por el Worker.
+  4. Worker: /API/admin/users pasa: la regla compara el texto exacto, con mayúsculas, y Spring Boot responde 404. Una expresión del WAF que ignora mayúsculas usa lower(http.request.uri.path).
+  5. Rate limit: Un presupuesto por x-api-key: 5 pedidos cada 10 segundos. k1 recibe cinco 200, después 429 con retry-after: 10.
+  6. Rate limit: k2 tiene su propio presupuesto. Las cuentas son por lugar y eventualmente consistentes: aproximadas, no exactas.
+  7. WAF: Una regla de rate limiting del WAF corre en su propia fase, antes de cualquier Worker; el plan gratuito incluye una. El binding sabe lo que una regla no, como el tenant detrás de una clave.
+  → Una regla en la zona corre antes de cualquier Worker; una regla en código corre solo donde corre tu Worker, y las dos comparan el texto tal como está escrito. Un presupuesto por clave cuenta lo que una regla de la zona no ve.
+
+H. Identidad antes del origen
+  1. Empleada: Ana, de operaciones, abre el panel interno, desde su casa, sin VPN.
+  2. Access: Cloudflare Access pregunta quién es: entra con el proveedor de identidad, y una política permite a la gente de operaciones.
+  3. Access: El borde agrega un JWT firmado a los pedidos que pasan: el encabezado Cf-Access-Jwt-Assertion y la cookie CF_Authorization.
+  4. API de Rumbo: El kit no tiene Access. Sin token, el origen pide uno.
+  5. Worker: El borde del kit sirve un emisor de prueba con su propia clave ES256 y los claims de Access: iss, aud rumbo-panel, el email de Ana y un vencimiento cinco minutos después.
+  6. API de Rumbo: Spring Security, como resource server, valida cuatro cosas: la firma con las claves publicadas, la audiencia, el emisor y el vencimiento.
+  7. API de Rumbo: Un token de otra aplicación, vencido o cambiado recibe 401, y el motivo: la audiencia, Jwt expired, Invalid signature.
+  8. API de Rumbo: Llamado directo, salteando el borde, el origen igual pide prueba. Con Access solo cambian tres valores: la URL de las claves, el emisor y la audiencia.
+  → Access controla quién es la persona en el borde; el origen valida el token firmado por su cuenta. Llegar al origen por otro camino no saltea el control.
+
+I. Una flag y un contador
+  1. KV: Workers KV guarda la flag de mantenimiento de Rumbo: escrita en almacenes centrales, en cache en los data centers que la leen.
+  2. Worker: El gateway lee la flag: on, así que responde 503, mantenimiento, y no llama al origen.
+  3. KV: Borrala y el pedido siguiente llega al origen. En local el cambio se ve enseguida; en Cloudflare, otros data centers pueden tardar un minuto o más.
+  4. KV: No es un contador: 50 pedidos leen el mismo número viejo, le suman uno y lo vuelven a escribir. KV no tiene operaciones atómicas, y la mayoría de los incrementos se pierden.
+  5. Durable Object: Un Durable Object por contador, por el binding COUNTERS, vive en un lugar y atiende una llamada por vez: los 50 incrementos llegan uno detrás del otro.
+  6. Durable Object: Su almacenamiento es fuertemente consistente. Pero un objeto es un lugar, con un límite blando cerca de 1.000 pedidos por segundo: para más carga, repartí el estado en más objetos.
+  7. Durable Object: Un objeto existe porque se lo pidió: el envío R-1043, todavía sin movimientos, nadie mirando.
+  → KV es para datos que se leen mucho más de lo que se escriben, y es eventual. Un contador necesita un lugar que atienda una llamada por vez: un Durable Object.
+
+J. Datos al lado del Worker
+  1. Worker: El borde calcula una cotización de envío por su cuenta, sin preguntarle al origen.
+  2. D1: D1 es SQLite en el borde, con sentencias preparadas y bind. Madrid, 2,5 kg: 12,0 + 1,6 x 2,5 = 16, guardada como una cotización nueva.
+  3. D1: El esquema cambia con migraciones numeradas, registradas en d1_migrations: aplicar dos veces no hace nada.
+  4. R2: R2 guarda el comprobante de entrega como un objeto, proofs/R-1043.txt, con su etag. Los cuerpos son streams: el Worker los pasa sin cargarlos en memoria.
+  5. R2: Leerlo no tiene costo de salida; lo que cuenta es el almacenamiento y las operaciones. R-1044 no tiene comprobante: 404.
+  6. Hyperdrive: /direct lee el envío de PostgreSQL por Hyperdrive, con un driver común: Spring Boot no interviene.
+  7. PostgreSQL 18: La misma base que usa el origen. En Cloudflare, Hyperdrive mantiene el pool cerca de ella y guarda lecturas sin invalidarlas cuando hay escrituras; en el kit no hay pool ni cache.
+  8. API de Rumbo: El mismo estado por el origen: dos caminos a una base, y el borde elige.
+  → Cada almacén tiene su garantía: SQL con migraciones en D1, objetos sin costo de salida en R2, y tu propio Postgres por Hyperdrive, sin mover los datos.
+
+K. El webhook de un transportista
+  1. Transportista: Un transportista avisa un movimiento: POST /webhooks/movement, evento m-1, R-1042, delivered.
+  2. Worker: El Worker manda el movimiento a la cola y responde 202 enseguida: el transportista no espera el trabajo.
+  3. Queue: Al menos una vez. El kit entrega un lote cada 2 segundos, con max_retries 2 y una cola de mensajes muertos, movements-dead.
+  4. Worker: El handler queue del mismo Worker toma el lote y manda cada movimiento al origen.
+  5. API de Rumbo: El id del evento es la clave primaria de la tabla de movimientos: guardado una vez.
+  6. Durable Object: El objeto del envío R-1042 toma el estado nuevo y lo manda por su WebSocket a los navegadores que lo miran.
+  7. API de Rumbo: El mismo mensaje dos veces: el origen responde already saved, y no cambia nada. El consumidor tiene que ser idempotente.
+  8. Queue: Un estado que el origen rechaza con 422: reintentado, tres intentos, y después movements-dead, en unos ocho segundos.
+  9. Durable Object: Sin movimientos en 8 segundos: la alarma del objeto marca el envío como demorado y avisa a quienes lo miran. Un estado final, delivered, cancela la alarma.
+  → El transportista recibe 202 enseguida y el trabajo pasa después, al menos una vez. El id del evento vuelve inofensiva una repetición, una cola de mensajes muertos guarda lo que falló, y el objeto del envío nota el silencio.
+
+L. Una devolución que espera
+  1. App de la tienda: Se pide una devolución del envío R-1043: POST /returns/r-1.
+  2. Worker: El Worker crea una instancia del Workflow de devoluciones con el id r-1.
+  3. Workflow: step.do guarda el registro; step.waitForEvent espera approved. Mientras espera, no corre nada y no se pierde nada.
+  4. Workflow: Estado running, output null: la instancia espera a una persona, días si hace falta.
+  5. Workflow: Ana aprueba: un evento approved con su nombre. El reintegro falla una vez a propósito, y solo ese paso se reintenta.
+  6. Workflow: Registrada, reintegrada, aprobada por ana, avisada: la salida de cada paso queda guardada.
+  7. Worker: El mismo id otra vez se rechaza: instance.already_exists. Un pedido duplicado es inofensivo.
+  → Cada paso de un Workflow guarda su resultado, así esperar a una persona o reintentar un paso fallido no pierde nada, y el id de una instancia vuelve inofensivo un pedido repetido.
+
+M. El cierre de las 03:00
+  1. Cron Trigger: Un Cron Trigger, 0 3 * * *, en UTC: el cierre diario de Rumbo. Después de un cambio, el horario nuevo puede tardar hasta 15 minutos en llegar a la red.
+  2. Worker: wrangler dev no dispara los Cron Triggers solo: lab cron le pide al Local Explorer que corra el handler scheduled.
+  3. Hyperdrive: El handler lee los envíos por estado de PostgreSQL, por Hyperdrive.
+  4. PostgreSQL 18: Tres envíos, contados por estado.
+  5. KV: El cierre se guarda en KV, en close:last.
+  6. Worker: El otro camino: /cdn-cgi/local/scheduled, con un cron y una hora opcionales. Los dos responden solo en la dirección del propio borde, por eso el lab los corre adentro.
+  → Un Cron Trigger corre el handler scheduled del Worker a una hora en UTC, con los mismos bindings que un pedido. En local lo corrés a mano.
+
+N. Un borde que se puede defender
+  1. Cache: Qué se guarda, y por qué: la página pública max-age=60, la API no-store, un perfil private, la tarifa de una zona en la Cache API de cada data center.
+  2. Worker: La API de administración se rechaza en el borde, como lo haría una regla propia, y la API se limita por clave.
+  3. API de Rumbo: El origen no escucha en ningún puerto público, un túnel es su entrada, el TLS hacia él es Full (strict), y valida la identidad por su cuenta.
+  4. Queue: Una cola para los movimientos: al menos una vez, un consumidor idempotente, una cola de mensajes muertos.
+  5. Durable Object: Un Durable Object por envío y por contador: un lugar, una llamada por vez. KV para flags, D1 para cotizaciones, R2 para comprobantes, un Workflow para devoluciones.
+  6. El kit: Cada afirmación respaldada por un span: el pedido rechazado que respondió solo el Worker, los webhooks con queue send, los consumidores con fetch al origen y el objeto, y la carrera.
+  → Cada decisión es un encabezado, una regla o una garantía que se puede señalar, y cada afirmación tiene un comando y un span detrás. Todo entra en el plan gratuito para una carga chica, salvo lo que necesita la zona; R2 pide un medio de pago.
 

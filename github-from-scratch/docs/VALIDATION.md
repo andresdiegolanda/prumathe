@@ -1,5 +1,13 @@
 # Evidencia de validación
 
+## Versión 1.5.0, 14/11/2026
+
+El panorama: `big-picture.html`, que se abre con un botón de la portada. 16 piezas, 18 líneas, 8 elementos, 10 recorridos y 62 paradas, en inglés y español. `npm run check` valida los datos con el motor común (ids, geometría, los dos idiomas, lecciones, recorridos que solo se mueven por líneas) y encuentra cada comando que muestra entre los comandos de las lecciones.
+
+Pasada de navegador en Chromium con la CSP de `_headers`: cada parada de cada recorrido con el teclado en 1440x900 (Clásica, inglés), 1366x768 (Oscura, español), 390x844 (Clásica, español) y 1920x1080 (Proyector, inglés). En cada una: el panel nombra la parada, la pieza actual queda marcada, la burbuja queda dentro de la escena y no tapa la pieza ni la rama de la parada (en un teléfono la burbuja le deja el lugar al panel), sin errores de consola ni desborde horizontal. Cada rótulo medido dentro de su caja en los dos idiomas; en 1440x900 la escena se dibuja a 0,78, los nombres a 11,8 px.
+
+No ejecutado: los experimentos y las actividades de GitHub. El panorama no corre ningún comando ni cambia el kit.
+
 ## Versión 1.4.0, 20/10/2026
 
 Visor en vivo: `node lab.mjs visor` sirve en 127.0.0.1:18092 una página que lee los repositorios de `labs/runs/` cada medio segundo (`labs/visor.mjs`, sin dependencias, y la página en `labs/visor/`). `lab.mjs` suma el modo `--step`, que frena antes de cada operación que cambia un repositorio y deja su avance en `progress.json` dentro de la corrida. La lección 00 suma el paso que abre el visor (81 pasos en total) y cada lección dice en su pestaña de actividad qué mirar en él. `npm run test:visor` se suma a `release` y a los dos workflows de validación.

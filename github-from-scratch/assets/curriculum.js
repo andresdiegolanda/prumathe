@@ -274,5 +274,5 @@ window.GITHUB_COURSE = (() => {
     capstone: online,
   };
   for (const l of lessons) l.visor = VISOR[l.slug];
-  return { version: '1.4.0', date: '2026-10-20', git: '2.51.0', units, lessons };
+  return { version: '1.5.0', date: '2026-10-20', git: '2.51.0', units, lessons };
 })();

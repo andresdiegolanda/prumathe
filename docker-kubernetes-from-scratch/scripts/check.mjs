@@ -84,4 +84,15 @@ assert.ok(forum && forum.repo && forum.category && forum.term === 'docker-kubern
 if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
 assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
 assert.ok(fs.readFileSync(path.join(root, 'lessons', course.lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
-console.log(`PASS: 25 lessons, 75 scenes, 75 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, quoting, versions, the What Docker and Kubernetes are page, local links and UTF-8/LF.`);
+// The big picture: the shared engine validates its data (ids, geometry, both languages, journeys
+// that move only along lines), and every command it shows is one a lesson gives.
+const bp={window:{}};
+for(const f of ['curriculum','big-picture-data','big-picture'])vm.runInNewContext(fs.readFileSync(path.join(root,`assets/${f}.js`),'utf8'),bp);
+const picture=bp.window.BIG_PICTURE,BigPicture=bp.window.BigPicture;
+const lessonCommands=new Set(course.lessons.flatMap(l=>l.lab.flatMap(s=>s.command.split('\n').map(x=>x.trim()))));
+const pictureErrors=[...BigPicture.validate(picture,bp.window.DK_COURSE,{icons:BigPicture.icons(),lab:c=>lessonCommands.has(c)})];
+assert.equal(pictureErrors.length,0,pictureErrors.join('\n'));
+const pictureHtml=fs.readFileSync(path.join(root,'big-picture.html'),'utf8');
+assert.ok(pictureHtml.includes('assets/big-picture.js')&&pictureHtml.includes('<noscript>'),'big-picture.html');
+assert.ok(fs.readFileSync(path.join(root,'assets/app.js'),'utf8').includes('big-picture.html'),'the home page links the big picture');
+console.log(`PASS: 25 lessons, 75 scenes, 75 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, quoting, versions, the What Docker and Kubernetes are page, the big picture (${picture.journeys.length} journeys, ${picture.journeys.reduce((n,j)=>n+j.stops.length,0)} stops), local links and UTF-8/LF.`);

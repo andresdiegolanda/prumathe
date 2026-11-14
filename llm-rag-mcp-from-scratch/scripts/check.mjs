@@ -195,7 +195,19 @@ if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missin
 assert.ok(read('_headers').includes('https://giscus.app'), 'CSP allows giscus');
 assert.ok(read(`lessons/${course.lessons[0].slug}.html`).includes('assets/forum.js'), 'lesson pages load forum.js');
 
-console.log(`PASS: 26 lessons, 78 scenes, 78 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, the kit, the about page, ${files} files in UTF-8/LF.`);
+// The big picture: the shared engine validates its data (ids, geometry, both languages, journeys
+// that move only along lines), and every command it shows is, letter by letter, one of the lessons.
+const bp = { window: {} };
+for (const name of ['curriculum', 'big-picture-data', 'big-picture']) vm.runInNewContext(read(`assets/${name}.js`), bp);
+const picture = bp.window.BIG_PICTURE, BigPicture = bp.window.BigPicture;
+const lessonCommands = new Set(course.lessons.flatMap((l) => l.lab.flatMap((s) => s.command.split('\n').map((x) => x.trim()))));
+const pictureErrors = [...BigPicture.validate(picture, bp.window.LLM_COURSE, { icons: BigPicture.icons(), lab: (x) => lessonCommands.has(x) })];
+assert.equal(pictureErrors.length, 0, pictureErrors.join('\n'));
+const pictureHtml = read('big-picture.html');
+assert.ok(pictureHtml.includes('assets/big-picture.js') && pictureHtml.includes('<noscript>'), 'big-picture.html');
+assert.ok(read('assets/app.js').includes('big-picture.html'), 'the home page links the big picture');
+
+console.log(`PASS: 26 lessons, 78 scenes, 78 questions, ${steps} lab steps, ${renders} model renders, ${refs.glossary.length} glossary entries, the kit, the about page, the big picture (${picture.journeys.length} journeys, ${picture.journeys.reduce((n, j) => n + j.stops.length, 0)} stops), ${files} files in UTF-8/LF.`);
 if (pending.length) {
   console.log('PENDING: ' + pending.join('; '));
   process.exitCode = 1;

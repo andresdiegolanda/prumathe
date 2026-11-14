@@ -1,8 +1,8 @@
 # Cloudflare kit / Kit de Cloudflare
 
-Version 1.0.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. Everything runs in containers: you do not need Node.js, Wrangler, Java or PostgreSQL on your machine.
+Version 1.1.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. Everything runs in containers: you do not need Node.js, Wrangler, Java or PostgreSQL on your machine.
 
-Versión 1.0.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. Todo corre en contenedores: no necesitás Node.js, Wrangler, Java ni PostgreSQL en tu máquina.
+Versión 1.1.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. Todo corre en contenedores: no necesitás Node.js, Wrangler, Java ni PostgreSQL en tu máquina.
 
 ## First run / Primera ejecución
 
@@ -27,9 +27,9 @@ Las herramientas locales de wrangler dev, como el Local Explorer, responden en h
 
 ## The live viewer / El visor en vivo
 
-Open http://127.0.0.1:18098 while you run the lessons. Every request, queue message, alarm and cron that reaches the edge appears as an event, drawn over the pieces of the kit with its calls and their times, and with the lab command and the lesson step that caused it; each piece has its card, the same as in the map of the course. It runs inside the edge container, next to wrangler dev, and reads the spans that wrangler dev records, the same ones that `lab spans` prints. It only reads: it answers GET and only to requests addressed to your machine. Pieces that do not run in the kit, such as Workers Cache and the zone, appear hatched. An event that no lab command caused, such as a curl or your browser, shows under the last lab command.
+Open http://127.0.0.1:18098 while you run the lessons. Every request, queue message, alarm and cron that reaches the edge appears as an event, drawn over the pieces of the kit with its calls and their times, and with the lab command and the lesson step that caused it; each piece has its card, the same as in the big picture of the course. It runs inside the edge container, next to wrangler dev, and reads the spans that wrangler dev records, the same ones that `lab spans` prints. It only reads: it answers GET and only to requests addressed to your machine. Pieces that do not run in the kit, such as Workers Cache and the zone, appear hatched. An event that no lab command caused, such as a curl or your browser, shows under the last lab command.
 
-Abrí http://127.0.0.1:18098 mientras hacés las lecciones. Cada pedido, mensaje de la cola, alarma y cron que llega al borde aparece como un evento, dibujado sobre las piezas del kit con sus llamadas y sus tiempos, y con el comando de lab y el paso de la lección que lo causó; cada pieza tiene su ficha, la misma del mapa del curso. Corre dentro del contenedor del borde, al lado de wrangler dev, y lee los spans que registra wrangler dev, los mismos que imprime `lab spans`. Solo lee: responde GET y solo a pedidos dirigidos a tu máquina. Las piezas que no corren en el kit, como Workers Cache y la zona, aparecen rayadas. Un evento que no causó ningún comando de lab, como un curl o tu navegador, aparece bajo el último comando de lab.
+Abrí http://127.0.0.1:18098 mientras hacés las lecciones. Cada pedido, mensaje de la cola, alarma y cron que llega al borde aparece como un evento, dibujado sobre las piezas del kit con sus llamadas y sus tiempos, y con el comando de lab y el paso de la lección que lo causó; cada pieza tiene su ficha, la misma del panorama del curso. Corre dentro del contenedor del borde, al lado de wrangler dev, y lee los spans que registra wrangler dev, los mismos que imprime `lab spans`. Solo lee: responde GET y solo a pedidos dirigidos a tu máquina. Las piezas que no corren en el kit, como Workers Cache y la zona, aparecen rayadas. Un evento que no causó ningún comando de lab, como un curl o tu navegador, aparece bajo el último comando de lab.
 
 ## Your account, optional / Tu cuenta, opcional
 

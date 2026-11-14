@@ -1,5 +1,5 @@
 /* The live viewer: asks the server for new events every second and draws the selected one on the
-   pieces of the kit. The cards of the pieces come from the map of the course (pieces.json) and the
+   pieces of the kit. The cards of the pieces come from the big picture of the course (pieces.json) and the
    lessons from the lab steps (lessons.json); build.mjs writes both. */
 (() => {
   const $ = (id) => document.getElementById(id);

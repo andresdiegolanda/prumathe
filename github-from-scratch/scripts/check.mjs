@@ -124,4 +124,15 @@ assert.ok(forum && forum.repo && forum.category && forum.term === 'github-from-s
 if (forum.enabled) assert.ok(forum.repoId && forum.categoryId, 'forum ids missing while enabled');
 assert.ok(fs.readFileSync(path.join(root, '_headers'), 'utf8').includes('https://giscus.app'), 'CSP allows giscus');
 assert.ok(fs.readFileSync(path.join(root, 'lessons', course.lessons[0].slug + '.html'), 'utf8').includes('assets/forum.js'), 'lesson pages load forum.js');
-console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 81 activity steps, a live viewer note per lesson, 37 glossary terms, ${renderings} model renderings, the What Git and GitHub are page, bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);
+// The big picture: the shared engine validates its data (ids, geometry, both languages, journeys
+// that move only along lines), and every command it shows is one a lesson gives.
+const bp={window:{}};
+for(const name of ['curriculum','big-picture-data','big-picture'])vm.runInNewContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),bp);
+const picture=bp.window.BIG_PICTURE,BigPicture=bp.window.BigPicture;
+const lessonCommands=new Set(course.lessons.flatMap(l=>l.lab.map(s=>s.command).filter(Boolean)));
+const pictureErrors=[...BigPicture.validate(picture,bp.window.GITHUB_COURSE,{icons:BigPicture.icons(),lab:x=>lessonCommands.has(x)})];
+assert.equal(pictureErrors.length,0,pictureErrors.join('\n'));
+const pictureHtml=fs.readFileSync(path.join(root,'big-picture.html'),'utf8');
+assert.ok(pictureHtml.includes('assets/big-picture.js')&&pictureHtml.includes('<noscript>'),'big-picture.html');
+assert.ok(fs.readFileSync(path.join(root,'assets/app.js'),'utf8').includes('big-picture.html'),'the home page links the big picture');
+console.log(`PASS: 20 lessons, 60 scenes, 60 questions, 81 activity steps, a live viewer note per lesson, 37 glossary terms, ${renderings} model renderings, the What Git and GitHub are page, the big picture (${picture.journeys.length} journeys, ${picture.journeys.reduce((n,j)=>n+j.stops.length,0)} stops), bilingual notes, local links, ZIP isolation, script syntax and example failure/success.`);

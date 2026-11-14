@@ -1,5 +1,5 @@
 KAFKA DESDE CERO. APUNTES DEL CURSO
-Apache Kafka 4.1.2 | 2026-10-18 | v1.6.0
+Apache Kafka 4.1.2 | 2026-10-18 | v1.7.0
 
 QUÉ ES KAFKA
 =================================================================
@@ -143,7 +143,7 @@ El cliente Java incluido permite ejecutar experimentos chicos y legibles. Viene 
 
 docker compose build lab
 
-Observá: Se construye kafka-course-lab:1.6.0. La primera compilación descarga dependencias de Maven.
+Observá: Se construye kafka-course-lab:1.7.0. La primera compilación descarga dependencias de Maven.
 
 3. Levantá tres nodos
 Ejecutá desde labs. Se crea únicamente el proyecto Docker del curso. Los puertos 19092, 29092 y 39092 tienen que estar libres.
@@ -2251,4 +2251,123 @@ B. Saltea el mensaje y confirma
 C. Manda el mensaje a un tópico de fallas automáticamente
 Respuesta: A. CommonContainerStoppingErrorHandler hace visible la falla y mantiene honesto el señalador. Reintentos y DLT son otra decisión de diseño.
 
+
+
+PANORAMA
+=================================================================
+Un pedido, del productor a cada lector
+
+A. Publicar un pedido y leerlo
+  1. Cliente HTTP: POST /orders/order-42 con un pedido en JSON. El cliente no sabe nada de Kafka.
+  2. Productor Spring: OrderProducer llama a KafkaTemplate.send(topic, orderId, event): la clave es el ID del pedido.
+  3. Cliente productor: El particionador aplica murmur2 a los bytes de la clave, módulo 3: order-42 va a la partición 0, y ahí se queda mientras sean 3.
+  4. Cliente productor: JsonSerializer convirtió el pedido en bytes. El mensaje espera en un lote para la partición 0; linger.ms y batch.size deciden cuándo sale.
+  5. Tópico de pedidos: El líder de la partición 0 agrega el lote al final de su log. Recién ahora el mensaje recibe su offset.
+  6. Réplicas seguidoras: Las seguidoras de los otros dos brokers copian el mensaje nuevo. Las réplicas que siguen el ritmo forman el ISR.
+  7. Tópico de pedidos: Con acks=all el líder responde cuando lo tienen las réplicas sincronizadas; el min.insync.replicas=2 del tópico es el piso.
+  8. Cliente HTTP: HTTP 202 Accepted, con tópico, partición y offset. Guardado, no procesado: todavía nadie lo leyó.
+  9. Tópico de pedidos: El mensaje espera en la partición 0. Leerlo no lo va a borrar.
+  10. Listener de Spring: El listener de Spring, en el grupo spring-kitchen, lo trae con poll y recibe un ConsumerRecord<String, OrderPlaced>.
+  11. Coordinador de grupos: El listener terminó bien, así que AckMode.RECORD confirma el próximo offset: dónde retoma el grupo.
+  12. Listener de Spring: Mandá el mismo POST otra vez y el tópico recibe un segundo mensaje: un envío nuevo, aunque el ID de evento sea el mismo.
+  → El pedido se guardó una vez, se copió a las réplicas sincronizadas y lo leyó un grupo que confirmó su señalador. Guardado, leído y procesado son tres hechos distintos.
+
+B. Las claves eligen un carril
+  1. Cliente productor: El laboratorio manda tres pedidos con dos claves: order-1, order-2, order-1. Para cada uno, el particionador toma murmur2 de los bytes de la clave, lo hace positivo y aplica módulo 3.
+  2. Tópico de pedidos: order-1 cae en la partición 1, las dos veces: misma clave, misma partición, en el orden en que se enviaron.
+  3. Tópico de pedidos: order-2 cae en la partición 0.
+  4. Tópico de pedidos: Cada partición conserva su propio orden y sus offsets: el offset 0 existe en cada carril. Entre particiones no hay orden global.
+  5. Tópico de pedidos: Ampliá a cuatro particiones y volvé a enviar: cambia el módulo, así que order-1 ahora cae en la partición 2 y order-2 en la nueva partición 3. Sus mensajes anteriores se quedan donde estaban.
+  6. Grupo cocina: Las particiones también ponen el techo de un grupo: tres particiones ocupan como máximo a tres miembros de un grupo.
+  → Las claves marcan el límite del orden. Cambiar la cantidad de particiones mueve claves; los mensajes que ya están se quedan donde estaban.
+
+C. Dos equipos, una historia
+  1. Tópico de pedidos: Seis pedidos están en las tres particiones del tópico. Leerlos no los va a borrar.
+  2. Grupo cocina: En el grupo cocina, el coordinador le da cada partición a un solo miembro a la vez. El miembro lee los pedidos de sus particiones.
+  3. Efectos: Imprime el ticket de cocina: un efecto afuera de Kafka.
+  4. Coordinador de grupos: Después la cocina confirma el próximo offset. El coordinador lo guarda en __consumer_offsets con el ID de grupo kitchen.
+  5. Grupo caja: Caja, con otro ID de grupo, lee los mismos pedidos del mismo log. No se sacó nada.
+  6. Coordinador de grupos: Caja confirma su propio señalador. Ningún grupo sabe hasta dónde leyó el otro.
+  → Un tópico no es una cola que se vacía. Cada grupo lee toda la historia retenida y guarda su propio señalador.
+
+D. Un señalador, no un recibo
+  1. Grupo cocina: Un miembro lee tres mensajes y confirma el offset 3. Significa retomá en 3, no el mensaje 3 terminó.
+  2. Coordinador de grupos: El señalador es durable: sobrevive al miembro.
+  3. Grupo cocina: El miembro reinicia, pide su offset confirmado y retoma ahí. auto.offset.reset no reemplaza un señalador válido.
+  4. Tópico de pedidos: El lag es el offset final del log menos el offset confirmado: una distancia en offsets, no en segundos.
+  5. Coordinador de grupos: Para releer, detené a los miembros del grupo y mové sus offsets hacia atrás a propósito.
+  6. Grupo cocina: Entra o sale un miembro y el grupo redistribuye las particiones; el nuevo dueño retoma desde el offset confirmado. Un miembro que no hace poll dentro de max.poll.interval.ms pierde sus particiones.
+  → El offset confirmado es dónde retomar después de reiniciar. El lag es una distancia en offsets. Ninguno prueba que terminó el trabajo de negocio.
+
+E. Se cae un broker
+  1. Tópico de pedidos: El tópico de la lección tiene una partición con tres réplicas: kafka1 es el líder, dos seguidoras copian, las tres en el ISR.
+  2. Tópico de pedidos: Detené kafka1: por un momento la partición se queda sin líder.
+  3. Controladores KRaft: Los dos controladores que quedan siguen siendo mayoría. Eligen un líder nuevo entre las réplicas sincronizadas y lo anotan en el log de metadatos.
+  4. Réplicas seguidoras: Una seguidora sincronizada pasa a ser líder, y el ISR baja a dos.
+  5. Tópico de pedidos: Los clientes actualizan sus metadatos y reintentan contra el líder nuevo. Los mensajes siguen legibles.
+  6. Cliente productor: Con acks=all, una escritura necesita al menos min.insync.replicas en el ISR. El tópico de la lección 11 pide 3, así que con un broker caído la escritura falla; uno que pidiera 2 seguiría escribiendo.
+  7. Controladores KRaft: Con dos de tres controladores los metadatos todavía cambian: se puede crear un tópico. Si se pierde otro, ya no.
+  8. Réplicas seguidoras: Arrancá el broker otra vez: se pone al día con el líder y vuelve al ISR.
+  → Las réplicas mantienen los datos legibles y los controladores mantienen el mapa. min.insync.replicas convierte una escritura más débil en un error explícito.
+
+F. La historia tiene un horizonte
+  1. Tópico de pedidos: Los mensajes van al segmento activo de cada partición. Los segmentos viejos se pueden borrar por tiempo o por tamaño de cada partición.
+  2. Tópico de pedidos: Cuando se borra un segmento, el offset inicial sube. Los demás offsets conservan su número.
+  3. Grupo cocina: Un grupo cuyo señalador ahora apunta antes del inicio no tiene un offset válido: auto.offset.reset decide dónde empieza.
+  4. Tópico de pedidos: Un tópico compactado interpreta las claves como filas: con el tiempo conserva al menos el último valor de cada clave.
+  5. Tópico de pedidos: Un valor null para la clave B es un tombstone: la tabla reconstruida desde el tópico quita B, aun antes de que pase el limpiador.
+  6. Tópico de pedidos: El limpiador pasa después. Deja huecos, y los mensajes que sobreviven conservan sus offsets y su orden.
+  → La retención limita hasta dónde se puede releer; la compactación conserva el último valor por clave. Los offsets nunca se renumeran.
+
+G. La caída entre dos acciones
+  1. Tópico de pedidos: Tres eventos de entrada esperan en el tópico de la lección.
+  2. Procesador: Un consumidor del grupo delivery-demo los lee. Su plan: escribir un efecto por cada uno y después confirmar los offsets de entrada.
+  3. Tópicos de salida: El primer efecto se escribe en lab14-effects...
+  4. Procesador: ...y el proceso cae antes de confirmar nada.
+  5. Coordinador de grupos: El señalador del grupo nunca se movió.
+  6. Procesador: Al reiniciar retoma desde el señalador viejo y vuelve a leer el primer evento.
+  7. Tópicos de salida: El primer efecto se escribe otra vez: al menos una vez, con un duplicado.
+  8. Procesador: Un destino idempotente guarda el ID del evento junto con su efecto en una transacción de base, y una restricción única rechaza la repetición. El laboratorio muestra la idea con un conjunto en memoria.
+  → Si confirmás después del efecto, una caída lo repite; si confirmás antes, una caída lo pierde. Elegí, y después hacé que el efecto se pueda repetir sin daño usando el ID del evento.
+
+H. Exactamente una vez dentro de Kafka
+  1. Procesador: El procesador tiene un transactional.id estable. initTransactions bloquea cualquier instancia anterior con el mismo ID.
+  2. Coordinador de transacciones: El coordinador de transacciones lo registra; empieza una transacción.
+  3. Tópico de pedidos: Lee la entrada con read_committed y auto-commit apagado.
+  4. Tópicos de salida: Escribe las salidas. Están en el log, pero quien lee con read_committed todavía no las ve.
+  5. Coordinador de transacciones: sendOffsetsToTransaction mete los próximos offsets de entrada en la misma transacción.
+  6. Coordinador de grupos: Los offsets llegan al coordinador de grupos como parte de la transacción.
+  7. Coordinador de transacciones: Commit: el coordinador escribe marcadores de confirmación para las salidas y los offsets. Con abort, se descartarían las dos cosas juntas.
+  8. Tópicos de salida: Ahora quien lee con read_committed ve las salidas, exactamente una por cada entrada.
+  9. Procesador: El proyecto final comprueba una salida confirmada por entrada y nada de lag. Eso prueba el límite de Kafka, no un efecto externo.
+  → Los mensajes de salida y los offsets de entrada se confirman juntos, o ninguno. El límite es de Kafka a Kafka; un correo o un pago quedan afuera.
+
+I. De una fila de base a un evento
+  1. pedidos + outbox: Una transacción de base escribe la fila del pedido y una fila de outbox con el ID de evento outbox-E42. Todavía no hay llamada a Kafka.
+  2. Relay del outbox: El relay consulta las filas del outbox sin enviar.
+  3. Tópico de pedidos: Publica el evento, y Kafka lo confirma.
+  4. Relay del outbox: Cae antes de marcar la fila como enviada: el evento está en Kafka y la fila sigue pendiente.
+  5. pedidos + outbox: La corrida siguiente encuentra la misma fila pendiente, con el mismo ID de evento.
+  6. Tópico de pedidos: Lo publica otra vez: dos mensajes comparten un ID de evento.
+  7. Grupo cocina: Un lector que guarda los IDs de evento junto con sus efectos lo aplica una vez y saltea la copia.
+  → El pedido y su evento se confirman juntos en la base. El relay es al menos una vez, así que el ID estable del evento vuelve inofensiva una repetición.
+
+J. Un flujo se convierte en tabla
+  1. Tópico de pedidos: Llegan eventos con clave al tópico de entrada.
+  2. Procesador: Una topología de Kafka Streams en un proceso Java: stream, groupByKey, count. Su application.id nombra su grupo y sus tópicos internos.
+  3. Store de estado: El conteo por clave vive en el store local order-counts.
+  4. Tópicos de salida: Cada cambio también va a un tópico changelog, así un store perdido se puede reconstruir.
+  5. Tópicos de salida: Los conteos actualizados se escriben en lab20-counts: un flujo de actualizaciones de tabla.
+  6. Procesador: Ventanas: un conteo por ventana de 10 segundos según el timestamp del mensaje, con 5 segundos de gracia. Un mensaje más tardío se descarta.
+  → Kafka Streams corre dentro de tu proceso Java. Su estado es local y está respaldado por tópicos changelog; las ventanas cierran por el tiempo del flujo, no por el reloj de pared.
+
+K. Alrededor del clúster
+  1. Kafka Connect: Kafka Connect arranca un conector de origen. El worker ejecuta sus tareas; una tarea lee un archivo y produce mensajes.
+  2. Tópico de pedidos: Sus mensajes llegan al tópico como los de cualquier productor.
+  3. Kafka Connect: Revisá también las tareas: un conector puede estar RUNNING con una de sus tareas en FAILED.
+  4. Kafbat UI: Kafbat UI muestra brokers, tópicos, grupos y lag. En modo solo lectura rechaza sus propias escrituras; el broker no ve esa opción.
+  5. Tópico de pedidos: Mirar mensajes no se une a ningún grupo ni confirma nada: mirar no es consumir.
+  6. Segundo clúster: Un segundo clúster recibe una copia en su propio tópico: el offset 0 de origen pasó a ser el offset 1 de destino.
+  7. Segundo clúster: Corré la copia otra vez y los mensajes se agregan de nuevo: esta copia es al menos una vez. Los IDs, no los offsets, unen las copias de un mismo evento.
+  → Connect mueve datos sin escribir otro loop, la consola mira sin tocar, y un segundo clúster es otro sistema con sus propios offsets.
 

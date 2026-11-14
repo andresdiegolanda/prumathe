@@ -1,6 +1,6 @@
 /* Canonical bilingual content. Generated HTML and notes are built from this file. */
 window.DK_COURSE = {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "date": "2026-10-20",
   "kubernetes": "1.37.0",
   "kind": "0.33.0",

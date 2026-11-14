@@ -1,5 +1,5 @@
 /* Verifies the course: content in both languages, the structure of every lesson and lab step, the
-   models in every skin, the map, the kit (pinned images, only 127.0.0.1 ports, no secrets in the ZIP),
+   models in every skin, the big picture, the kit (pinned images, only 127.0.0.1 ports, no secrets in the ZIP),
    the about page, the generated pages and notes, and UTF-8 without BOM, LF and no long dashes in every
    file. Run after `npm run build`. */
 import fs from 'node:fs';
@@ -11,8 +11,13 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
 const c = { window: {} };
-for (const f of ['curriculum', 'reference', 'visuals', 'about', 'forum', 'map']) vm.runInNewContext(read(`assets/${f}.js`), c);
-const course = c.window.CF_COURSE, refs = c.window.CF_REFERENCE, visuals = c.window.CFVisuals, map = c.window.CFMap;
+for (const f of ['curriculum', 'reference', 'visuals', 'about', 'forum']) vm.runInNewContext(read(`assets/${f}.js`), c);
+const course = c.window.CF_COURSE, refs = c.window.CF_REFERENCE, visuals = c.window.CFVisuals;
+// The big picture, read by its own engine: its pieces carry the cards the live viewer shows.
+const bp = { window: {} };
+for (const name of ['curriculum', 'big-picture-data', 'big-picture']) vm.runInNewContext(read(`assets/${name}.js`), bp);
+const picture = bp.window.BIG_PICTURE, BigPicture = bp.window.BigPicture;
+const cards = { ...Object.fromEntries(Object.entries(picture.nodes).map(([id, n]) => [id, n.card])), ...picture.extraCards };
 const pair = (v, label) => {
   assert.equal(typeof v?.en, 'string', label);
   assert.equal(typeof v?.es, 'string', label);
@@ -103,28 +108,21 @@ for (const g of refs.glossary) {
 }
 for (const [key, [name, url]] of Object.entries(refs.sources)) assert.ok(name && url.startsWith('https://'), 'source ' + key);
 
-// The map: seven scenarios, every stop on a piece that exists, every piece with a card and a lesson.
-assert.equal(map.scenarios.length, 7, 'seven scenarios');
-assert.equal(map.scenarios.map((x) => x.id).join(''), 'ABCDEFG');
-walkPairs(map.scenarios, 'map.scenarios');
-walkPairs(map.cards, 'map.cards');
-for (const s of map.scenarios) {
-  assert.ok(s.stops.length >= 5, `scenario ${s.id} stops`);
-  for (const stop of s.stops) assert.ok(map.nodes[stop.node], `scenario ${s.id} stop on an unknown piece ${stop.node}`);
+// The big picture: the shared engine validates its data (ids, geometry, both languages, journeys
+// that move only along lines), every command it shows is, letter by letter, one of the lessons, and
+// every piece has a card with its lesson and how the kit runs it.
+const lessonCommands = new Set(course.lessons.flatMap((l) => l.lab.flatMap((s) => s.command.split('\n').map((x) => x.trim()))));
+const pictureErrors = [...BigPicture.validate(picture, bp.window.CF_COURSE, { icons: BigPicture.icons(), lab: (x) => lessonCommands.has(x) })];
+assert.equal(pictureErrors.length, 0, pictureErrors.join('\n'));
+walkPairs(cards, 'big picture cards');
+for (const [id, card] of Object.entries(cards)) {
+  for (const k of ['what', 'forwhat', 'not']) pair(card[k], `card ${id} ${k}`);
+  assert.ok(course.lessons[card.lesson], `card ${id} lesson`);
+  assert.ok(['yes', 'part', 'no'].includes(card.local), `card ${id} local`);
 }
-for (const id of Object.keys(map.nodes)) {
-  const card = map.cards[id];
-  assert.ok(card, 'map piece without a card: ' + id);
-  for (const k of ['what', 'forwhat', 'not']) pair(card[k], `map card ${id} ${k}`);
-  assert.ok(course.lessons[card.lesson], `map card ${id} lesson`);
-  assert.ok(['yes', 'part', 'no'].includes(card.local), `map card ${id} local`);
-}
-for (const theme of visuals.themes) for (const lang of ['en', 'es']) {
-  const v = map.view({ lang, theme, prefix: '', link: (l) => `lessons/${l.slug}.html`, lessons: course.lessons });
-  assert.ok(v.includes('<svg') && !/undefined|NaN/.test(v), `map view ${theme} ${lang}`);
-}
-const mapPage = read('cloudflare-map.html');
-assert.ok(mapPage.includes('data-page="map"') && mapPage.includes('assets/map.js'), 'map page shell');
+const pictureHtml = read('big-picture.html');
+assert.ok(pictureHtml.includes('assets/big-picture.js') && pictureHtml.includes('<noscript>'), 'big-picture.html');
+assert.ok(read('assets/app.js').includes('big-picture.html'), 'the home page links the big picture');
 
 // The kit: images pinned by digest, only 127.0.0.1 on the host, the account only through .env.
 const compose = read('labs/compose.yaml');
@@ -146,7 +144,7 @@ for (const f of ['labs/compose.yaml', 'labs/.env.example', 'labs/edge/package-lo
 assert.ok(!names.some((n) => /(^|\/)\.env$|\.dev\.vars|kubeconfig|node_modules|\.wrangler|\/target\//.test(n)), 'ZIP carries a secret, dependencies or build output');
 
 // The live viewer: published on 127.0.0.1 only, started next to wrangler dev, read-only, no inline
-// code, and its data written by build.mjs from the lab steps and the cards of the map.
+// code, and its data written by build.mjs from the lab steps and the cards of the big picture.
 if (visorBuilt) {
   assert.ok(compose.includes('"127.0.0.1:18098:8788"') && compose.includes('./visor:/visor:ro'), 'compose: the viewer port and its read-only folder');
   assert.ok(compose.includes('http://127.0.0.1:8788/health'), 'compose: the health check of the edge includes the viewer');
@@ -163,7 +161,7 @@ if (visorBuilt) {
   assert.equal(vl.version, course.version, 'viewer lessons version');
   const labCommands = course.lessons.flatMap((l) => l.lab.flatMap((s) => s.command.split('\n').filter((x) => /^docker compose (run --rm|exec edge) lab /.test(x.trim()))));
   assert.equal(vl.commands.length, labCommands.length, 'viewer lessons.json up to date: npm run build');
-  for (const [id, card] of Object.entries(vp.pieces)) assert.deepEqual(card, JSON.parse(JSON.stringify(map.cards[id])), 'viewer pieces.json up to date: ' + id);
+  for (const [id, card] of Object.entries(vp.pieces)) assert.deepEqual(card, JSON.parse(JSON.stringify(cards[id])), 'viewer pieces.json up to date: ' + id);
   for (const f of ['labs/visor/server.mjs', 'labs/visor/static/index.html', 'labs/visor/static/visor.js', 'labs/visor/static/lessons.json', 'labs/visor/static/pieces.json']) assert.ok(names.includes(f), 'ZIP content ' + f);
 }
 
@@ -205,7 +203,7 @@ for (const file of walk(root)) {
     if (!/^(https?:|mailto:)/.test(target)) assert.ok(fs.existsSync(path.resolve(path.dirname(file), target)), rel + ' missing ' + target);
   }
 }
-for (const f of ['app', 'theme', 'curriculum', 'reference', 'visuals', 'about', 'forum', 'map']) new vm.Script(read(`assets/${f}.js`), { filename: f + '.js' });
+for (const f of ['app', 'theme', 'curriculum', 'reference', 'visuals', 'about', 'forum', 'big-picture-data', 'big-picture']) new vm.Script(read(`assets/${f}.js`), { filename: f + '.js' });
 for (const lang of ['en', 'es']) {
   const notes = read(`downloads/course-notes-${lang}.txt`);
   for (const l of course.lessons) assert.ok(notes.includes(`${String(l.id).padStart(2, '0')}. ${l.title[lang]}`), `notes ${lang} ${l.id}`);
@@ -219,7 +217,7 @@ assert.ok(read('_headers').includes('https://giscus.app'), 'CSP allows giscus');
 assert.ok(read(`lessons/${course.lessons[0].slug}.html`).includes('assets/forum.js'), 'lesson pages load forum.js');
 
 const optional = course.lessons.reduce((a, l) => a + l.lab.filter((s) => s.optional).length, 0);
-console.log(`PASS: 26 lessons, 78 scenes, 78 questions, ${steps} lab steps (${optional} optional, on an account), ${renders} model renders, ${refs.glossary.length} glossary entries, the map with ${map.scenarios.length} scenarios, the kit, the about page, ${files} files in UTF-8/LF.`);
+console.log(`PASS: 26 lessons, 78 scenes, 78 questions, ${steps} lab steps (${optional} optional, on an account), ${renders} model renders, ${refs.glossary.length} glossary entries, the big picture (${picture.journeys.length} journeys, ${picture.journeys.reduce((n, j) => n + j.stops.length, 0)} stops), the kit, the about page, ${files} files in UTF-8/LF.`);
 if (pending.length) {
   console.log('PENDING: ' + pending.join('; '));
   process.exitCode = 1;
