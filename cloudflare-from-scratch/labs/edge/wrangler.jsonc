@@ -1,0 +1,38 @@
+// The Worker of Rumbo, the fictional shipment-tracking platform of the course. `wrangler dev` runs it
+// on workerd with every binding simulated on this machine: no account, no login. The ids below only
+// name local resources; deploy/wrangler.jsonc is the Worker that goes to a Cloudflare account.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rumbo-edge",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ORIGIN": "http://origin:8080",
+    "ALLOWED_ORIGIN": "https://shop.example",
+    "ISSUER": "http://test-issuer.local"
+  },
+  "kv_namespaces": [{ "binding": "FLAGS", "id": "rumbo-flags" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "rumbo-edge", "database_id": "rumbo-edge", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "PROOFS", "bucket_name": "rumbo-proofs" }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "SHIPMENTS", "class_name": "Shipment" },
+      { "name": "COUNTERS", "class_name": "Counter" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Shipment", "Counter"] }],
+  "queues": {
+    "producers": [{ "binding": "MOVES", "queue": "movements" }],
+    "consumers": [
+      { "queue": "movements", "max_batch_size": 10, "max_batch_timeout": 2, "max_retries": 2, "retry_delay": 0, "dead_letter_queue": "movements-dead" },
+      { "queue": "movements-dead", "max_batch_timeout": 1 }
+    ]
+  },
+  "workflows": [{ "name": "returns", "binding": "RETURNS", "class_name": "ReturnFlow" }],
+  "ratelimits": [{ "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 10 } }],
+  // Local only: wrangler dev connects straight to the Postgres of Compose, without Hyperdrive's
+  // pool or cache. A deployed Worker would use the id of a Hyperdrive configuration of the account.
+  "hyperdrive": [{ "binding": "PG", "id": "00000000000000000000000000000000", "localConnectionString": "postgres://rumbo:rumbo@db:5432/rumbo" }],
+  "triggers": { "crons": ["0 3 * * *"] }
+}

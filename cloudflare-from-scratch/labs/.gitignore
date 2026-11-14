@@ -1,0 +1,7 @@
+.env
+edge/node_modules/
+edge/.wrangler/
+edge/.dev.vars
+edge/worker-configuration.d.ts
+edge/deploy/.wrangler/
+origin/target/

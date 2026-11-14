@@ -1,0 +1,390 @@
+{
+ "version": "1.0.0",
+ "pieces": {
+  "kit": {
+   "what": {
+    "en": "wrangler dev in Docker, with the origin and the database of Rumbo.",
+    "es": "wrangler dev en Docker, con el origen y la base de Rumbo."
+   },
+   "forwhat": {
+    "en": "Every lesson, with no account.",
+    "es": "Cada lección, sin cuenta."
+   },
+   "not": {
+    "en": "No anycast, no zone, no Workers Cache, no pool in Hyperdrive.",
+    "es": "Sin anycast, sin zona, sin Workers Cache, sin pool en Hyperdrive."
+   },
+   "free": {
+    "en": "Free: it runs on your machine.",
+    "es": "Gratis: corre en tu máquina."
+   },
+   "lesson": 0,
+   "local": "yes"
+  },
+  "dns": {
+   "what": {
+    "en": "The authoritative DNS of your zone, run by Cloudflare.",
+    "es": "El DNS con autoridad de tu zona, operado por Cloudflare."
+   },
+   "forwhat": {
+    "en": "A proxied record answers with anycast addresses, so requests meet the edge first.",
+    "es": "Un registro con proxy responde con direcciones anycast, así los pedidos se encuentran primero con el borde."
+   },
+   "not": {
+    "en": "It hides the origin in DNS only, not everywhere.",
+    "es": "Esconde el origen solo en el DNS, no en todos lados."
+   },
+   "free": {
+    "en": "Included.",
+    "es": "Incluido."
+   },
+   "lesson": 2,
+   "local": "no"
+  },
+  "waf": {
+   "what": {
+    "en": "Rules on each request, in fixed phases: custom, rate limiting, managed.",
+    "es": "Reglas sobre cada pedido, en fases fijas: propias, rate limiting, administradas."
+   },
+   "forwhat": {
+    "en": "Stop what no code should see, before the Worker.",
+    "es": "Frenar lo que ningún código debería ver, antes del Worker."
+   },
+   "not": {
+    "en": "It compares text: a rule without lower() misses another case.",
+    "es": "Compara texto: una regla sin lower() no ve otras mayúsculas."
+   },
+   "free": {
+    "en": "5 custom rules, 1 rate limiting rule, the Free Managed Ruleset.",
+    "es": "5 reglas propias, 1 de rate limiting, el Free Managed Ruleset."
+   },
+   "lesson": 13,
+   "local": "part"
+  },
+  "access": {
+   "what": {
+    "en": "A login in front of an application, with policies.",
+    "es": "Un login delante de una aplicación, con políticas."
+   },
+   "forwhat": {
+    "en": "Internal tools without a VPN; a signed JWT for the origin.",
+    "es": "Herramientas internas sin VPN; un JWT firmado para el origen."
+   },
+   "not": {
+    "en": "It does not close the origin: the origin validates the JWT.",
+    "es": "No cierra el origen: el origen valida el JWT."
+   },
+   "free": {
+    "en": "Zero Trust: free up to 50 users.",
+    "es": "Zero Trust: gratis hasta 50 usuarios."
+   },
+   "lesson": 15,
+   "local": "part"
+  },
+  "cache": {
+   "what": {
+    "en": "Workers Cache: a cache in front of the Worker, by the Cache-Control of its answers.",
+    "es": "Workers Cache: una cache delante del Worker, según el Cache-Control de sus respuestas."
+   },
+   "forwhat": {
+    "en": "Serve what is the same for everyone without running the Worker.",
+    "es": "Servir lo que es igual para todos sin correr el Worker."
+   },
+   "not": {
+    "en": "The key has no user: never cache personal answers as public.",
+    "es": "La clave no tiene usuario: nunca guardes respuestas personales como públicas."
+   },
+   "free": {
+    "en": "Any plan, no price of its own: each request still counts as a Worker request.",
+    "es": "Cualquier plan, sin precio propio: cada pedido sigue contando como pedido del Worker."
+   },
+   "lesson": 10,
+   "local": "no"
+  },
+  "worker": {
+   "what": {
+    "en": "Your code, in a V8 isolate of the data center that got the request.",
+    "es": "Tu código, en un isolate de V8 del data center que recibió el pedido."
+   },
+   "forwhat": {
+    "en": "Decide, rewrite, answer or forward; reach the bindings.",
+    "es": "Decidir, reescribir, responder o reenviar; llegar a los bindings."
+   },
+   "not": {
+    "en": "No global state you can trust; no Java.",
+    "es": "Sin estado global confiable; sin Java."
+   },
+   "free": {
+    "en": "100,000 requests a day, 10 ms of CPU each.",
+    "es": "100.000 pedidos por día, 10 ms de CPU cada uno."
+   },
+   "lesson": 5,
+   "local": "yes"
+  },
+  "ratelimit": {
+   "what": {
+    "en": "A counter per key in a window of 10 or 60 seconds, from the Worker.",
+    "es": "Un contador por clave en una ventana de 10 o 60 segundos, desde el Worker."
+   },
+   "forwhat": {
+    "en": "A budget per API key, user or tenant.",
+    "es": "Un presupuesto por API key, usuario o tenant."
+   },
+   "not": {
+    "en": "Not exact: per location and eventually consistent.",
+    "es": "No es exacto: por lugar y eventualmente consistente."
+   },
+   "free": null,
+   "lesson": 14,
+   "local": "yes"
+  },
+  "kv": {
+   "what": {
+    "en": "A key-value store, cached near its readers.",
+    "es": "Un almacén de clave y valor, en cache cerca de sus lectores."
+   },
+   "forwhat": {
+    "en": "Flags, configuration, allow lists.",
+    "es": "Flags, configuración, listas de permitidos."
+   },
+   "not": {
+    "en": "Not a counter: eventual and without atomic operations.",
+    "es": "No es un contador: eventual y sin operaciones atómicas."
+   },
+   "free": {
+    "en": "100,000 reads and 1,000 writes a day.",
+    "es": "100.000 lecturas y 1.000 escrituras por día."
+   },
+   "lesson": 16,
+   "local": "yes"
+  },
+  "cacheapi": {
+   "what": {
+    "en": "The cache of one data center, from your code: caches.default, with match, put and delete.",
+    "es": "La cache de un data center, desde tu código: caches.default, con match, put y delete."
+   },
+   "forwhat": {
+    "en": "Keep what the Worker computed, under a key it chooses: the rates of Rumbo.",
+    "es": "Guardar lo que calculó el Worker, bajo una clave que elige: las tarifas de Rumbo."
+   },
+   "not": {
+    "en": "It does not replicate: delete purges this data center only.",
+    "es": "No se replica: delete purga solo este data center."
+   },
+   "free": {
+    "en": "Any plan.",
+    "es": "Cualquier plan."
+   },
+   "lesson": 12,
+   "local": "yes"
+  },
+  "d1": {
+   "what": {
+    "en": "A managed SQL database with the SQL of SQLite.",
+    "es": "Una base SQL administrada con el SQL de SQLite."
+   },
+   "forwhat": {
+    "en": "Tables the edge reads and writes: the quotes of Rumbo.",
+    "es": "Tablas que el borde lee y escribe: las cotizaciones de Rumbo."
+   },
+   "not": {
+    "en": "Not your big relational database: one primary per database.",
+    "es": "No es tu base relacional grande: una principal por base."
+   },
+   "free": {
+    "en": "10 databases, 5 GB, 5 million rows read a day.",
+    "es": "10 bases, 5 GB, 5 millones de filas leídas por día."
+   },
+   "lesson": 17,
+   "local": "yes"
+  },
+  "r2": {
+   "what": {
+    "en": "Object storage with an S3-compatible API.",
+    "es": "Almacenamiento de objetos con una API compatible con S3."
+   },
+   "forwhat": {
+    "en": "Files read by many: the proofs of delivery.",
+    "es": "Archivos que leen muchos: los comprobantes de entrega."
+   },
+   "not": {
+    "en": "No egress fees, but storage and operations are counted.",
+    "es": "Sin costo de salida, pero se cuentan el almacenamiento y las operaciones."
+   },
+   "free": {
+    "en": "10 GB-month, 1 million Class A, 10 million Class B a month.",
+    "es": "10 GB-mes, 1 millón Clase A, 10 millones Clase B por mes."
+   },
+   "lesson": 18,
+   "local": "yes"
+  },
+  "queue": {
+   "what": {
+    "en": "Messages from a producer to a consumer, in batches.",
+    "es": "Mensajes de un productor a un consumidor, en lotes."
+   },
+   "forwhat": {
+    "en": "Answer now, work later, absorb bursts.",
+    "es": "Responder ahora, trabajar después, absorber ráfagas."
+   },
+   "not": {
+    "en": "Not exactly once: duplicates are rare but possible.",
+    "es": "No es exactamente una vez: los duplicados son raros pero posibles."
+   },
+   "free": {
+    "en": "10,000 operations a day, 24 hours of retention.",
+    "es": "10.000 operaciones por día, 24 horas de retención."
+   },
+   "lesson": 22,
+   "local": "yes"
+  },
+  "dobj": {
+   "what": {
+    "en": "An instance of your class, one per id, in one place.",
+    "es": "Una instancia de tu clase, una por id, en un lugar."
+   },
+   "forwhat": {
+    "en": "Counters, live state, coordination: one call at a time.",
+    "es": "Contadores, estado en vivo, coordinación: una llamada por vez."
+   },
+   "not": {
+    "en": "Not one global table: one object queues every caller.",
+    "es": "No es una tabla global: un objeto hace hacer cola a todos."
+   },
+   "free": {
+    "en": "SQLite backend only; 5 GB in total.",
+    "es": "Solo backend SQLite; 5 GB en total."
+   },
+   "lesson": 19,
+   "local": "yes"
+  },
+  "workflow": {
+   "what": {
+    "en": "A process of steps whose results are stored.",
+    "es": "Un proceso de pasos cuyos resultados se guardan."
+   },
+   "forwhat": {
+    "en": "Returns that wait days for a person, with retries per step.",
+    "es": "Devoluciones que esperan días a una persona, con reintentos por paso."
+   },
+   "not": {
+    "en": "Not a place for heavy computation: each step is a Worker invocation.",
+    "es": "No es lugar para cálculo pesado: cada paso es una invocación de Worker."
+   },
+   "free": {
+    "en": "3,000 steps a day.",
+    "es": "3.000 pasos por día."
+   },
+   "lesson": 23,
+   "local": "yes"
+  },
+  "hyperdrive": {
+   "what": {
+    "en": "A pool and a query cache between Workers and your own database.",
+    "es": "Un pool y una cache de consultas entre Workers y tu propia base."
+   },
+   "forwhat": {
+    "en": "Reach PostgreSQL from many data centers without a connection per request.",
+    "es": "Llegar a PostgreSQL desde muchos data centers sin una conexión por pedido."
+   },
+   "not": {
+    "en": "It does not replicate your data, nor invalidate its cache on writes.",
+    "es": "No replica tus datos, ni invalida su cache cuando hay escrituras."
+   },
+   "free": {
+    "en": "100,000 queries a day.",
+    "es": "100.000 consultas por día."
+   },
+   "lesson": 21,
+   "local": "part"
+  },
+  "consumer": {
+   "what": {
+    "en": "The queue handler of a Worker.",
+    "es": "El handler queue de un Worker."
+   },
+   "forwhat": {
+    "en": "Process each message, ack or retry; a dead letter queue at the end.",
+    "es": "Procesar cada mensaje, ack o retry; una cola de mensajes muertos al final."
+   },
+   "not": {
+    "en": "It must be idempotent: the same message may come twice.",
+    "es": "Tiene que ser idempotente: el mismo mensaje puede llegar dos veces."
+   },
+   "free": null,
+   "lesson": 22,
+   "local": "yes"
+  },
+  "alarm": {
+   "what": {
+    "en": "One scheduled wake-up per Durable Object.",
+    "es": "Un despertador programado por Durable Object."
+   },
+   "forwhat": {
+    "en": "Notice silence: a shipment with no movement becomes delayed.",
+    "es": "Notar el silencio: un envío sin movimientos queda demorado."
+   },
+   "not": {
+    "en": "Not more than one at a time per object.",
+    "es": "No más de una por vez por objeto."
+   },
+   "free": null,
+   "lesson": 20,
+   "local": "yes"
+  },
+  "cron": {
+   "what": {
+    "en": "A schedule that runs the scheduled handler.",
+    "es": "Un horario que corre el handler scheduled."
+   },
+   "forwhat": {
+    "en": "The daily close of Rumbo at 03:00 UTC.",
+    "es": "El cierre diario de Rumbo a las 03:00 UTC."
+   },
+   "not": {
+    "en": "Not in your time zone: in UTC. Changes take up to 15 minutes.",
+    "es": "No en tu zona horaria: en UTC. Los cambios tardan hasta 15 minutos."
+   },
+   "free": {
+    "en": "5 Cron Triggers per account.",
+    "es": "5 Cron Triggers por cuenta."
+   },
+   "lesson": 24,
+   "local": "part"
+  },
+  "api": {
+   "what": {
+    "en": "The Spring Boot API of Rumbo: the origin.",
+    "es": "La API de Spring Boot de Rumbo: el origen."
+   },
+   "forwhat": {
+    "en": "The business: shipments, movements, the panel.",
+    "es": "El negocio: envíos, movimientos, el panel."
+   },
+   "not": {
+    "en": "It does not trust the edge blindly: it validates tokens.",
+    "es": "No confía ciegamente en el borde: valida tokens."
+   },
+   "free": null,
+   "lesson": 0,
+   "local": "yes"
+  },
+  "postgres": {
+   "what": {
+    "en": "The database of the origin.",
+    "es": "La base del origen."
+   },
+   "forwhat": {
+    "en": "The source of truth for shipments.",
+    "es": "La fuente de verdad de los envíos."
+   },
+   "not": {
+    "en": "It is not in Cloudflare: Hyperdrive and the origin reach it.",
+    "es": "No está en Cloudflare: llegan Hyperdrive y el origen."
+   },
+   "free": null,
+   "lesson": 21,
+   "local": "yes"
+  }
+ }
+}

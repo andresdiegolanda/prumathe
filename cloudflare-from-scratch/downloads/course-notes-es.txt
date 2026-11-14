@@ -1,0 +1,1966 @@
+CLOUDFLARE DESDE CERO. APUNTES DEL CURSO
+WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.0.0
+
+QUÉ ES CLOUDFLARE
+=================================================================
+Qué es, de dónde salió, dónde encaja y dónde no. Se lee una vez; el resto lo hacen las lecciones y el mapa.
+
+Una red delante de tu aplicación, y un lugar donde correr código en ella
+Cloudflare opera una red global de data centers, 348 ciudades en su mapa de red cuando se verificó este curso. Para un dominio que le agregás, su DNS responde con direcciones de esa red, así los pedidos de tus usuarios llegan primero a un data center cercano. Ahí el borde termina TLS, aplica tus reglas, sirve lo que tiene en cache y reenvía el resto a tu servidor, el origen. Tu origen sigue haciendo su trabajo; el borde decide qué le llega.
+La misma red corre tu código. Un Worker es JavaScript o TypeScript, o Python, Rust y otros lenguajes por WebAssembly, que corre en un isolate de V8 en cada data center, con bindings a almacenamiento propio: KV, D1, R2, Durable Objects, Queues, Workflows, e Hyperdrive para llegar a tu propia base. Java no corre en Workers, así que en este curso Java queda donde corresponde: en el origen.
+→ El borde decide qué llega a tu origen; los Workers deciden qué hace el borde.
+
+De una trampa para spam a una plataforma
+Cloudflare salió de Project Honey Pot, que Matthew Prince y Lee Holloway arrancaron en 2004 para averiguar de dónde venía el spam. Con Michelle Zatlyn fundaron Cloudflare en 2009 y lo lanzaron en público en 2010. El primer producto protegía y aceleraba sitios poniéndose delante de ellos; correr código en esa misma posición llegó siete años después.
+2009 Fundación: Matthew Prince, Michelle Zatlyn y Lee Holloway, después de Project Honey Pot.
+2010 Lanzamiento: 27 de septiembre, en TechCrunch Disrupt, en San Francisco.
+2017 Workers: 29 de septiembre: JavaScript en el borde, sobre V8, con una API como la de Service Workers.
+2019 Cotización: 13 de septiembre, en la Bolsa de Nueva York como NET.
+2020 Durable Objects: 28 de septiembre: estado con un solo dueño, en el borde.
+2026 cf: 28 de septiembre: una línea de comandos para toda la API, en beta abierta; Wrangler la va a seguir.
+
+Dónde encaja
+Casos en los que poner Cloudflare delante, o correr código en él, conviene.
+- Un sitio o una API pública: TLS, cache de lo que es igual para todos, reglas y rate limits antes de tus servidores, con la dirección del origen fuera del DNS.
+- Un origen sin puertos abiertos: Un túnel publica un servicio desde una red privada, y Access pide identidad delante de herramientas internas.
+- Lógica cerca del usuario: Redirecciones, encabezados, pruebas A/B, verificaciones de autenticación y APIs chicas que responden desde el data center que recibió el pedido.
+- Webhooks y ráfagas: Aceptar enseguida, encolar y procesar a tu ritmo con reintentos y una cola de mensajes muertos.
+- Estado por cosa: Contadores, sesiones, salas y estados en vivo, un Durable Object por entidad.
+- Archivos para muchos lectores: Objetos en R2 servidos desde el borde, sin costo de salida.
+
+Dónde no
+El criterio del curso, a partir de los límites de la documentación: casos en los que otra cosa hace mejor el trabajo.
+- Cálculo pesado o largo: Un pedido tiene 10 ms de CPU en el plan gratuito y 5 minutos como máximo en el pago. En cambio: Tus servidores o contenedores, alimentados por una cola.
+- Tu código Java y Spring: Java no corre en Workers. En cambio: El origen, con el borde delante.
+- Una base relacional grande: D1 es SQLite por base, con una sola principal para las escrituras. En cambio: Tu PostgreSQL o MySQL, alcanzado por Hyperdrive.
+- Contadores y coordinación en KV: KV es eventualmente consistente y no tiene operaciones atómicas. En cambio: Un Durable Object por contador.
+- Cualquier cosa personal en una cache compartida: La clave de cache por defecto no tiene usuario. En cambio: private o no-store, y guardar solo lo que es igual para todos.
+
+Cinco preguntas antes de ponerlo delante
+1. ¿Qué pedidos no tienen que llegar nunca a mi origen, y cuáles siempre?
+2. ¿Qué es igual para todos, y se puede guardar, y qué es personal?
+3. ¿Alguien puede llegar a mi origen sin pasar por el borde?
+4. ¿Qué necesita cada pieza de estado: lectura rápida, un dueño, SQL o archivos?
+5. ¿Qué entra en el plan gratuito, y por qué pagaría?
+El curso responde cada una con un comando que podés ejecutar, en tu máquina.
+
+
+00. Antes de empezar
+=================================================================
+Mirá el modelo, predecí un resultado y después ejecutá el experimento en un borde real en tu máquina.
+
+Dos espacios y tres clases de evidencia
+El navegador muestra modelos ilustrativos de cada mecanismo. Tu terminal ejecuta el kit: el mismo runtime que usa Cloudflare para Workers, en tu máquina. Cada paso del laboratorio dice de dónde sale su evidencia: local corre en el kit, sin cuenta; cuenta necesita una cuenta gratuita de Cloudflare y es opcional; zona necesita un dominio propio en Cloudflare, así que el curso la muestra como caso de estudio con salidas reales.
+→ Un modelo explica; un laboratorio produce evidencia, y dice de qué clase.
+
+Un kit, una empresa ficticia
+Rumbo es una plataforma ficticia de seguimiento de envíos. Su origen es una API de Spring Boot sobre Java 25 con PostgreSQL 18: envíos, los movimientos que reportan los transportistas y un panel interno. Delante, el borde es un Worker que corre wrangler dev, con todos los bindings simulados: KV, D1, R2, Durable Objects, Queues, Workflows, Hyperdrive y rate limiting. Un comando lab, también en Docker, hace los pedidos e imprime lo que importa.
+→ Mantené la empresa chica para que el mecanismo siga a la vista.
+
+Qué corre dónde
+Solo se publica el borde: el Worker en 127.0.0.1:18097 y su visor en vivo en 127.0.0.1:18098; el origen y la base no tienen puerto en tu máquina, como debe pasar con un origen detrás de Cloudflare. El kit usa unos 800 MB de memoria, casi todo el borde con su visor, unos 450 MB, y el origen, unos 300 MB, medido en la máquina de validación. Las imágenes se bajan una vez. Las herramientas locales de wrangler dev, como el Local Explorer en /cdn-cgi/local/explorer, responden en el puerto del Worker.
+→ Publicá solo lo que se tiene que alcanzar.
+
+LABORATORIO
+1. Verificá Docker
+El kit necesita Docker con Compose. No se instala nada más en tu máquina: Node, Wrangler, Java y PostgreSQL corren en contenedores.
+
+docker version --format "{{.Server.Version}}"
+
+Observá: Un número de versión del Docker Engine, como 29.1.3. Un error quiere decir que Docker Desktop o el daemon no está corriendo.
+
+2. Construí y levantá el kit
+Desde la carpeta donde descomprimiste el kit, entrá a labs y levantalo. La primera vez construye dos imágenes, el borde y el origen, y baja las imágenes base; después arranca en segundos. --wait vuelve cuando cada servicio responde su chequeo de salud.
+
+cd labs
+docker compose up -d --build --wait
+
+Observá: Los tres servicios, db, origin y edge, terminan Healthy. La primera construcción tarda unos minutos, casi todo Maven bajando las dependencias del origen.
+
+3. Mirá qué está publicado
+docker compose ps lista los servicios y sus puertos. Solo una línea tiene una dirección en tu máquina.
+
+docker compose ps --format "{{.Service}} {{.Ports}}"
+
+Observá: edge muestra 127.0.0.1:18097->8787/tcp y 127.0.0.1:18098->8788/tcp, el Worker y su visor; origin muestra 8080/tcp y 8443/tcp sin dirección; db muestra 5432/tcp sin dirección. Solo al borde se llega desde tu máquina.
+
+4. Pedile al origen a través del borde
+El comando lab corre en la misma imagen que el borde y le habla por la red de Compose. get imprime el estado, los encabezados que importan y el cuerpo. Abrí http://127.0.0.1:18098 en tu navegador: el visor en vivo dibuja este pedido, y todos los que siguen, sobre las piezas del kit.
+
+docker compose run --rm lab get /api/shipments/R-1042
+
+Observá: HTTP 200, x-rumbo-via: edge y un id de pedido que agregó el Worker, y un cuerpo que dice servedBy rumbo-origin: la respuesta vino de Spring Boot, a través del borde.
+
+5. Leé los comandos del lab
+Todas las lecciones usan este mismo comando. help lista lo que hace: pedidos a través del borde, los mecanismos de cada lección y los pasos opcionales de tu cuenta.
+
+docker compose run --rm lab help
+
+Observá: Grupos de comandos: through the edge, the origin, mechanisms, events, what happened, network in front, identity y your account.
+
+CONTROL
+1. ¿Qué prueba el modelo visual del navegador?
+A. Lo que Cloudflare le va a responder a tu pedido
+B. Tu razonamiento dentro de sus supuestos
+C. La velocidad de tu conexión
+Respuesta: B. Solo los comandos del laboratorio llegan a un runtime real: el kit, o tu cuenta en los pasos opcionales.
+
+2. ¿Qué pasos necesitan una cuenta de Cloudflare?
+A. Todos, porque Workers solo corre en Cloudflare
+B. Solo los pasos de zona
+C. Los pasos marcados como cuenta, y son opcionales
+Respuesta: C. wrangler dev corre el Worker y simula sus bindings sin login; la cuenta es para desplegar.
+
+3. ¿Por qué el origen de Rumbo no tiene puerto en tu máquina?
+A. Porque solo el borde se tiene que poder alcanzar desde afuera
+B. Porque Spring Boot no puede escuchar en un puerto en Docker
+C. Porque la base rechazaría la conexión
+Respuesta: A. El borde y el lab llegan por la red de Compose; nadie más lo necesita.
+
+
+01. Un pedido pasa por el borde
+=================================================================
+Una dirección anunciada desde muchos lugares, y el data center que te responde.
+
+Una dirección, muchos lugares
+Anycast: Cloudflare anuncia las mismas direcciones IP desde todos sus data centers, y el ruteo de internet lleva a cada cliente a uno de ellos, en general uno cercano. Qué es: una forma de rutear, no un servidor. Para qué sirve: para responder desde cerca y repartir carga y ataques en toda la red. Qué no hace: prometer la ciudad más cercana en el mapa; deciden las rutas de las redes del medio.
+→ La dirección es la misma en todos lados; el data center que responde, no.
+
+El borde responde primero
+Tu conexión TLS termina en ese data center, que corre todos los productos de la zona sobre el pedido antes de que vaya a otro lado. Cada pedido recibe un Ray ID, que viaja al origen en el encabezado cf-ray; Cloudflare aclara que los Ray IDs no tienen garantía de ser únicos. /cdn-cgi/trace en un sitio detrás de Cloudflare muestra qué data center respondió, en el campo colo.
+→ Registrá el Ray ID: es cómo encontrás un pedido en Cloudflare.
+
+Tu borde en el kit
+wrangler dev corre workerd, el runtime de código abierto de Workers, en tu máquina. Es un lugar, no una red: no hay anycast ni otros data centers. request.cf, el objeto donde el borde describe al cliente, se trae una vez de Cloudflare cuando arranca wrangler y describe tu propia conexión; en Cloudflare cada pedido trae el suyo.
+→ El kit corre el mismo código; no reproduce la red.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Solo lab cf y lab get /echo llegan al kit: el primero lo responde el Worker solo, el segundo sigue hasta la API de Rumbo. trace y headers van a www.cloudflare.com, y lab origin saltea el borde, así que no dejan nada.
+
+1. Preguntale a Cloudflare qué data center respondió
+/cdn-cgi/trace existe en todo sitio detrás de Cloudflare. El lab lo lee de www.cloudflare.com e imprime algunos campos; tu dirección pública viene en la respuesta pero no se imprime. Este paso necesita internet, y un proxy corporativo lo puede bloquear.
+
+docker compose run --rm lab trace
+
+Observá: colo con tres letras, como LHR u ORD: el código de aeropuerto del data center que te respondió. tls=TLSv1.3 y http=http/2 describen la conexión que terminó ahí.
+
+2. Mirá los encabezados de una respuesta
+headers pide una página e imprime los encabezados que agrega el borde.
+
+docker compose run --rm lab headers
+
+Observá: server: cloudflare y un encabezado cf-ray. En la corrida de validación, el cf-ray terminaba con las mismas tres letras que colo, como a5a636edac9dd8f8-LHR; la documentación describe el Ray ID pero no ese formato. cf-cache-status es la lección 10.
+
+3. Leé request.cf en el borde local
+El Worker de Rumbo devuelve parte de request.cf. En el kit es el objeto que wrangler trajo de Cloudflare cuando arrancó.
+
+docker compose run --rm lab cf
+
+Observá: Un colo y un país que coinciden con tu conexión, no con el contenedor del lab: el mismo objeto para todos los pedidos hasta que el borde reinicia.
+
+4. Mirá qué llegó al origen
+/echo es una ruta del origen que devuelve los encabezados que recibió. A través del borde, el Worker agrega dos propios.
+
+docker compose run --rm lab get /echo
+
+Observá: El origen vio x-rumbo-edge y x-rumbo-request-id, el mismo id que volvió en los encabezados de la respuesta.
+
+5. Andá directo al origen
+El contenedor del lab está dentro de la red de Compose, así que puede saltear el borde. Nadie de afuera puede: el origen no tiene puerto en tu máquina.
+
+docker compose run --rm lab origin /echo
+
+Observá: Solo el encabezado host: no hay encabezados x-rumbo, porque nada pasó por el Worker.
+
+CONTROL
+1. ¿Qué decide anycast?
+A. Qué data center recibe un pedido a la misma dirección IP
+B. Que el pedido llegue siempre a la ciudad más cercana en el mapa
+C. Qué servidor dentro de un data center corre tu Worker
+Respuesta: A. El ruteo elige entre muchos lugares que anuncian la misma dirección; suele ser el más cercano, no siempre.
+
+2. ¿Dónde termina la conexión TLS del visitante, en un sitio con proxy?
+A. En tu origen
+B. En el data center de Cloudflare que la recibió
+C. En el resolver de DNS
+Respuesta: B. El borde termina TLS; la conexión al origen es otra, lección 03.
+
+3. ¿Qué describe request.cf en el kit?
+A. Cada pedido que hace el lab, medido en ese momento
+B. El data center más cercano al origen
+C. Tu conexión a Cloudflare cuando arrancó wrangler
+Respuesta: C. wrangler dev trae un objeto cf real al arrancar; en producción cada pedido tiene el suyo.
+
+
+02. DNS con proxy o sin proxy
+=================================================================
+El mismo registro puede mandar el pedido al borde o directo a tu servidor.
+
+Con proxy: responde el borde
+El DNS de Cloudflare guarda los registros de tu zona. Un registro marcado con proxy se responde con direcciones anycast de Cloudflare, así que los pedidos HTTP y HTTPS llegan primero al borde y la dirección de tu origen no se publica. Solo los registros A, AAAA y CNAME pueden ir con proxy; el panel lo prende por defecto para ellos. Los registros con proxy tienen un TTL fijo de 300 segundos.
+→ Con proxy quiere decir que el pedido se encuentra con el borde antes que con tu servidor.
+
+Solo DNS: Cloudflare solo responde DNS
+Un registro solo DNS se responde con la dirección real que escribiste. Los pedidos van directo a ese servidor: sin cache, sin WAF, sin Workers en el camino, y solo con analíticas de DNS. La dirección la ve cualquiera que pregunte por el registro. Los registros MX y TXT son siempre solo DNS.
+→ Un registro solo DNS se saltea todos los productos de la zona.
+
+Lo que el proxy no esconde
+El proxy esconde la dirección del origen en el DNS, no en todos lados. Un registro viejo solo DNS, un servidor de mail en la misma máquina o un enlace directo la pueden revelar, y quien la conoce se saltea el borde. Hay dos defensas más adelante: un origen sin puertos abiertos, lección 04, y un origen que verifica quién mandó el pedido, lección 15.
+→ Esconder una dirección no es lo mismo que cerrar una puerta.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): No aparece nada: estos pasos le preguntan al DNS y a la API de Cloudflare, no al borde del kit.
+
+1. Resolvé un nombre con proxy
+dns resuelve los registros A de un nombre y compara cada dirección con los rangos que Cloudflare publica para su red, leídos de su API. Este paso necesita internet.
+
+docker compose run --rm lab dns www.cloudflare.com
+
+Observá: Dos o más direcciones, cada una en la red de Cloudflare: el pedido va al borde.
+
+2. Resolvé un nombre que no está detrás del proxy
+Un sitio que no usa el proxy de Cloudflare responde con direcciones de su propia red.
+
+docker compose run --rm lab dns github.com
+
+Observá: Las direcciones están fuera de la red de Cloudflare: nada del borde se pone entre vos y ese servidor.
+
+3. Encontrá quién responde el DNS de una zona
+Los registros NS dicen qué servidores tienen autoridad sobre una zona. dig está instalado en la imagen del lab.
+
+docker compose run --rm --entrypoint dig lab +short NS cloudflare.com
+
+Observá: Nombres bajo cloudflare.com, como ns3.cloudflare.com. La zona de un cliente recibe en cambio dos nombres asignados bajo ns.cloudflare.com.
+
+4. Leé los rangos que publica Cloudflare
+La misma lista que usa el comando dns. Es cómo un origen puede aceptar conexiones solo de Cloudflare cuando no puede usar un túnel.
+
+docker compose run --rm --entrypoint curl lab -s https://api.cloudflare.com/client/v4/ips
+
+Observá: Un JSON con ipv4_cidrs e ipv6_cidrs, como 104.16.0.0/13, y un etag que cambia cuando cambia la lista.
+
+CONTROL
+1. Un registro A con proxy se responde con
+A. La dirección de tu origen, con un TTL más corto
+B. Nada, hasta que el borde revisa el pedido
+C. Direcciones anycast de Cloudflare
+Respuesta: C. Eso es lo que pone al borde adelante: el cliente se conecta a Cloudflare, no a vos.
+
+2. ¿Qué registro no puede ir con proxy?
+A. CNAME
+B. MX
+C. AAAA
+Respuesta: B. Solo A, AAAA y CNAME pueden ir con proxy; los registros de mail y de texto son siempre solo DNS.
+
+3. Tu API va con proxy, pero alguien llama directo a la IP del origen. ¿Qué te protege?
+A. El proxy, porque escondió la dirección
+B. Nada de Cloudflare: ese pedido nunca pasó por el borde
+C. El WAF, porque ve todo pedido a tu IP
+Respuesta: B. Cerrá el origen, lección 04, o hacé que verifique quién llama, lección 15.
+
+
+03. TLS en dos tramos
+=================================================================
+El visitante se conecta al borde, y el borde se conecta a tu origen: dos conexiones, un ajuste.
+
+Dos conexiones
+El primer tramo va del visitante al borde, con un certificado que Cloudflare administra para tu zona. El segundo va del borde a tu origen, y lo decide el modo de cifrado SSL/TLS de la zona: Off, Flexible, Full, Full (strict) o Strict. Aplica a toda la zona; una regla de configuración lo puede cambiar para un hostname. El valor por defecto es Automatic SSL/TLS, que elige el modo más seguro que puede y nunca baja el tuyo.
+→ El candado del navegador solo habla del primer tramo.
+
+Qué verifica cada modo
+Flexible cifra el primer tramo y manda el segundo en HTTP plano. Full usa HTTPS hacia el origen sin validar su certificado, así que acepta uno autofirmado, y también cualquier servidor que conteste con uno. Full (strict) lo valida contra una autoridad de certificación pública o contra Cloudflare Origin CA. Strict siempre se conecta al origen por HTTPS con validación, use lo que use el visitante. Cloudflare recomienda fuertemente Full o Full (strict).
+→ Cifrar no es autenticar: Full cifra, Full (strict) además verifica quién responde.
+
+El segundo tramo, en el kit
+lab tls hace de borde en el segundo tramo. El origen tiene un certificado firmado por una CA de prueba del kit, generada cuando se construye su imagen; un servicio impostor tiene uno autofirmado para el mismo nombre. La CA del kit hace de las autoridades en las que confía Full (strict). Es material de prueba: no se confía en ningún otro lado.
+→ Probá qué servidor responde, no solo si la línea está cifrada.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Tampoco aparece nada: lab tls hace de tramo entre el borde y el origen conectándose desde su propio contenedor al origen y al impostor, y el Worker no está en ese camino.
+
+1. Levantá el impostor
+El impostor usa la imagen del origen con un certificado autofirmado. Está en el perfil tls, así que solo corre cuando lo pedís.
+
+docker compose --profile tls up -d --wait impostor
+
+Observá: prumathe-cf-impostor-1 termina Healthy, cuando su puerto HTTPS responde.
+
+2. Flexible: el segundo tramo en HTTP plano
+El lab se conecta al origen en el puerto 8080, como hace el borde en Flexible.
+
+docker compose run --rm lab tls flexible
+
+Observá: encrypted: no, y la respuesta del origen: quien esté entre el borde y tu origen la puede leer y cambiar.
+
+3. Full: cualquier certificado sirve
+HTTPS al impostor, sin verificar el certificado.
+
+docker compose run --rm lab tls full impostor
+
+Observá: certificate: subject origin, issuer origin, uno autofirmado, y result: accepted con la respuesta Not Rumbo: an impostor. La línea iba cifrada, al servidor equivocado.
+
+4. Full (strict) con el origen real
+HTTPS al origen, validando su certificado contra la CA del kit, para el nombre origin.
+
+docker compose run --rm lab tls strict origin
+
+Observá: issuer Rumbo course test CA y result: accepted.
+
+5. Full (strict) con el impostor
+La misma validación, contra el impostor.
+
+docker compose run --rm lab tls strict impostor
+
+Observá: result: rejected (DEPTH_ZERO_SELF_SIGNED_CERT): el certificado es para el nombre correcto, pero no lo firmó nadie confiable.
+
+6. Pará el impostor
+El impostor es solo para esta lección.
+
+docker compose --profile tls stop impostor
+
+Observá: prumathe-cf-impostor-1 Stopped.
+
+CONTROL
+1. En modo Flexible, ¿qué viaja en texto plano?
+A. La conexión del visitante al borde
+B. La conexión del borde al origen
+C. Nada: los dos tramos van cifrados
+Respuesta: B. El visitante ve un candado mientras el segundo tramo va en HTTP.
+
+2. ¿Por qué Full acepta al impostor del lab?
+A. Porque Full no valida el certificado del origen
+B. Porque el impostor usa una versión más nueva de TLS
+C. Porque el impostor responde más rápido
+Respuesta: A. Full cifra con el certificado que conteste; no pregunta quién lo firmó.
+
+3. ¿Qué le permite a Full (strict) rechazar al impostor?
+A. Una regla del WAF
+B. La dirección IP del impostor
+C. Un certificado que no encadena con una autoridad confiable
+Respuesta: C. El certificado autofirmado vale para el nombre, pero no lo firmó nadie confiable.
+
+
+04. Un origen sin puertos abiertos
+=================================================================
+El origen llama hacia Cloudflare, y los pedidos vuelven por esa conexión.
+
+Nada escucha en internet
+Cloudflare Tunnel: cloudflared, un programa chico al lado de tu servicio, abre conexiones salientes hacia Cloudflare, y el borde manda por ahí los pedidos para tu hostname. Cada túnel mantiene cuatro conexiones de larga duración con dos data centers. Para qué sirve: publicar un servicio sin puertos de entrada abiertos y sin IP pública. Está disponible en todos los planes.
+→ Solo saliente: el firewall del origen puede quedar cerrado.
+
+Túnel rápido y túnel con nombre
+Un túnel rápido no necesita cuenta: cloudflared recibe un nombre al azar bajo trycloudflare.com, para pruebas, con límites como 200 pedidos en curso y sin server-sent events. Un túnel con nombre es de tu cuenta, sobrevive reinicios y asocia hostnames de tu zona con servicios locales; con Access delante, lección 15, solo llegan personas identificadas.
+→ Los túneles rápidos son para probar; los túneles con nombre, para operar.
+
+La puerta que te olvidaste
+Un túnel agrega una entrada; no cierra las otras. Si el origen sigue escuchando en una dirección pública, quien la encuentre se saltea el borde, con su cache, su WAF y Access. Con un túnel, el origen puede escuchar solo en su red privada, como pasa en el kit.
+→ El túnel protege solo si es la única entrada.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): El pedido del túnel no cruza el Worker del kit: va de Cloudflare por cloudflared al origen, así que el visor queda quieto mientras viaja.
+
+1. Pedile a Compose el puerto público del origen
+docker compose port imprime la dirección en tu máquina donde se publica un puerto del contenedor.
+
+docker compose port origin 8080
+
+Observá: :0, es decir, ninguna dirección: el puerto 8080 del origen no está publicado. Compará con docker compose port edge 8787.
+
+2. Levantá un túnel rápido
+El servicio tunnel corre cloudflared 2026.11.0 apuntado a http://origin:8080, dentro de la red de Compose. Necesita internet; algunas redes corporativas lo bloquean.
+
+docker compose --profile tunnel up -d tunnel
+
+Observá: prumathe-cf-tunnel-1 Started.
+
+3. Llamá al origen a través de Cloudflare
+tunnel espera a que cloudflared esté conectado, lee el hostname al azar y pide un envío por ahí. No espera al DNS, donde un nombre nuevo puede tardar un minuto en aparecer: manda el pedido a la dirección de trycloudflare.com con el nombre nuevo, y el borde lo enruta por ese nombre. El nombre es público mientras el túnel corre: quien lo tenga llega a la API de prueba del kit.
+
+docker compose run --rm lab tunnel
+
+Observá: Un nombre de trycloudflare.com, HTTP 200, server: cloudflare, un cf-ray y cf-cache-status: DYNAMIC, con el cuerpo de rumbo-origin: el pedido cruzó la red de Cloudflare y entró por una conexión que abrió el lado del origen. En las corridas de validación tardó entre 14 y 41 segundos, según cuánto tardó Cloudflare en enrutar el nombre nuevo.
+
+4. Leé cómo se conectó cloudflared
+El log de cloudflared dice adónde fue su conexión.
+
+docker compose logs tunnel
+
+Observá: Registered tunnel connection, con una location como lhr20 y protocol=quic: una conexión saliente a un data center. Un túnel rápido mostró una conexión en la corrida de validación; un túnel con nombre mantiene cuatro.
+
+5. Cerrá el túnel
+Parar cloudflared saca la única entrada desde internet.
+
+docker compose --profile tunnel stop tunnel
+
+Observá: prumathe-cf-tunnel-1 Stopped; el nombre de trycloudflare.com deja de responder.
+
+CONTROL
+1. ¿Hacia dónde van las conexiones de cloudflared?
+A. De Cloudflare hacia tu red
+B. Del visitante directo a cloudflared
+C. De tu red hacia Cloudflare
+Respuesta: C. Por eso no hace falta un puerto de entrada: los pedidos vuelven por una conexión que abrió el origen.
+
+2. ¿Qué necesita un túnel rápido?
+A. Solo cloudflared y acceso a internet
+B. Una cuenta de Cloudflare y una zona
+C. Un puerto abierto en el origen
+Respuesta: A. Recibe un nombre al azar de trycloudflare.com; es para pruebas.
+
+3. Tu origen tiene un túnel y sigue escuchando en una IP pública. ¿Qué pasa?
+A. Los pedidos a esa IP se saltean el borde y sus protecciones
+B. El túnel cifra también los pedidos al puerto público
+C. Cloudflare cierra el puerto público automáticamente
+Respuesta: A. Un túnel agrega una entrada; cerrar las otras es tarea tuya.
+
+
+05. Un isolate, no un contenedor
+=================================================================
+Tu código corre en un isolate de V8 dentro de un proceso que corre muchos otros, y el estado global es una apuesta.
+
+Isolates en lugar de máquinas
+Un Worker no recibe una máquina virtual ni un contenedor: recibe un isolate de V8 dentro de un proceso del runtime que ya existe, y una instancia del runtime corre cientos o miles de isolates. Un isolate arranca unas cien veces más rápido que un proceso de Node en un contenedor y usa un orden de magnitud menos de memoria, lo que elimina el arranque en frío del modelo de máquinas virtuales.
+→ Muchos isolates por proceso: arrancar es barato, no hay nada que guardar.
+
+El estado global no es tuyo
+Los isolates no necesariamente duran: se pueden desalojar por límites de recursos y otros motivos, y dos pedidos del mismo usuario pueden llegar a instancias distintas, en el mismo data center o en otro. Una variable a nivel de módulo sobrevive entre algunos pedidos y no entre otros. Cloudflare recomienda no usar ni modificar el estado global; el estado va a un binding, unidad 5.
+→ Un contador en una variable global cuenta un isolate, por un rato.
+
+CPU, memoria y el plan gratuito
+El límite que importa es el tiempo de CPU, no el tiempo de reloj: esperar a fetch o a un binding no cuenta. El plan gratuito da 10 ms de CPU por pedido y 100.000 pedidos por día; el pago, 30 segundos por defecto y hasta 5 minutos. Cada isolate tiene 128 MB de memoria, y un pedido puede hacer 50 subpedidos en el plan gratuito. El runtime además rechaza valores aleatorios, timers y E/S a nivel global: van dentro de un handler.
+→ Presupuestá CPU, no segundos.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Cada lab isolate es un GET /lab/isolate que el Worker responde solo. docker compose restart edge reinicia también el visor: vuelve a leer los mismos spans y la lista reaparece.
+
+1. Preguntale al isolate quién es
+/lab/isolate devuelve un id que el isolate saca en su primer pedido y un contador que guarda en una variable global.
+
+docker compose run --rm lab isolate
+
+Observá: Un id de isolate de ocho caracteres y hits con un número chico.
+
+2. Preguntá de nuevo
+En local hay un solo isolate, así que la variable global parece funcionar.
+
+docker compose run --rm lab isolate
+
+Observá: El mismo id, y hits uno más que antes.
+
+3. Reiniciá el borde
+Un reinicio es como se ve un desalojo desde afuera: el runtime arranca de nuevo con isolates frescos. Lo guardado en disco queda.
+
+docker compose restart edge
+
+Observá: prumathe-cf-edge-1 Started. El próximo comando lab espera a que el borde vuelva a responder.
+
+4. Preguntale al isolate nuevo
+Misma ruta, mismo código, después del reinicio.
+
+docker compose run --rm lab isolate
+
+Observá: Otro id y hits: 1. En Cloudflare no hay un reinicio a la vista: los pedidos se reparten en muchos isolates, en muchos data centers, y cada uno cuenta lo suyo.
+
+CONTROL
+1. ¿Dónde corre un Worker dentro de un data center?
+A. En un contenedor que se arranca para cada pedido
+B. En un isolate de V8 dentro de un proceso compartido del runtime
+C. En una máquina virtual reservada para tu cuenta
+Respuesta: B. Por eso arranca rápido y por eso el proceso no es tuyo.
+
+2. Un contador global del Worker llegó a 2 y después volvió a 1. ¿Qué pasó?
+A. KV perdió una escritura
+B. El límite de CPU reinició la variable
+C. El pedido lo atendió un isolate nuevo
+Respuesta: C. El estado del módulo vive lo que vive su isolate, y nada le promete al próximo pedido el mismo.
+
+3. Un Worker espera 2 segundos a su origen. ¿Cuánto del límite de 10 ms de CPU del plan gratuito usa la espera?
+A. Nada: esperar E/S no es tiempo de CPU
+B. La mitad, porque esperar cuenta a mitad de tarifa
+C. Todo: el pedido se corta a los 10 ms
+Respuesta: A. El límite es tiempo de CPU: parsear, calcular, serializar. Esperar es tiempo de reloj.
+
+
+06. Wrangler y la configuración
+=================================================================
+Un archivo dice qué es el Worker y a qué puede llegar; los secretos quedan afuera.
+
+wrangler.jsonc
+Wrangler es la línea de comandos de Workers: dev, deploy, tail, migraciones, secretos. Su archivo de configuración nombra al Worker, su punto de entrada y su fecha de compatibilidad, que fija el comportamiento del runtime a ese día; flags como nodejs_compat prenden más APIs. Cada binding es un nombre en env que apunta a un recurso: un namespace de KV, una base D1, una cola. En local los ids solo nombran almacenes locales; en la cuenta nombran recursos reales.
+→ Un binding es una capacidad: si no está en el archivo, el Worker no llega a eso.
+
+Variables y secretos
+Las vars de la configuración son valores planos, que se versionan con el código; la documentación dice no poner ahí información sensible. Los secretos van a la cuenta con wrangler secret put y, para desarrollo local, en un archivo .dev.vars o .env al lado de la configuración, nunca los dos y nunca versionados. wrangler dev lee .dev.vars cuando arranca. wrangler types genera el tipo de TypeScript de env a partir del archivo.
+→ Si está en el repositorio, no es un secreto.
+
+Wrangler 4 y cf
+El curso fija Wrangler 4.162.0. Desde el 28 de septiembre de 2026, cf, una línea de comandos nueva para toda la API de Cloudflare, está en beta abierta; cuando termine la beta, Wrangler sale con una última versión mayor que remite a cf, con 18 meses de mantenimiento. Los conceptos del curso son los mismos en las dos: configuración, bindings, versiones.
+→ Fijá la herramienta; aprendé el modelo que tiene atrás.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): lab config aparece como GET /lab/config, respondido por el Worker solo. Los comandos de wrangler trabajan sobre archivos y no dejan nada.
+
+1. Mirá qué Wrangler corre
+exec corre un comando dentro del contenedor del borde, donde está instalado Wrangler.
+
+docker compose exec edge npx wrangler --version
+
+Observá: 4.162.0, la versión fijada en package.json del borde.
+
+2. Leé a qué puede llegar el Worker
+/lab/config lista las vars, si existe el secreto RUMBO_TOKEN, nunca su valor, y los nombres de los bindings en env.
+
+docker compose run --rm lab config
+
+Observá: Tres vars, RUMBO_TOKEN: not set y nueve bindings: COUNTERS, DB, FLAGS, LIMITER, MOVES, PG, PROOFS, RETURNS y SHIPMENTS.
+
+3. Escribí un secreto local
+El archivo va dentro del contenedor del borde, al lado de wrangler.jsonc, no en tu carpeta: nunca llega al repositorio y desaparece cuando se recrea el contenedor.
+
+docker compose exec edge sh -c "echo RUMBO_TOKEN=local-only-value > .dev.vars"
+
+Observá: Sin salida: el archivo existe, y wrangler dev todavía no lo leyó.
+
+4. Reiniciá y leé el secreto
+wrangler dev lee .dev.vars cuando arranca.
+
+docker compose restart edge
+docker compose run --rm lab config
+
+Observá: RUMBO_TOKEN: set, 16 characters. El Worker ve el valor; el lab imprime solo su largo.
+
+5. Generá los tipos de env
+wrangler types lee la configuración y escribe worker-configuration.d.ts, con el tipo de env y los tipos del runtime.
+
+docker compose exec edge npx wrangler types
+
+Observá: Un Env con FLAGS: KVNamespace, DB: D1Database, MOVES: Queue y el resto, RUMBO_TOKEN: string de .dev.vars, y Types written to worker-configuration.d.ts.
+
+CONTROL
+1. ¿Qué es un binding?
+A. Un nombre en env que le da al Worker acceso a un recurso
+B. Un registro DNS que apunta al Worker
+C. Una biblioteca que importás de npm
+Respuesta: A. El Worker llega solo a lo que su configuración le asocia.
+
+2. ¿Dónde va un secreto para desarrollo local?
+A. En vars de wrangler.jsonc
+B. En compatibility_flags
+C. En .dev.vars o .env, fuera del repositorio
+Respuesta: C. Las vars se versionan con el código; .dev.vars y .env no.
+
+3. ¿Por qué el lab reinició el borde después de escribir .dev.vars?
+A. Porque los secretos necesitan una fecha de compatibilidad nueva
+B. Porque wrangler dev lee .dev.vars cuando arranca
+C. Porque el archivo primero tiene que estar versionado
+Respuesta: B. Los cambios del código recargan el Worker; el archivo de secretos locales se lee al arrancar.
+
+
+07. Un Worker delante de tu API
+=================================================================
+El Worker ve cada pedido primero: responde, reescribe, rechaza o reenvía.
+
+Un handler para cada pedido
+El handler fetch recibe un Request, el env con los bindings y un contexto, y devuelve un Response. En el medio puede responder solo, llamar al origen con fetch y cambiar lo que vuelve. En Rumbo, el gateway agrega x-rumbo-request-id y x-rumbo-edge a la ida, y x-rumbo-via a la vuelta.
+→ El Worker es dueño del pedido hasta que devuelve un Response.
+
+Decidir antes del origen
+Algunas respuestas nunca necesitan al origen. Un preflight de CORS se responde en el borde, solo para la tienda permitida. Una ruta de la API de administración se rechaza con 403: al origen no le llega carga ni la ve. Cada decisión que se toma en el borde es una que el origen no tiene que tomar, y que no puede tomar mal.
+→ Rechazá lo más temprano que puedas.
+
+Después de la respuesta
+ctx.waitUntil mantiene trabajo en curso después de mandar la respuesta, hasta 30 segundos: el gateway registra el último pedido en KV sin hacer esperar al cliente. Los service bindings dejan que un Worker llame a otro sin pasar por internet público; el curso no los usa.
+→ Lo que el cliente no necesita, hacelo después de responder.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): GET /api/shipments/R-1043 enciende rate limit, KV y la API de Rumbo; los dos OPTIONS y /api/admin/users frenan en el Worker. Es el dibujo de lo que imprime lab spans.
+
+1. Un pedido que el Worker reenvía
+El gateway reenvía al origen todo lo que no responde solo.
+
+docker compose run --rm lab get /api/shipments/R-1043
+
+Observá: HTTP 200 de rumbo-origin con x-rumbo-via: edge y un x-rumbo-request-id nuevo.
+
+2. Un preflight de la tienda
+options manda un preflight de CORS con el encabezado Origin de una página.
+
+docker compose run --rm lab options /api/shipments/R-1042 https://shop.example
+
+Observá: HTTP 204 con access-control-allow-origin: https://shop.example y los métodos y encabezados permitidos.
+
+3. Un preflight de otro sitio
+El mismo pedido desde una página que no es la tienda.
+
+docker compose run --rm lab options /api/shipments/R-1042 https://other.example
+
+Observá: HTTP 204 y access-control-allow-origin: (none): un navegador en esa página no deja que su script lea la respuesta.
+
+4. Una ruta rechazada en el borde
+La API de administración está bloqueada en el gateway.
+
+docker compose run --rm lab get /api/admin/users
+
+Observá: HTTP 403 y blocked at the edge.
+
+5. Leé qué hizo el borde
+wrangler dev registra un span por cada pedido y sus operaciones. spans los lee del Local Explorer, que solo responde en la dirección del propio borde: por eso corre con exec dentro del borde.
+
+docker compose exec edge lab spans 4
+
+Observá: GET /api/shipments/R-1043 con rate limit, KV get maintenance, fetch origin:8080 y KV put last-request; los dos OPTIONS y GET /api/admin/users 403 respondidos por el Worker solo.
+
+6. Leé lo que dejó waitUntil
+Después de reenviar un pedido, el gateway escribe el último en KV dentro de ctx.waitUntil.
+
+docker compose run --rm lab get /lab/last-request
+
+Observá: /api/shipments/R-1043 con status 200: los pedidos rechazados y los preflight nunca llegaron tan lejos.
+
+CONTROL
+1. ¿Qué pedido nunca llega al origen de Rumbo?
+A. GET /api/shipments/R-1043
+B. GET /track/R-1043
+C. GET /api/admin/users
+Respuesta: C. El gateway responde 403 solo; los spans no muestran fetch al origen.
+
+2. ¿Qué hace ctx.waitUntil?
+A. Hace esperar al cliente por un binding
+B. Mantiene trabajo corriendo después de la respuesta, hasta 30 segundos
+C. Reintenta el fetch si el origen falla
+Respuesta: B. El cliente recibe su respuesta; el borde termina el resto.
+
+3. Llega un preflight de https://other.example. ¿Qué responde el gateway?
+A. 403, como la API de administración
+B. 204 sin encabezados access-control, así que el navegador rechaza
+C. Reenvía el preflight al origen
+Respuesta: B. CORS lo hace cumplir el navegador: el borde solo decide si lo concede.
+
+
+08. Probar un Worker
+=================================================================
+Las pruebas corren dentro de workerd, con los bindings simulados, no en Node.
+
+El mismo runtime que producción
+La integración de Vitest para Workers, el paquete @cloudflare/vitest-plugin, que reemplazó a vitest-pool-workers, corre cada archivo de pruebas dentro de workerd con los bindings de wrangler.jsonc simulados, como hace wrangler dev. Una prueba que pasa en Node puede fallar en workerd, y al revés, porque sus APIs son distintas.
+→ Probá donde corre el código.
+
+Llamar al Worker
+exports de cloudflare:workers da los exports del módulo principal: exports.default.fetch llama al Worker como lo haría un pedido; env da los bindings, así que una prueba puede poner una flag de KV antes de llamar. El almacenamiento de los bindings lo comparten las pruebas de un archivo, así que una prueba que escribe limpia después.
+→ Una prueba es dueña del estado que crea.
+
+Reemplazos para lo que está afuera
+El origen no es parte de la prueba: vi.spyOn reemplaza el fetch global, para responder como lo haría el origen o fallar como uno caído. La respuesta falsa se tiene que construir dentro del pedido: Workers no deja que un pedido lea un cuerpo creado en el contexto de otro, y el archivo de pruebas es otro.
+→ Reemplazá la red, no el runtime.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): No aparece nada: vitest corre el Worker en un workerd propio, no en el wrangler dev que lee el visor.
+
+1. Corré las pruebas
+Las pruebas del gateway viven en edge/test, montadas desde tu carpeta, así que las podés editar y correr de nuevo.
+
+docker compose exec edge npx vitest run
+
+Observá: Vitest 5.1.0, 1 archivo y 6 passed, en un segundo y medio, más o menos.
+
+2. Leé sus nombres
+El reporter verbose imprime cada prueba.
+
+docker compose exec edge npx vitest run --reporter verbose
+
+Observá: health, la API de administración bloqueada, CORS, mantenimiento, el reenvío al origen y el 502 de un origen caído. La primera línea puede decir Using secrets defined in .dev.vars, el archivo de la lección 06.
+
+3. Corré una prueba
+-t filtra por nombre.
+
+docker compose exec edge npx vitest run -t "maintenance"
+
+Observá: 1 passed y 5 skipped.
+
+4. Mirá cómo se reemplaza el origen
+grep muestra las líneas que reemplazan fetch.
+
+docker compose exec edge grep -n "spyOn" test/gateway.test.ts
+
+Observá: Dos líneas: un reemplazo que responde R-1042 dentro del pedido, y uno que rechaza con Network connection lost.
+
+CONTROL
+1. ¿Dónde corren las pruebas del Worker?
+A. En Node, con los bindings simulados a mano
+B. En workerd, con los bindings simulados
+C. En la cuenta, contra el Worker desplegado
+Respuesta: B. La integración corre el archivo de pruebas en el mismo runtime que producción.
+
+2. ¿Por qué la prueba de mantenimiento borra su flag?
+A. Porque las pruebas de un archivo comparten el almacenamiento
+B. Porque las flags de KV vencen después de una prueba
+C. Porque Vitest corre las pruebas en la cuenta
+Respuesta: A. Sin eso, la prueba siguiente recibiría 503 en lugar de llegar al origen falso.
+
+3. ¿Por qué la respuesta falsa se construye dentro de mockImplementation?
+A. Porque un cuerpo hecho en otro pedido no se puede leer
+B. Porque fetch se tiene que llamar dos veces
+C. Porque Vitest pide una función
+Respuesta: A. Workers aísla la E/S por pedido; la prueba es otro pedido.
+
+
+09. Desplegar y observar
+=================================================================
+Una versión se sube; un despliegue decide qué versiones se llevan el tráfico.
+
+Versiones y despliegues
+Una versión es el código y la configuración de un Worker, subidos y guardados. Un despliegue dice qué versiones atienden pedidos, y en qué proporción. wrangler deploy hace las dos cosas: sube una versión y la despliega al 100 %. Un Worker en workers.dev responde en <nombre>.<tu subdominio>.workers.dev, sin zona propia.
+→ Subir no es liberar.
+
+Un despliegue gradual
+wrangler versions upload crea una versión sin servirla; wrangler versions deploy reparte el tráfico entre versiones por porcentaje, y correrlo de nuevo mueve el reparto, o vuelve atrás. Cada pedido se rutea por su cuenta, así que un usuario puede ver las dos versiones, salvo que version affinity mantenga una clave en una. Un despliegue puede usar solo las últimas 100 versiones subidas.
+→ Mové el tráfico en pasos que puedas deshacer.
+
+El Worker para tu cuenta
+El kit tiene un segundo Worker en edge/deploy: rumbo-edge-demo, sin bindings, así que entra en el plan gratuito, y con Workers Cache delante, lección 10. Estos pasos necesitan labs/.env con el id de tu cuenta y un token de API que pueda editar Workers; son opcionales. wrangler tail muestra los logs del Worker desplegado en vivo.
+→ Desplegá algo chico primero.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): El simulacro no llama a ningún Worker. Los pasos de tu cuenta corren en Cloudflare, no en el kit, así que el visor no los ve.
+
+1. Revisá el Worker sin subirlo
+--dry-run construye el Worker y lista sus bindings sin subir nada. Corre dentro del borde, sin cuenta.
+
+docker compose exec edge npx wrangler deploy --dry-run --config deploy/wrangler.jsonc
+
+Observá: Total Upload: 1.50 KiB, un binding, env.VERSION ("v1"), y --dry-run: exiting now.
+
+2. Verificá tu cuenta [cuenta, opcional]
+Copiá .env.example a .env y completá CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_API_TOKEN, de un token hecho con la plantilla Edit Cloudflare Workers. account verifica el token y el subdominio de workers.dev; nunca imprime ninguno.
+
+docker compose run --rm lab account
+
+Observá: token: active y workers.dev subdomain: set.
+
+3. Desplegá la versión v1 [cuenta, opcional]
+lab wrangler corre Wrangler sobre edge/deploy con las credenciales de .env.
+
+docker compose run --rm lab wrangler deploy --tag v1
+
+Observá: La URL de rumbo-edge-demo en workers.dev y un Current Version ID.
+
+4. Subí v2 sin servirla [cuenta, opcional]
+El mismo código con VERSION=v2.
+
+docker compose run --rm lab wrangler versions upload --tag v2 --var VERSION:v2
+
+Observá: Un Worker Version ID y el aviso de que la versión todavía no está desplegada.
+
+5. Mandale el 10 % a v2 [cuenta, opcional]
+Repartí el tráfico entre las dos etiquetas.
+
+docker compose run --rm lab wrangler versions deploy --version-tag v1@90% --version-tag v2@10% -y
+
+Observá: Un despliegue con dos versiones, 90 % y 10 %.
+
+6. Contá quién responde [cuenta, opcional]
+split hace 40 pedidos a /version y cuenta el encabezado x-rumbo-version.
+
+docker compose run --rm lab split /version 40
+
+Observá: La mayoría de los pedidos de v1 y algunos de v2; la cuenta exacta cambia en cada corrida.
+
+CONTROL
+1. ¿Qué hace wrangler versions upload?
+A. Sube una versión sin mandarle tráfico
+B. Despliega una versión al 100 %
+C. Vuelve a la versión anterior
+Respuesta: A. El tráfico se mueve solo con versions deploy.
+
+2. Con 90 % para v1 y 10 % para v2, ¿qué ve un usuario?
+A. Siempre v1, porque el usuario estaba antes
+B. Cualquiera de las dos, pedido por pedido, salvo que haya version affinity
+C. Siempre v2 después del primer pedido
+Respuesta: B. Por defecto, cada pedido se rutea por su cuenta.
+
+3. ¿Por qué el Worker de edge/deploy no tiene bindings?
+A. Porque los bindings no se pueden desplegar
+B. Porque Workers Cache los prohíbe
+C. Para que entre en el plan gratuito sin crear nada más
+Respuesta: C. Sus lecciones son sobre versiones y la cache, no sobre almacenamiento.
+
+
+10. Qué guarda el borde
+=================================================================
+Dos caches que podés poner delante: la de la zona y la del Worker.
+
+La cache de una zona
+En una zona con proxy, Cloudflare guarda por extensión de archivo, no por tipo MIME: CSS, JS, imágenes, PDF y una lista larga más. HTML y JSON no se guardan por defecto. No guarda cuando Cache-Control dice private, no-store, no-cache o max-age=0, cuando la respuesta tiene Set-Cookie, o cuando el método no es GET. Una regla de cache puede volver elegible más contenido. Cuando un Worker corre en una ruta, su fetch al origen pasa por esta cache.
+→ Por defecto el borde guarda archivos, no páginas.
+
+Una cache delante del Worker
+Workers Cache pone una cache delante del propio Worker: "cache": {"enabled": true} en wrangler.jsonc, también en workers.dev. Sigue el Cache-Control de las respuestas del Worker, y un acierto no ejecuta el Worker, así que no usa CPU. No tiene precio propio, pero cada pedido sigue contando como pedido del Worker, acierto o no. Un 200 sin Cache-Control se guarda 7.200 segundos por heurística; private, no-store y Set-Cookie la saltean; la versión del Worker es parte de la clave, así que cada despliegue arranca vacío.
+→ Una respuesta sin Cache-Control también es una decisión.
+
+Leer cf-cache-status
+El encabezado dice qué hizo la cache: MISS, no estaba, ahora quedó guardada; HIT, salió de ahí; EXPIRED, REVALIDATED, UPDATING y STALE, el ciclo de vida de una copia guardada; BYPASS, la respuesta dijo que no se guarde; DYNAMIC, en una zona, no era elegible. El kit no puede mostrar esta parte: wrangler dev no corre Workers Cache, así que estos pasos usan tu cuenta.
+→ Leé cf-cache-status dos veces: el segundo pedido dice la verdad.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): /track/R-1042 y /api/shipments/R-1042 cruzan el Worker hasta el origen cada vez: en el kit no hay Workers Cache, la pieza rayada.
+
+1. Una página que el origen marca pública
+La página pública de seguimiento es la misma para todos, así que el origen deja que una cache compartida la guarde 60 segundos.
+
+docker compose run --rm lab get /track/R-1042
+
+Observá: cache-control: max-age=60, public y un cuerpo HTML. Una zona igual no la guardaría por defecto, porque es HTML; Workers Cache sí.
+
+2. Una respuesta que el origen marca no-store
+La API dice que un envío no se tiene que guardar.
+
+docker compose run --rm lab get /api/shipments/R-1042
+
+Observá: cache-control: no-store: ninguna cache en el camino la puede guardar.
+
+3. Pedí dos veces una ruta pública en tu cuenta [cuenta, opcional]
+Usa rumbo-edge-demo, desplegado en la lección 09, con Workers Cache prendida. remote imprime el estado y cf-cache-status de cada pedido.
+
+docker compose run --rm lab remote /c/public 2
+
+Observá: MISS y después HIT. La validación de este paso con una cuenta queda registrada en docs/VALIDATION.md.
+
+4. Una respuesta con Set-Cookie [cuenta, opcional]
+El mismo Cache-Control, más una cookie.
+
+docker compose run --rm lab remote /c/cookie 2
+
+Observá: Ningún HIT: una respuesta con Set-Cookie se saltea la cache.
+
+5. Una respuesta que no dice nada [cuenta, opcional]
+/c/silent devuelve 200 sin Cache-Control.
+
+docker compose run --rm lab remote /c/silent 2
+
+Observá: MISS y después HIT: guardada por heurística, hasta dos horas.
+
+CONTROL
+1. Por defecto, ¿la cache de una zona guarda una respuesta JSON de tu API?
+A. Sí, si es un GET
+B. Solo en el plan gratuito
+C. No: por defecto guarda por extensión, y JSON no está en la lista
+Respuesta: C. Una regla de cache lo puede cambiar; el valor por defecto, no.
+
+2. Con Workers Cache prendida, ¿qué pasa en un HIT?
+A. Se le pregunta al origen si la copia sigue valiendo
+B. El Worker corre y su respuesta se compara con la copia
+C. El borde responde desde la cache y el Worker no corre
+Respuesta: C. Ese es el punto: no hay CPU en un acierto. El pedido igual se cobra como pedido.
+
+3. Un Worker devuelve 200 sin Cache-Control, detrás de Workers Cache. ¿Qué pasa?
+A. No se guarda nada, porque no hay encabezado
+B. Se guarda 7.200 segundos por heurística
+C. Se guarda solo hasta el próximo despliegue
+Respuesta: B. Decí lo que querés: no-store para respuestas que no se tienen que guardar.
+
+
+11. La clave de cache y sus trampas
+=================================================================
+Dos personas piden la misma URL: la cache no las distingue salvo que vos lo hagas.
+
+De qué está hecha la clave
+La clave de cache por defecto de una zona es el esquema, el host y la ruta con su query string, más unos pocos encabezados como Origin. No es el usuario: dos personas que piden la misma URL reciben la misma entrada guardada. Las reglas de cache pueden cambiar la clave; opciones como encabezados, cookies o el usuario en la clave son solo de Enterprise, mientras que ignorar u ordenar la query string está en todos los planes.
+→ La cache responde a la URL, no a la persona.
+
+La trampa
+Una respuesta armada para un usuario y marcada como pública se guarda bajo una clave que no incluye a ese usuario. La próxima persona que pide la misma URL la recibe: su dirección, sus pedidos, su nombre. El arreglo está en la respuesta, no en la cache: private o no-store para todo lo personal, y public solo para lo que es igual para todos.
+→ Nunca marques como públicos datos personales.
+
+Purgar
+Purgar saca copias guardadas. Todos los planes, el gratuito incluido, pueden purgar por URL, por hostname, por tag, por prefijo y todo; el plan gratuito permite 800 URLs por segundo, y 5 pedidos por minuto para los otros tipos. Purgar arregla el pasado; solo un Cache-Control correcto arregla el futuro.
+→ Purgá, y después arreglá el encabezado, o vuelve.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Cada /lab/cache/profile muestra cache match en la Cache API y, si no encuentra, cache put; el pedido de Beto encuentra la copia de Ana. La ruta segura responde sin tocar la cache.
+
+1. Ana pide su perfil
+/lab/cache/profile arma un perfil para el usuario del encabezado x-user y lo marca public, max-age=300, la trampa. Usa la Cache API con la URL como clave, como haría una cache compartida.
+
+docker compose run --rm lab get /lab/cache/profile -H x-user:ana
+
+Observá: x-rumbo-from: worker y el perfil de ana, ahora guardado.
+
+2. Beto pide el suyo
+La misma URL, otro usuario.
+
+docker compose run --rm lab get /lab/cache/profile -H x-user:beto
+
+Observá: x-rumbo-from: cache, cf-cache-status: HIT y user: ana, con su dirección. Beto recibió a Ana.
+
+3. La ruta corregida para Ana
+/lab/cache/profile-safe marca el perfil private, no-store, y no lo guarda.
+
+docker compose run --rm lab get /lab/cache/profile-safe -H x-user:ana
+
+Observá: cache-control: private, no-store y el perfil de ana.
+
+4. La ruta corregida para Beto
+La misma URL, otro usuario, de nuevo.
+
+docker compose run --rm lab get /lab/cache/profile-safe -H x-user:beto
+
+Observá: x-rumbo-from: worker y user: beto: cada persona recibe su propia respuesta.
+
+CONTROL
+1. ¿Qué hay en la clave de cache por defecto de una zona?
+A. El esquema, el host, la ruta y la query string
+B. La URL y la IP del visitante
+C. La URL y la cookie de la sesión
+Respuesta: A. Sin usuario, que es toda la trampa.
+
+2. Beto recibe el perfil de Ana. ¿Dónde está el error?
+A. En el navegador de Beto
+B. En la cache, que debería conocer a los usuarios
+C. En el Cache-Control de una respuesta personal marcada pública
+Respuesta: C. La respuesta le permitió a una cache compartida guardarla.
+
+3. ¿Qué purga permite el plan gratuito?
+A. Solo purgar todo
+B. URL, hostname, tag, prefijo y todo
+C. Ninguna: purgar es de pago
+Respuesta: B. Todos los métodos están en todos los planes, con tasas más bajas en el gratuito.
+
+
+12. Cache desde un Worker
+=================================================================
+La Cache API guarda y purga desde el código, de a un data center por vez.
+
+match, put, delete
+caches.default es la Cache API: match busca un Response guardado para un Request, put guarda uno y delete lo saca. put rechaza una respuesta cuyo Cache-Control dice que no se guarde. En Rumbo, /lab/cache/rate guarda la tarifa de una zona 60 segundos con la zona en la clave.
+→ La clave es el Request que elegís.
+
+De a un data center por vez
+El contenido de la Cache API no se replica fuera del data center donde se guardó, y cache.delete purga solo ese data center. Es independiente de Workers Cache, que corre delante del Worker, y de la cache por la que pasa el fetch de un Worker. Funciona en dominios propios; las vistas previas del panel no hacen nada con ella, y no está disponible para Workers detrás de Access.
+→ Un delete desde el código es una purga local.
+
+Cuándo usarla
+Usala para resultados que calculás en el borde y podés reconstruir, como una tarifa, un fragmento renderizado o la respuesta de una API lenta, cuando necesitás una clave propia. Para una purga que tiene que llegar a todos los data centers, usá la purga de la zona o la purga por tag de Workers Cache. En local hay un solo data center, así que local y global se ven iguales.
+→ Guardá lo que podés reconstruir.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): La tarifa de DUB: cache match y cache put la primera vez, match solo la segunda, cache delete en la purga, y put otra vez después.
+
+1. El primer pedido calcula la tarifa
+Poné la URL entre comillas: en zsh, un ? sin comillas es un patrón.
+
+docker compose run --rm lab get "/lab/cache/rate?zone=dub"
+
+Observá: x-rumbo-from: worker y una hora de generación.
+
+2. El segundo sale de la cache
+La misma clave, dentro de los 60 segundos.
+
+docker compose run --rm lab get "/lab/cache/rate?zone=dub"
+
+Observá: x-rumbo-from: cache, cf-cache-status: HIT, que la Cache API local agrega a un match, y la misma hora de generación.
+
+3. Purgala desde el código
+/lab/cache/purge llama a cache.delete con la misma clave.
+
+docker compose run --rm lab get "/lab/cache/purge?zone=dub"
+
+Observá: purged: true y la nota: solo este data center.
+
+4. Pedí de nuevo
+Acá la clave quedó vacía de nuevo.
+
+docker compose run --rm lab get "/lab/cache/rate?zone=dub"
+
+Observá: x-rumbo-from: worker y una hora de generación nueva.
+
+5. Leé las operaciones
+Los spans muestran cada operación de la Cache API.
+
+docker compose exec edge lab spans 4
+
+Observá: cache match y cache put en el primer pedido, cache match solo en el segundo, cache delete en la purga.
+
+CONTROL
+1. Un Worker guarda una respuesta con cache.put en Madrid. Llega un pedido a Dublín. ¿Qué encuentra match ahí?
+A. La copia de Madrid, replicada
+B. Nada: la Cache API no se replica
+C. La copia, después de un minuto
+Respuesta: B. Cada data center tiene su propio contenido de Cache API.
+
+2. ¿Qué purga cache.delete?
+A. También las copias de Workers Cache
+B. Todas las copias de esa URL en el mundo
+C. La copia del data center donde corrió el Worker
+Respuesta: C. Para una purga global usá la zona o Workers Cache.
+
+3. ¿La Cache API es lo mismo que Workers Cache?
+A. No: son mecanismos independientes
+B. Sí, pero Workers Cache es la de pago
+C. Sí, dos nombres para una cache
+Respuesta: A. Workers Cache se pone delante del Worker; la Cache API la llama su código.
+
+
+13. WAF: reglas sobre el pedido
+=================================================================
+Reglas que miran cada pedido y lo frenan antes de tu código, en un orden fijo.
+
+Reglas administradas y propias
+El WAF de una zona corre reglas sobre cada pedido. Las reglas administradas las escribe Cloudflare contra ataques conocidos; el plan gratuito recibe el Free Managed Ruleset. Las reglas propias son tuyas, con una expresión del lenguaje de Rules, como starts_with(http.request.uri.path, "/api/admin"), y una acción como Block, Managed Challenge o Skip: 5 en el plan gratuito, con todas las acciones salvo Log.
+→ Una regla es una expresión y una acción.
+
+En un orden fijo
+Las fases de seguridad corren en secuencia: protección DDoS, reglas propias, reglas de rate limiting, reglas administradas, Super Bot Fight Mode. Una acción que termina, como Block, corta el pedido: las fases siguientes y tu Worker no lo ven. Antes de las reglas, la normalización de URL puede hacer que /%68ello y /hello sean la misma ruta; las mayúsculas no están entre lo que la documentación dice que cambia.
+→ Una regla compara texto: normalizá lo que compara, lower() incluido.
+
+La regla en código, y su evento
+El kit no tiene zona, así que el gateway hace de regla propia: una ruta que empieza con /api/admin recibe 403 antes del origen. Un bloqueo del WAF además queda como evento de seguridad con su Ray ID; los eventos son muestras, así que si falta uno no prueba que no pasó nada. Una regla en la zona corre antes de cualquier Worker; una regla en código corre solo donde corre tu Worker.
+→ Bloqueá en la zona lo que ningún código debería ver.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): /api/admin/users termina en el Worker; /API/admin/users sigue hasta el origen, que responde 404: la regla en código no vio las mayúsculas.
+
+1. La regla bloquea la API de administración
+En el kit, la regla está en el gateway.
+
+docker compose run --rm lab get /api/admin/users
+
+Observá: HTTP 403, blocked at the edge.
+
+2. La misma ruta en mayúsculas
+startsWith compara texto, como lo haría una expresión del WAF sin lower().
+
+docker compose run --rm lab get /API/admin/users
+
+Observá: HTTP 404 de Spring Boot, con x-rumbo-via: edge: el pedido pasó la regla y llegó al origen, que justo no tiene esa ruta.
+
+3. Mirá los dos en los spans
+Uno lo respondió el Worker; el otro fue al origen.
+
+docker compose exec edge lab spans 2
+
+Observá: GET /api/admin/users 403 respondido por el Worker solo, y GET /API/admin/users 404 con fetch origin:8080/API/admin/users.
+
+4. Leé la regla
+La regla del kit, en el código del gateway.
+
+docker compose exec edge grep -n "api/admin" src/gateway.ts
+
+Observá: url.pathname.startsWith("/api/admin"): texto exacto, mayúsculas incluidas. Como expresión del WAF que ignora mayúsculas: starts_with(lower(http.request.uri.path), "/api/admin").
+
+CONTROL
+1. De estas tres, ¿cuál corre primero sobre un pedido?
+A. Las reglas administradas
+B. Las reglas propias
+C. Tu Worker
+Respuesta: B. Reglas propias, después rate limiting, después administradas; un bloqueo lo corta ahí.
+
+2. /API/admin/users llegó al origen mientras /api/admin/users quedaba bloqueado. ¿Por qué?
+A. La regla compara texto, y las mayúsculas difieren
+B. El WAF solo revisa pedidos GET
+C. La cache respondió el segundo pedido
+Respuesta: A. Compará lower(http.request.uri.path), o normalizá en el código.
+
+3. Buscás un Ray ID en los eventos de seguridad y no encontrás nada. ¿Qué prueba?
+A. Que ninguna regla coincidió con el pedido
+B. Que el pedido nunca llegó a Cloudflare
+C. Nada seguro: los eventos son muestras
+Respuesta: C. El muestreo puede dejar un evento afuera.
+
+
+14. Rate limiting
+=================================================================
+Contá pedidos por algo estable, en una ventana, y respondé 429 pasado el límite.
+
+Contar por qué, en qué ventana
+Un rate limit cuenta pedidos que comparten una característica, en una ventana, y actúa pasado un umbral. El binding de Workers cuenta por la clave que da tu código, cualquier texto: una API key, un usuario, un tenant, una ruta. La documentación desaconseja la dirección IP, porque muchos usuarios pueden compartir una. La ventana es de 10 o 60 segundos.
+→ Contá lo que identifica a un cliente, no desde dónde se conecta.
+
+Aproximado, por lugar
+El binding cuenta por separado en cada lugar de Cloudflare y las cuentas son eventualmente consistentes, así que los pedidos pueden pasar el límite antes de que los contadores se pongan de acuerdo. Una llamada que devuelve success: false no suma a la cuenta. Para un límite estricto en todos los lugares, la documentación remite a Durable Objects, lección 19.
+→ Un rate limit protege capacidad; no es una cuota exacta.
+
+En la zona o en el Worker
+Las reglas de rate limiting del WAF corren en su propia fase, antes de las administradas y antes de cualquier Worker; el plan gratuito incluye una regla así. El binding corre dentro de tu Worker, donde sabe cosas que una regla no, como el tenant detrás de una API key. En Rumbo, el gateway permite 5 pedidos cada 10 segundos por x-api-key y responde 429 con retry-after: 10. En local las ventanas son fijas, alineadas cada 10 segundos.
+→ Limitá en la zona lo anónimo; en el código, lo que tiene nombre.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Cada pedido de la ráfaga pasa primero por rate limit; las respuestas 429 frenan ahí, antes de KV y del origen.
+
+1. Una ráfaga con una clave
+limit manda 7 pedidos con x-api-key k1, empezando dentro de una ventana.
+
+docker compose run --rm lab limit k1
+
+Observá: key k1: 200 200 200 200 200 429 429: cinco permitidos y después rechazados.
+
+2. Otra clave en la misma ventana
+Tres pedidos con k2.
+
+docker compose run --rm lab limit k2 3
+
+Observá: key k2: 200 200 200: k2 tiene su propio presupuesto.
+
+3. Leé la configuración
+El binding está declarado en wrangler.jsonc.
+
+docker compose exec edge grep -n "ratelimits" wrangler.jsonc
+
+Observá: LIMITER, namespace_id 1001 y simple: limit 5, period 10.
+
+4. Mirá el límite en los spans
+El binding es una operación más del pedido.
+
+docker compose exec edge lab spans 2
+
+Observá: Pedidos a /api/shipments/R-1042 con rate limit primero, después KV get maintenance y el fetch al origen.
+
+CONTROL
+1. ¿Por qué no usar la dirección IP como clave?
+A. Porque muchos usuarios pueden compartir una
+B. Porque las direcciones IP cambian en cada pedido
+C. Porque el binding no la puede leer
+Respuesta: A. Una oficina o una red móvil detrás de una dirección compartirían un presupuesto.
+
+2. ¿El límite del binding es exacto en todo el mundo?
+A. Sí: un contador por clave en todo el mundo
+B. No: es por lugar y eventualmente consistente
+C. Sí, en el plan pago
+Respuesta: B. Para un límite global estricto, un Durable Object tiene el contador.
+
+3. La clave k1 recibió 429 y la clave k2 recibió 200 en el mismo segundo. ¿Por qué?
+A. Porque cada clave tiene su propia cuenta
+B. Porque k2 es una clave más nueva
+C. Porque la ventana se acababa de reiniciar para todos
+Respuesta: A. El presupuesto es de la clave.
+
+
+15. Access: identidad antes del origen
+=================================================================
+El borde pregunta quién sos; el origen igual verifica la prueba que recibe.
+
+Identidad en el borde
+Cloudflare Access pone un login delante de una aplicación: un hostname de tu zona, o un Worker con su nombre de workers.dev y sus vistas previas. Una persona entra con un proveedor de identidad, una política decide, y el borde agrega un JWT firmado a los pedidos que pasan, en el encabezado Cf-Access-Jwt-Assertion y en la cookie CF_Authorization. Cloudflare Zero Trust, que incluye Access, es gratis hasta 50 usuarios.
+→ Access decide en el borde; no cierra tu origen.
+
+El origen valida
+Un origen que confía en el encabezado sin verificarlo deja entrar a cualquiera que mande uno. Valida la firma con las claves públicas del equipo en https://<equipo>.cloudflareaccess.com/cdn-cgi/access/certs, el claim aud contra el AUD tag de la aplicación, el iss contra el dominio del equipo, y el vencimiento. Las claves rotan cada seis semanas más o menos, así que se traen, no se copian. Para un Worker detrás de Access, ctx.access da la identidad directamente.
+→ Verificá firma, audiencia, emisor y vencimiento, siempre.
+
+El emisor de prueba del kit
+El kit no tiene Access: el borde sirve un emisor de prueba del curso, con su propia clave ES256, sus certs y tokens con los mismos claims que Access. El origen usa Spring Security como resource server, lee el token del encabezado Cf-Access-Jwt-Assertion y verifica las mismas cuatro cosas. Con Access cambian solo tres valores: la URL de los certs, el emisor y la audiencia.
+→ Probá las verificaciones con tokens que tienen que fallar.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): lab panel le pide un token al emisor de prueba cuando lo necesita y después llama a /panel, que el Worker pasa al origen: el token se verifica allá. panel --direct no deja nada, porque saltea el borde.
+
+1. El panel sin token
+panel llama a /panel del origen a través del borde.
+
+docker compose run --rm lab panel
+
+Observá: HTTP 401: el origen pide un token.
+
+2. Pedile un token al emisor de prueba
+token imprime los claims y solo el principio del token.
+
+docker compose run --rm lab token
+
+Observá: iss http://test-issuer.local, aud rumbo-panel, el email de ana, iat, nbf y exp cinco minutos después, y la nota: test issuer of the course, not Cloudflare Access.
+
+3. El panel con un token válido
+El token va en Cf-Access-Jwt-Assertion, como lo mandaría Access.
+
+docker compose run --rm lab panel --token
+
+Observá: HTTP 200 con el email, el emisor y la audiencia que validó el origen.
+
+4. Un token para otra aplicación
+Mismo emisor, misma clave, audiencia other-app.
+
+docker compose run --rm lab panel --aud other-app
+
+Observá: HTTP 401 y why: audience is not rumbo-panel.
+
+5. Un token vencido
+Emitido hace diez minutos, válido por cinco.
+
+docker compose run --rm lab panel --expired
+
+Observá: HTTP 401 y why: Jwt expired at, con la hora.
+
+6. Un token cambiado después de firmarse
+El email se cambia a intruder@rumbo.example y se deja la firma.
+
+docker compose run --rm lab panel --tampered
+
+Observá: HTTP 401 y why: Signed JWT rejected: Invalid signature.
+
+7. Directo al origen
+Salteando el borde, como haría alguien que encontró el origen.
+
+docker compose run --rm lab panel --direct
+
+Observá: HTTP 401 de nuevo: el origen pide prueba llame quien llame, así que saltear el borde no saltea la verificación.
+
+CONTROL
+1. ¿Dónde pone Access la identidad para el origen?
+A. En un parámetro de la URL llamado user
+B. En la dirección IP del pedido
+C. En un JWT firmado, en Cf-Access-Jwt-Assertion
+Respuesta: C. También en la cookie CF_Authorization, para navegadores.
+
+2. Un token de otra aplicación llega al panel. ¿Qué verificación lo rechaza?
+A. La audiencia
+B. La firma
+C. El vencimiento
+Respuesta: A. Mismo equipo, mismas claves, firma válida: aud es lo que dice para qué aplicación es.
+
+3. ¿Por qué traer los certs en lugar de copiar la clave en el origen?
+A. Porque la URL de los certs es más rápida
+B. Porque las claves rotan
+C. Porque la clave es secreta
+Respuesta: B. Cada seis semanas más o menos; una clave copiada deja de andar.
+
+
+16. KV: leer rápido, escribir eventual
+=================================================================
+Un almacén de clave y valor guardado cerca de cada lector, donde una escritura tarda en llegar.
+
+Almacenes centrales, copias locales
+Workers KV escribe en unos pocos data centers centrales y guarda copias de los valores en los data centers que los leen; los valores populares quedan en cache donde se los pide. Para qué sirve: datos que se leen mucho más de lo que se escriben, como configuración, feature flags, listas de permitidos y bloqueados, preferencias. Rumbo guarda ahí su flag de mantenimiento y la clave de su emisor de prueba.
+→ KV es para leer mucho y escribir poco.
+
+Eventual quiere decir después
+KV es eventualmente consistente: una escritura en general se ve enseguida donde se hizo, y puede tardar 60 segundos o más en verse en otros lugares. Una clave que falta también queda en cache, así que una clave nueva puede tardar lo mismo en aparecer. cacheTtl, 60 segundos por defecto, fija cuánto guarda su copia una lectura. El plan gratuito da 100.000 lecturas y 1.000 escrituras por día.
+→ Diseñá como si el próximo lector viera el valor viejo.
+
+No es un contador
+KV no tiene operaciones atómicas: leé un número, sumale uno y escribilo de vuelta desde 50 pedidos a la vez, y se pierden casi todos los incrementos, porque cada pedido leyó el mismo valor viejo. La documentación además advierte contra escribir la misma clave decenas o cientos de veces por segundo, y remite a Durable Objects para esto. En local hay un solo almacén, así que lo que pierde el lab sale de leer y escribir en paralelo; en Cloudflare, la consistencia eventual suma.
+→ Leer, modificar y escribir necesita un lugar que decida.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Con la flag de mantenimiento puesta, el pedido muestra KV get maintenance y un 503 sin llamar al origen. lab race kv es un solo pedido cuyos cincuenta incrementos leen y escriben KV.
+
+1. Prendé el mantenimiento
+wrangler kv key put escribe en el almacén local con --local, el mismo que lee wrangler dev. Alcanza el nombre del binding para encontrar el namespace.
+
+docker compose exec edge npx wrangler kv key put maintenance on --binding FLAGS --local
+
+Observá: Writing the value "on" to key "maintenance" on namespace binding: "FLAGS".
+
+2. El gateway lee la flag
+Cada pedido a la API la lee.
+
+docker compose run --rm lab get /api/shipments/R-1042
+
+Observá: HTTP 503, maintenance, try again later: no se llamó al origen.
+
+3. Apagalo
+Borrá la clave.
+
+docker compose exec edge npx wrangler kv key delete maintenance --binding FLAGS --local
+docker compose run --rm lab get /api/shipments/R-1042
+
+Observá: Deleting the key "maintenance", y después HTTP 200 del origen. En local el cambio se ve enseguida; en Cloudflare, otros data centers podrían tardar hasta un minuto o más.
+
+4. Cincuenta incrementos a la vez
+/lab/race/kv pone race en 0 y corre 50 leer, sumar y escribir en paralelo.
+
+docker compose run --rm lab race kv
+
+Observá: increments: 50 y final: 1, o un número muy por debajo de 50.
+
+5. Listá las claves
+Todo lo que el Worker escribió en este namespace.
+
+docker compose exec edge npx wrangler kv key list --binding FLAGS --local
+
+Observá: last-request de la lección 07, race, test-issuer:key y las demás: KV es un namespace de textos para muchos usos.
+
+CONTROL
+1. ¿Qué encaja bien en KV?
+A. Un contador de visitas
+B. El stock de un producto durante una oferta
+C. Una flag que prende el mantenimiento
+Respuesta: C. Se lee en cada pedido y se escribe cada tanto: para eso es KV.
+
+2. Cambiás un valor en KV. ¿Cuándo lo ve un lector en otro continente?
+A. Enseguida, porque KV escribe en todos lados
+B. En general dentro de 60 segundos, a veces más
+C. Nunca, hasta que se borre la clave
+Respuesta: B. Consistencia eventual: no hay promesa de cuándo, solo de que va a pasar.
+
+3. 50 incrementos en paralelo en KV terminaron en 1. ¿Por qué?
+A. El plan gratuito permite una escritura por prueba
+B. KV rechazó 49 como duplicados
+C. Todos leyeron el mismo valor viejo y se pisaron
+Respuesta: C. No hay incremento atómico: cada uno escribió 0 + 1.
+
+
+17. D1: SQLite en el borde
+=================================================================
+Una base SQL administrada con migraciones, que el Worker lee por un binding.
+
+Una base por binding
+D1 es una base administrada y serverless con el SQL de SQLite. El Worker usa sentencias preparadas con bind y recibe filas. Rumbo guarda ahí sus zonas y cotizaciones: lo que el borde calcula y registra sin preguntarle al origen. El plan gratuito permite 10 bases, 5 GB en total, 5 millones de filas leídas y 100.000 filas escritas por día.
+→ Siempre usá bind para los valores; nunca armes SQL con textos.
+
+Migraciones
+El esquema cambia con archivos SQL numerados en migrations, que se aplican con wrangler d1 migrations apply, en local con --local y en la cuenta con --remote. D1 registra las aplicadas en la tabla d1_migrations, así que aplicar dos veces no hace nada. El kit las aplica cada vez que arranca el borde.
+→ El esquema es código: versionado, revisado y aplicado en orden.
+
+Una principal, réplicas de lectura
+Una base D1 tiene una principal que recibe las escrituras. La replicación de lectura, en beta, agrega copias en otras regiones para leer; la Sessions API, con un bookmark, deja que un pedido lea por lo menos lo que escribió uno anterior. El Local Explorer de wrangler dev, en /cdn-cgi/local/explorer en el puerto del borde, muestra y edita las tablas locales.
+→ Las réplicas son para leer; un bookmark es para leer lo que escribiste.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): lab quote muestra D1 first para la zona y D1 run para la cotización; la zona XYZ frena después de D1 first, con un 404.
+
+1. Mirá las migraciones
+El borde las aplicó cuando arrancó.
+
+docker compose exec edge npx wrangler d1 migrations list rumbo-edge --local
+
+Observá: No migrations to apply: 0001_zones.sql y 0002_quotes.sql ya están en d1_migrations.
+
+2. Pedí una cotización
+/quotes lee la zona, calcula base más precio por kilo e inserta la cotización.
+
+docker compose run --rm lab quote MAD 2.5
+
+Observá: Madrid, 3 días, 2,5 kg, total_eur: 16 (12,0 + 1,6 x 2,5) y el id de la cotización nueva.
+
+3. Leé la tabla con SQL
+wrangler d1 execute corre SQL sobre la base local.
+
+docker compose exec edge npx wrangler d1 execute rumbo-edge --local --command "SELECT zone, kg, total_eur FROM quotes"
+
+Observá: La fila MAD, 2.5, 16.
+
+4. Listá las tablas
+Las comillas simples van dentro de las dobles, nunca al revés, así el comando anda también en PowerShell.
+
+docker compose exec edge npx wrangler d1 execute rumbo-edge --local --command "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
+
+Observá: d1_migrations, quotes, sqlite_sequence y zones.
+
+5. Una zona desconocida
+El Worker responde 404 cuando la zona no está en la tabla, y lab termina con error.
+
+docker compose run --rm lab quote XYZ 1
+
+Observá: unknown zone, XYZ, y código de salida 1.
+
+CONTROL
+1. ¿Qué registra D1 en d1_migrations?
+A. Cada consulta que corrió el Worker
+B. Las migraciones ya aplicadas
+C. Las réplicas de la base
+Respuesta: B. Por eso aplicar de nuevo dice que no hay nada que aplicar.
+
+2. Un pedido escribe una cotización y el siguiente, ruteado a una réplica, no la ve. ¿Qué lo arregla?
+A. Escribir en la réplica
+B. Correr la migración de nuevo
+C. Una sesión con el bookmark de la escritura
+Respuesta: C. El bookmark hace que la réplica espere hasta tener por lo menos esa escritura.
+
+3. ¿Por qué usar bind para la zona en lugar de ponerla dentro del texto SQL?
+A. Porque un valor escrito dentro del SQL puede cambiar la consulta
+B. Porque bind es más rápido de escribir
+C. Porque D1 rechaza literales
+Respuesta: A. Inyección de SQL: el valor nunca se tiene que volver código.
+
+
+18. R2: objetos sin costo de salida
+=================================================================
+Guardá archivos por clave y servilos desde el borde, sin costo de salida.
+
+Objetos en buckets
+R2 es almacenamiento de objetos: buckets con objetos direccionados por clave, cada uno con metadatos y un etag. Un Worker llega por un binding, y otros programas por una API compatible con S3. Rumbo guarda ahí los comprobantes de entrega, bajo proofs/<envío>.txt.
+→ Una clave es un nombre, no una carpeta.
+
+Sin costo de salida
+Sacar datos de R2 no tiene cargo de salida; se cobra el almacenamiento y las operaciones. El nivel gratuito, para almacenamiento Standard, da 10 GB-mes de almacenamiento, 1 millón de operaciones Clase A, como escrituras, y 10 millones de Clase B, como lecturas, por mes. Habilitar R2 en una cuenta pide un medio de pago: NO VERIFICADO en la documentación, surge de un incidente de estado.
+→ Con R2, leer es barato; contá las operaciones.
+
+Desde el Worker
+El binding tiene put, get, head, list y delete, y los cuerpos son streams: un Worker puede pasarle el cuerpo de un pedido a put y el cuerpo de un objeto a un Response sin cargarlo en memoria. writeHttpMetadata copia el tipo de contenido guardado a la respuesta. Un bucket también puede ser público, por un dominio propio, y avisarle a una cola cuando cambian objetos, configurado en la cuenta.
+→ Pasá los cuerpos como stream; no los cargues enteros.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): El comprobante muestra R2 put y después R2 get; el que no existe es un R2 get que no encuentra nada, y un 404.
+
+1. Subí un comprobante
+proof put manda un PUT a /proofs/R-1043 con el texto.
+
+docker compose run --rm lab proof put R-1043 signed by Ana
+
+Observá: HTTP 201, stored: proofs/R-1043.txt, size: 13 y un etag.
+
+2. Leelo a través del borde
+proof get devuelve el objeto con sus metadatos.
+
+docker compose run --rm lab proof get R-1043
+
+Observá: HTTP 200, el mismo etag, x-rumbo-via: edge, r2 y signed by Ana.
+
+3. Leelo con Wrangler
+El mismo bucket local, sin el Worker.
+
+docker compose exec edge npx wrangler r2 object get rumbo-proofs/proofs/R-1043.txt --local --pipe
+
+Observá: signed by Ana.
+
+4. Un comprobante que no existe
+get devuelve null para una clave que falta, y el Worker responde 404.
+
+docker compose run --rm lab proof get R-1044
+
+Observá: HTTP 404 y no proof for this shipment.
+
+5. Leé las operaciones
+Cada pedido hizo una operación de R2.
+
+docker compose exec edge lab spans 3
+
+Observá: PUT /proofs/R-1043 con R2 put, después GET /proofs/R-1043 y GET /proofs/R-1044 con R2 get cada uno.
+
+CONTROL
+1. ¿Qué no cobra R2?
+A. La salida, sacar los datos
+B. El almacenamiento
+C. Las operaciones Clase A
+Respuesta: A. El almacenamiento y las operaciones se cobran pasado el nivel gratuito; la salida no.
+
+2. Un comprobante se guarda bajo proofs/R-1043.txt. ¿Qué es proofs/?
+A. Parte del nombre de la clave
+B. Otro bucket
+C. Una carpeta que hay que crear primero
+Respuesta: A. El almacenamiento de objetos tiene claves; las barras son una convención para listar por prefijo.
+
+3. ¿Cómo devuelve el Worker de Rumbo un comprobante guardado?
+A. Redirige a una URL pública del bucket
+B. Lo lee a un texto y lo devuelve
+C. Le pasa el cuerpo del objeto al Response como stream
+Respuesta: C. Sin cargar todo: los bytes van de R2 al cliente.
+
+
+19. Durable Objects: un lugar por cosa
+=================================================================
+Un objeto con un id, en un lugar, que atiende sus pedidos de a uno.
+
+Un objeto por id
+Un Durable Object es una clase que escribís; cada instancia tiene un id o nombre único y vive en un lugar. Todo pedido para ese id, desde cualquier data center, llega a la misma instancia. Los atiende de a uno, así que el código que lee, cambia y escribe su propio estado no compite consigo mismo. En Rumbo hay un objeto por envío, y uno por contador.
+→ Un id, una instancia, una decisión por vez.
+
+Almacenamiento consistente
+Cada objeto tiene su propio almacenamiento, fuertemente consistente: después de una escritura, toda lectura posterior de ese objeto la ve. En el plan gratuito solo está el backend de SQLite, con 5 GB en total para la cuenta. Los mismos 50 incrementos que KV perdió, el objeto los conserva, porque llegan uno después del otro.
+→ La coordinación necesita un solo dueño.
+
+Para qué no sirve
+Un objeto es un lugar: un límite blando de 1.000 pedidos por segundo cada uno, y cada llamada espera su turno. Para más carga, dividí el estado en más objetos, uno por envío, por sala, por usuario. Usalos para coordinación y estado por entidad: contadores, locks, sesiones en vivo, rate limits estrictos; no como una tabla global en la que escriben todos.
+→ Muchos objetos chicos escalan; un objeto grande hace cola.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): lab race do es un solo pedido con cincuenta llamadas al mismo Durable Object; el estado de un envío es una llamada a su objeto.
+
+1. Cincuenta incrementos en un objeto
+/lab/race/do manda 50 incrementos en paralelo a un objeto Counter nuevo.
+
+docker compose run --rm lab race do
+
+Observá: increments: 50 y final: 50.
+
+2. La misma carrera en KV
+La carrera de la lección 16, de nuevo, para comparar.
+
+docker compose run --rm lab race kv
+
+Observá: final: 1, o muy por debajo de 50.
+
+3. Doscientos incrementos
+Más llamadas, mismo objeto, misma respuesta.
+
+docker compose run --rm lab race do 200
+
+Observá: increments: 200 y final: 200.
+
+4. El objeto de un envío
+/shipments/R-1043/state le pide su estado al objeto Shipment llamado R-1043.
+
+docker compose run --rm lab get /shipments/R-1043/state
+
+Observá: Un objeto que existe porque se lo pidió: shipment R-1043, status no movements yet, delayed false y watchers 0. La lección 20 le da movimientos a uno de ellos.
+
+5. Las llamadas en los spans
+Cada llamada a un objeto es un span del pedido.
+
+docker compose exec edge lab spans 1
+
+Observá: GET /shipments/R-1043/state con una llamada a Durable Object.
+
+CONTROL
+1. Llegan dos pedidos para el mismo envío, en Lima y en Madrid. ¿Qué instancia atiende cada uno?
+A. Una instancia en cada ciudad
+B. La misma instancia, viva donde viva
+C. La que responda primero
+Respuesta: B. Un id, un objeto: los dos pedidos viajan hasta él.
+
+2. ¿Por qué el objeto conservó los 50 incrementos?
+A. Porque atiende sus llamadas de a una
+B. Porque reintenta las escrituras perdidas
+C. Porque guarda el contador en cache
+Respuesta: A. Cada lectura ve la escritura anterior; nada se intercala.
+
+3. Un objeto recibe todos los pedidos de la app y se pone lento. ¿Cuál es el arreglo?
+A. Pasarlo a KV
+B. Subirle la memoria
+C. Dividir el estado en un objeto por entidad
+Respuesta: C. Cada objeto es una cola de uno; más objetos, más colas.
+
+
+20. Durable Objects en el tiempo
+=================================================================
+Un objeto que se despierta solo y mantiene sockets abiertos mientras duerme.
+
+Una alarma por objeto
+Un Durable Object puede programar una alarma por vez con setAlarm; una llamada nueva reemplaza a la pendiente, y deleteAlarm la cancela. Cuando llega la hora, corre su handler alarm, por lo menos una vez, nunca dos a la vez. Si tira un error, se reintenta con backoff exponencial desde 2 segundos, hasta 6 veces.
+→ Una alarma es una promesa de volver a mirar más tarde.
+
+Sockets que viven más que el objeto en memoria
+Con la WebSocket Hibernation API, el objeto acepta sockets con ctx.acceptWebSocket. Cuando está inactivo se lo saca de memoria mientras los clientes siguen conectados a la red de Cloudflare; un mensaje lo despierta en webSocketMessage. La duración facturable no se acumula mientras hiberna. La API estándar de WebSocket impide la hibernación.
+→ Hiberná entre mensajes; pagá el trabajo, no la espera.
+
+Un envío en vivo
+En Rumbo cada objeto de envío tiene el estado en vivo, le manda cada cambio a los navegadores que lo miran y programa una alarma: si no llega un movimiento en 8 segundos, se marca demorado y les avisa. Un estado final, delivered o returned, cancela la alarma. En producción la espera sería de horas; en el kit son segundos para que el lab lo vea.
+→ Dejá que el objeto note el silencio.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): El movimiento que avisa lab live pasa por la cola hasta el objeto, y la alarma del objeto aparece sola unos ocho segundos después, sin un pedido delante. El pedido del WebSocket aparece cuando se cierra.
+
+1. Mirá un envío en vivo
+live abre un WebSocket al objeto de R-1044, reporta un movimiento medio segundo después y espera la alarma.
+
+docker compose run --rm lab live R-1044
+
+Observá: snapshot con no movements yet y watchers 1; update con out for delivery unos dos segundos después, cuando lo entregó la cola; update con delayed true ocho segundos después, mandado por la alarma.
+
+2. El estado después de cerrar el socket
+El objeto guardó el estado en su almacenamiento.
+
+docker compose run --rm lab get /shipments/R-1044/state
+
+Observá: out for delivery, delayed true y watchers 0.
+
+3. El transportista lo entrega
+webhook encola un movimiento y espera al consumidor, lección 22.
+
+docker compose run --rm lab webhook w-1 R-1044 delivered
+
+Observá: HTTP 202, attempts: 1 y saved at the origin.
+
+4. Sin alarma después de un estado final
+delivered limpió delayed y canceló la alarma.
+
+docker compose run --rm lab get /shipments/R-1044/state
+
+Observá: delivered y delayed false; queda así.
+
+5. Encontrá la alarma en los spans
+Una alarma es una invocación propia, sin un pedido detrás.
+
+docker compose exec edge lab spans 8
+
+Observá: Entre ellos, Durable Object alarm, y queue consumer of movements por cada movimiento.
+
+CONTROL
+1. Un objeto de envío llama dos veces a setAlarm. ¿Cuántas alarmas quedan pendientes?
+A. Dos, en el orden en que se programaron
+B. Ninguna, la segunda cancela las dos
+C. Una: la segunda reemplaza a la primera
+Respuesta: C. Una alarma por objeto por vez.
+
+2. ¿Qué mantiene conectados a los clientes mientras el objeto hiberna?
+A. Un loop que hace ping cada segundo
+B. La alarma del objeto
+C. La red de Cloudflare, que sostiene los sockets
+Respuesta: C. El objeto sale de memoria; los sockets no se cierran.
+
+3. ¿Por qué delivered cancela la alarma?
+A. Porque las alarmas no pueden correr después de una escritura
+B. Porque después de un estado final no se esperan más movimientos
+C. Porque el plan gratuito permite una alarma por día
+Respuesta: B. Un envío entregado no puede estar demorado.
+
+
+21. Hyperdrive: tu Postgres desde el borde
+=================================================================
+Un pool de conexiones cerca de tu base y una cache de consultas de lectura, detrás de un connection string.
+
+Un connection string que pasa por Cloudflare
+Hyperdrive se pone entre Workers y una base PostgreSQL o MySQL que ya tenés. El Worker usa un driver común, postgres.js en Rumbo, con env.PG.connectionString. El armado de la conexión pasa en el borde, cerca del Worker, y el pool de conexiones a la base vive en las regiones más cercanas a tu base. El plan gratuito da 100.000 consultas por día.
+→ Muchos Workers, pocas conexiones a tu base.
+
+Lecturas en cache, y lo que cuestan
+Hyperdrive guarda en cache los resultados de consultas de lectura por un max_age configurado. No los invalida cuando tu aplicación escribe, así que una lectura justo después de una escritura puede devolver la fila vieja. No mueve ni replica tus datos: toda consulta que no está en cache llega a tu servidor.
+→ Una consulta en cache es una promesa de aceptar datos viejos.
+
+En el kit, y para una base privada
+En local no hay pool ni cache: Hyperdrive se conecta directo a la base con localConnectionString, o con la variable CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_<BINDING>. Lo que muestra el kit es el camino, no la velocidad. A una base sin dirección pública se llega por un Tunnel; la documentación ahora recomienda Workers VPC, en beta.
+→ El kit prueba el camino del código; la cuenta prueba la velocidad.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): /direct/shipments/R-1044 enciende Hyperdrive y PostgreSQL; /api/shipments/R-1044 llega a los mismos datos por la API de Rumbo.
+
+1. Leé un envío por Hyperdrive
+/direct/shipments/R-1044 consulta PostgreSQL desde el Worker, sin el origen.
+
+docker compose run --rm lab get /direct/shipments/R-1044
+
+Observá: x-rumbo-via: edge, hyperdrive y la fila de R-1044, sin servedBy: Spring Boot no participó.
+
+2. El mismo envío por el origen
+El camino de siempre: el gateway y Spring Boot.
+
+docker compose run --rm lab get /api/shipments/R-1044
+
+Observá: El mismo estado, con servedBy: rumbo-origin.
+
+3. Compará los dos en los spans
+Uno fue a la base, el otro a la API.
+
+docker compose exec edge lab spans 2
+
+Observá: GET /direct/shipments/R-1044 con Hyperdrive; GET /api/shipments/R-1044 con fetch origin:8080.
+
+4. Leé el binding
+La configuración dice adónde conectarse en local.
+
+docker compose exec edge grep -n "localConnectionString" wrangler.jsonc
+
+Observá: localConnectionString postgres://rumbo:rumbo@db:5432/rumbo: la base del kit, dentro de la red de Compose.
+
+5. Preguntale a PostgreSQL
+psql corre dentro del contenedor db.
+
+docker compose exec db psql -U rumbo -d rumbo -c "SELECT id, status FROM shipments ORDER BY id"
+
+Observá: Tres filas; R-1044 delivered, de la lección 20.
+
+CONTROL
+1. ¿Dónde vive el pool de conexiones a la base de Hyperdrive?
+A. En cada data center que corre tu Worker
+B. Dentro de tu servidor de base de datos
+C. En las regiones más cercanas a tu base
+Respuesta: C. El armado de la conexión pasa cerca del Worker; el pool, cerca de la base.
+
+2. El panel actualiza un envío y la lectura siguiente por Hyperdrive muestra el estado viejo. ¿Por qué?
+A. Hyperdrive no invalida las lecturas en cache cuando hay escrituras
+B. La escritura fue a una réplica
+C. PostgreSQL demora sus escrituras
+Respuesta: A. Hasta que pasa el max_age, el resultado en cache queda.
+
+3. ¿Qué no muestra el kit de Hyperdrive?
+A. El binding y su connection string
+B. El pool y la cache
+C. Una consulta que llega a PostgreSQL
+Respuesta: B. En local se conecta directo: el camino es real, la aceleración no está.
+
+
+22. Queues: al menos una vez
+=================================================================
+Respondele al transportista enseguida y hacé el trabajo después, preparado para un mensaje que llega dos veces.
+
+Productor, cola, consumidor
+Un Worker manda un mensaje a una cola por su binding y responde enseguida; un Worker consumidor recibe los mensajes en lotes, por defecto hasta 10 mensajes o 5 segundos, lo que llegue primero, con máximos de 100 y 60 segundos. Cada mensaje se puede confirmar con ack o devolver con retry, por separado, y trae attempts, la cantidad de entregas hasta ahora. El plan gratuito incluye 10.000 operaciones por día, con mensajes guardados 24 horas.
+→ Respondé ahora; trabajá después; confirmá cada mensaje.
+
+Al menos una vez
+Queues entrega cada mensaje por lo menos una vez y, en raras ocasiones, más de una. Por eso el consumidor tiene que ser idempotente: el mismo mensaje dos veces tiene que dejar el mismo resultado que una. La documentación sugiere un id único por mensaje usado como clave primaria o como clave de idempotencia; en Rumbo, el id de evento del transportista es la clave primaria de la tabla de movimientos en el origen.
+→ Esperá cada mensaje dos veces; guardalo una.
+
+Reintentos y la cola de mensajes muertos
+Un mensaje que se reintenta vuelve en un lote posterior, hasta max_retries, 3 por defecto; después se borra, o se escribe en una cola de mensajes muertos si hay una configurada. Un mensaje se puede demorar hasta 24 horas. El kit usa max_retries 2 y un timeout de lote de 2 segundos para que el lab lo vea en segundos: un estado que el origen rechaza se intenta tres veces y termina en movements-dead.
+→ La cola de mensajes muertos es donde mirás, no donde te olvidás.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Cada webhook son dos eventos: el POST que responde 202 después de queue send, y el consumidor que llama al origen. m-2 muestra tres eventos del consumidor, uno por intento, y después el consumidor de movements-dead.
+
+1. Un transportista reporta un movimiento
+webhook manda el movimiento, imprime el 202 del webhook y después espera la última palabra del consumidor sobre ese evento.
+
+docker compose run --rm lab webhook m-1 R-1042 delivered
+
+Observá: HTTP 202, attempts: 1, saved at the origin, sin cola de mensajes muertos y 1 movimiento de R-1042 en el origen.
+
+2. El mismo evento de nuevo
+Un transportista que manda el mismo evento dos veces, como haría un reintento propio.
+
+docker compose run --rm lab webhook m-1 R-1042 delivered
+
+Observá: already saved: not saved again, y sigue 1 movimiento de R-1042.
+
+3. Un estado que el origen rechaza
+lost in space no es un estado que conozca el origen: responde 422 y el consumidor llama a retry.
+
+docker compose run --rm lab webhook m-2 R-1042 lost in space
+
+Observá: attempts: 3, rejected by the origin (422) y dead letter queue: yes, después de unos ocho segundos.
+
+4. Leé la cola de mensajes muertos
+El consumidor de movements-dead guarda cada mensaje en KV, para que lo puedas ver.
+
+docker compose run --rm lab dead
+
+Observá: m-2 con su envío, su estado, 3 intentos y el resultado.
+
+5. Preguntale al origen
+movements lee la tabla del origen directamente.
+
+docker compose run --rm lab movements R-1042
+
+Observá: count: 1, el movimiento m-1: ni el duplicado ni el rechazado se guardaron.
+
+6. Leé la configuración
+El productor y los dos consumidores están declarados en wrangler.jsonc.
+
+docker compose exec edge grep -n "movements" wrangler.jsonc
+
+Observá: El productor MOVES, el consumidor de movements con max_batch_size 10, max_batch_timeout 2, max_retries 2 y dead_letter_queue movements-dead, y el consumidor de movements-dead.
+
+CONTROL
+1. ¿Qué quiere decir al menos una vez para el consumidor?
+A. Tiene que soportar el mismo mensaje dos veces sin daño
+B. Nunca va a ver un mensaje dos veces
+C. Tiene que confirmar cada mensaje por lo menos una vez
+Respuesta: A. Raro, pero posible: hacé idempotente el efecto.
+
+2. El mismo evento llegó dos veces y el origen tiene un movimiento. ¿Qué lo logró?
+A. La cola notó el duplicado
+B. El id del evento es la clave primaria en el origen
+C. El lote juntó los dos mensajes
+Respuesta: B. INSERT ... ON CONFLICT DO NOTHING: el segundo insert no cambia nada.
+
+3. Con max_retries 2, ¿cuántas veces se intenta un mensaje que falla?
+A. Dos
+B. Tres: la primera entrega y dos reintentos
+C. Hasta que salga bien
+Respuesta: B. Después va a la cola de mensajes muertos, o se borra si no hay una.
+
+
+23. Workflows: pasos que sobreviven
+=================================================================
+Un proceso de muchos pasos, cada uno reintentado por su cuenta, que puede esperar días a una persona.
+
+Pasos con memoria
+Un Workflow es una clase con un método run que recibe un evento y un objeto step. Cada step.do es una unidad de trabajo: su resultado se guarda, así que cuando el workflow sigue después de una falla o una espera, los pasos terminados no corren de nuevo. Un paso que falla se reintenta por su cuenta, por defecto hasta 5 veces, con una espera que arranca en 10 segundos y crece de forma exponencial, cada intento con un timeout de 10 minutos; NonRetryableError lo corta.
+→ Reintentá el paso, no el proceso.
+
+Esperar es un paso
+step.sleep y step.sleepUntil esperan un tiempo o hasta una fecha; step.waitForEvent espera un evento de un tipo, con timeout, que se manda desde afuera con instance.sendEvent. Mientras un workflow espera no corre nada y no se pierde nada. En Rumbo, una devolución se registra, espera la aprobación de una persona, después reintegra y avisa; el reintegro falla a propósito la primera vez.
+→ Dejá que la plataforma sostenga la espera.
+
+Instancias y límites
+Cada corrida es una instancia con un id; crear una con un id que ya existe se rechaza, lo que vuelve inofensivo un pedido duplicado. El plan gratuito comparte los 100.000 pedidos diarios de Workers y agrega 3.000 pasos por día y 1 GB-mes de almacenamiento. En local, el estado de una instancia que espera un evento se ve como running.
+→ Un id por proceso vuelve idempotente el arranque.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Los pedidos que inician, consultan y aprueban la devolución encienden el Workflow. Sus pasos corren dentro del motor de Workflows, que el visor dibuja como una sola pieza.
+
+1. Arrancá una devolución
+return start crea la instancia r-1 del workflow returns para R-1043 y lee su estado un momento después.
+
+docker compose run --rm lab return start r-1 R-1043
+
+Observá: status: running y output: null: registrada, ahora esperando la aprobación.
+
+2. Sigue esperando
+No corre nada mientras espera.
+
+docker compose run --rm lab return status r-1
+
+Observá: Lo mismo: running, output null.
+
+3. Aprobala
+return approve manda el evento approved con el nombre de quien aprueba, y espera a que la instancia termine.
+
+docker compose run --rm lab return approve r-1 ana
+
+Observá: complete, con registered, refund con attempts: 2, el primero falló a propósito, by: ana, y notified.
+
+4. Arrancá la misma devolución de nuevo
+El mismo id, como haría un pedido duplicado.
+
+docker compose run --rm lab return start r-1 R-1043
+
+Observá: could not start return r-1: instance.already_exists, y código de salida 1.
+
+CONTROL
+1. El paso de reintegro falló en su primer intento. ¿Qué corre de nuevo?
+A. Todo el workflow desde el principio
+B. El reintegro y el registro anterior
+C. Solo el paso de reintegro
+Respuesta: C. El registro quedó guardado; solo se reintenta el paso que falla.
+
+2. ¿Cómo le llega la aprobación a un workflow que espera?
+A. El workflow consulta una clave de KV cada minuto
+B. Un evento que se le manda a la instancia con sendEvent
+C. Un cron trigger lo reinicia
+Respuesta: B. waitForEvent devuelve el payload de ese evento.
+
+3. ¿Qué pasa si arrancás r-1 de nuevo?
+A. Se rechaza: ya existe una instancia con ese id
+B. Corre una segunda instancia r-1 en paralelo
+C. La primera instancia vuelve a arrancar
+Respuesta: A. El id vuelve inofensivo un arranque repetido.
+
+
+24. Cron y eventos de la plataforma
+=================================================================
+Trabajo que arranca a una hora, o cuando la plataforma dice que algo cambió.
+
+Cron Triggers
+Un Cron Trigger corre el handler scheduled de un Worker según una expresión cron, en UTC, declarada en triggers.crons de la configuración. El plan gratuito permite 5 Cron Triggers por cuenta, el pago 250. Después de un cambio, el horario nuevo puede tardar hasta 15 minutos en llegar a toda la red, y hasta entonces se pueden perder corridas. En Rumbo, 0 3 * * * calcula el cierre diario: envíos por estado, guardado en KV.
+→ Cron corre en UTC: anotá la hora en UTC.
+
+Correrlo en local
+wrangler dev no dispara los Cron Triggers solo. Ofrece dos formas de correr el handler: el Local Explorer, con un POST a /cdn-cgi/local/explorer/api/local/scheduled?worker=<nombre>, y un pedido a /cdn-cgi/local/scheduled, con cron y time opcionales. Las dos responden solo en la dirección del propio borde, por eso el lab las corre adentro.
+→ Probá el handler scheduled a pedido.
+
+Eventos de la plataforma
+Algunos cambios los anuncia Cloudflare. Las notificaciones de eventos de R2 mandan un mensaje a una cola cuando se crean o borran objetos en un bucket; se configuran en la cuenta con wrangler r2 bucket notification, no en wrangler.jsonc, y el kit no las simula. Después un consumidor reacciona como en la lección 22, al menos una vez.
+→ Preferí un evento a un loop que consulta.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): lab cron muestra un evento de cron con Hyperdrive y KV y sin un pedido antes, y después el GET /lab/close que lee el resultado. El cron que dispara curl aparece bajo el comando de lab anterior: solo los comandos de lab marcan el visor.
+
+1. Leé el horario
+El trigger está en wrangler.jsonc.
+
+docker compose exec edge grep -n "crons" wrangler.jsonc
+
+Observá: "triggers": { "crons": ["0 3 * * *"] }.
+
+2. Corré el cierre ahora
+cron corre dentro del borde y le pide al Local Explorer que despache una invocación scheduled, y después lee el resultado.
+
+docker compose exec edge lab cron
+
+Observá: scheduled handler, cron "0 3 * * *": ok y un cierre con la hora y los envíos por estado, leídos de PostgreSQL por Hyperdrive.
+
+3. Corrélo con un pedido simple
+La otra forma local: /cdn-cgi/local/scheduled, desde dentro del borde.
+
+docker compose exec edge curl -s "http://127.0.0.1:8787/cdn-cgi/local/scheduled?cron=0+3+*+*+*"
+
+Observá: ok.
+
+4. Encontrá las dos corridas en los spans
+Una corrida scheduled es una invocación sin un pedido detrás.
+
+docker compose exec edge lab spans 3
+
+Observá: Las dos invocaciones cron, cada una con Hyperdrive y KV put close:last, y entre las dos GET /lab/close, la lectura de lab cron.
+
+CONTROL
+1. ¿A qué hora corre 0 3 * * *?
+A. A las 3:00 UTC
+B. A las 3:00 en cada data center
+C. A las 3:00 en la zona horaria de la cuenta
+Respuesta: A. Los Cron Triggers corren en hora UTC.
+
+2. Cambiaste un cron y la corrida siguiente no pasó. ¿Una razón probable?
+A. Los Cron Triggers corren como mucho una vez por día
+B. El cambio todavía se estaba propagando, hasta 15 minutos
+C. El plan gratuito pausa los cron después de un cambio
+Respuesta: B. Se pueden perder corridas hasta que termina la propagación.
+
+3. ¿Dónde se configuran las notificaciones de eventos de R2?
+A. En triggers de wrangler.jsonc
+B. En el handler scheduled
+C. En la cuenta, con wrangler r2 bucket notification
+Respuesta: C. Por eso también el kit no las puede simular.
+
+
+25. Un borde que se puede defender
+=================================================================
+Rumbo, decidido pieza por pieza, con un comando detrás de cada decisión.
+
+Qué se guarda, y por qué
+La página pública de seguimiento es igual para todos: public, max-age=60. La API responde por envío y cambia: no-store. Un perfil es personal: private, no-store, nunca public, sea cual sea la clave. La tarifa de una zona se calcula en el borde y se guarda por data center con la Cache API. Cada decisión es un encabezado que se puede leer.
+→ Cada respuesta guardada tiene una razón escrita en sus encabezados.
+
+Qué protege qué
+El origen no escucha en ningún puerto público: un túnel es su entrada. La API de administración se rechaza en el borde, como lo haría una regla propia. La API se limita por API key. El panel necesita identidad en el borde y un token que el origen valida solo, así que llegar directo al origen no saltea la verificación. El TLS hacia el origen es Full (strict).
+→ Defendé en capas; cada capa supone que falló la anterior.
+
+Qué garantiza cada almacenamiento
+KV para flags: se lee en todos lados, eventual. Un Durable Object por envío y por contador: un lugar, una llamada por vez. D1 para cotizaciones, con migraciones. R2 para comprobantes, sin costo de salida. Una cola para movimientos, al menos una vez, con un consumidor idempotente y una cola de mensajes muertos. Un workflow para devoluciones, que esperan a personas. Todo entra en el plan gratuito para una carga chica, salvo lo que necesita la zona, y R2 pide un medio de pago.
+→ Elegí el almacenamiento por su garantía, no por su velocidad.
+
+LABORATORIO
+Visor en vivo (http://127.0.0.1:18098): Todo el curso junto: el pedido rechazado, los dos webhooks con sus consumidores, y la carrera en el objeto; panel --direct no deja nada.
+
+1. La API de administración, rechazada
+Rúbrica 1: lo que ningún código debería ver se rechaza antes del origen.
+
+docker compose run --rm lab get /api/admin/users
+
+Observá: HTTP 403, blocked at the edge.
+
+2. El panel, directo al origen
+Rúbrica 2: saltear el borde no saltea la verificación de identidad.
+
+docker compose run --rm lab panel --direct
+
+Observá: HTTP 401 del origen.
+
+3. Un movimiento dos veces
+Rúbrica 3: el consumidor es idempotente.
+
+docker compose run --rm lab webhook c-1 R-1043 delivered
+docker compose run --rm lab webhook c-1 R-1043 delivered
+
+Observá: saved at the origin, y después already saved: not saved again.
+
+4. Un contador que no pierde
+Rúbrica 4: la coordinación vive en un lugar.
+
+docker compose run --rm lab race do
+
+Observá: final: 50.
+
+5. Lo que hizo el borde
+Rúbrica 5: cada afirmación tiene una traza.
+
+docker compose exec edge lab spans 6
+
+Observá: El pedido rechazado respondido por el Worker solo, los webhooks con queue send, los consumidores con fetch al origen y el Durable Object, y la carrera.
+
+6. Pará el kit
+down para y saca los contenedores y conserva los volúmenes, así los datos del curso están la próxima vez. Los perfiles nombran también los servicios opcionales.
+
+docker compose --profile tls --profile tunnel down
+
+Observá: Cada contenedor Removed, y la red.
+
+CONTROL
+1. Alguien llama al panel en el origen, salteando el borde. ¿Qué lo frena?
+A. Access, porque ve todos los pedidos
+B. El WAF de la zona
+C. El origen validando el token por su cuenta
+Respuesta: C. Una capa en el origen cubre los pedidos que nunca pasaron por el borde.
+
+2. ¿Qué almacenamiento para el estado en vivo de cada envío?
+A. Un Durable Object por envío
+B. Una clave de KV por envío
+C. Una fila en D1 que leen todos los Workers
+Respuesta: A. Un dueño, almacenamiento consistente, sockets y una alarma.
+
+3. ¿Por qué el consumidor de movimientos está a salvo de los duplicados?
+A. Porque la cola entrega cada mensaje una vez
+B. Porque el id del evento es la clave primaria en el origen
+C. Porque el consumidor guarda una lista en memoria
+Respuesta: B. La idempotencia vive donde se guarda el efecto.
+
+

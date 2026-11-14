@@ -76,3 +76,10 @@ Que sirva la versión nueva, la CSP, la 404, las descargas como adjunto y las re
 
 Origen: la publicación en Cloudflare del 18/10 y los despliegues del 19/10 se comprobaron así.
 Control: pedir al sitio publicado un archivo que cambió y buscar la versión.
+
+### Cada texto de un dibujo se mide dentro de su caja, en cada estado
+
+Los modelos se dibujan en cada escena y en cada valor de sus controles, en los dos idiomas, y en el navegador se comprueba que cada texto quede dentro de su caja y del dibujo. El español suele ser más largo, y un estado que nadie capturó es el que se desborda.
+
+Origen: Cloudflare 1.0.0: en las capturas, `movements-dead` se salía de su caja, una leyenda quedaba fuera de su panel y el mapa cortaba el subtítulo del WAF; la medición de todos los estados encontró una caja más ([VALIDATION](../../cloudflare-from-scratch/docs/VALIDATION.md)).
+Control: la pasada de navegador que registra VALIDATION; todavía no es un control de `check.mjs`.

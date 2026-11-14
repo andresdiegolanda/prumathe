@@ -1,0 +1,797 @@
+{
+  "course": "cloudflare-from-scratch",
+  "version": "1.0.0",
+  "date": "2026-11-14",
+  "platform": "Windows 11 Pro 10.0.26200, Docker Desktop 4.55.0 (Engine 29.1.3, Compose 2.40.3-desktop.1), Node.js 24.11.0",
+  "kit": "wrangler 4.162.0, workerd 1.20261113.1, Spring Boot 4.1.2 on Java 25, PostgreSQL 18.7, cloudflared 2026.11.0",
+  "coverage": "One sequential run of lessons 00 to 25 with --fresh, from no containers and no volumes of the Compose project prumathe-cf, without an account. Six earlier full runs: three passed, three failed at 22.2, 13.3 and 04.3, and each failure changed the kit before this run.",
+  "totals": {
+    "steps": 129,
+    "passed": 121,
+    "failed": 0,
+    "notRun": 8
+  },
+  "visor": {
+    "checks": 11,
+    "passed": 11,
+    "events": 93,
+    "eventsWithStep": 93,
+    "lessons": 21
+  },
+  "steps": [
+    {
+      "lesson": 0,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 164
+    },
+    {
+      "lesson": 0,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 16697
+    },
+    {
+      "lesson": 0,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 387
+    },
+    {
+      "lesson": 0,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1187
+    },
+    {
+      "lesson": 0,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 876
+    },
+    {
+      "lesson": 1,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1035
+    },
+    {
+      "lesson": 1,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1146
+    },
+    {
+      "lesson": 1,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1108
+    },
+    {
+      "lesson": 1,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1130
+    },
+    {
+      "lesson": 1,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 1086
+    },
+    {
+      "lesson": 2,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1112
+    },
+    {
+      "lesson": 2,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1181
+    },
+    {
+      "lesson": 2,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1052
+    },
+    {
+      "lesson": 2,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1076
+    },
+    {
+      "lesson": 3,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 5431
+    },
+    {
+      "lesson": 3,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 924
+    },
+    {
+      "lesson": 3,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1025
+    },
+    {
+      "lesson": 3,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1110
+    },
+    {
+      "lesson": 3,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 1095
+    },
+    {
+      "lesson": 3,
+      "step": 6,
+      "status": "passed",
+      "durationMs": 865
+    },
+    {
+      "lesson": 4,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 431
+    },
+    {
+      "lesson": 4,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1766
+    },
+    {
+      "lesson": 4,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 37760
+    },
+    {
+      "lesson": 4,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 411
+    },
+    {
+      "lesson": 4,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 583
+    },
+    {
+      "lesson": 5,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1001
+    },
+    {
+      "lesson": 5,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1063
+    },
+    {
+      "lesson": 5,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1472
+    },
+    {
+      "lesson": 5,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 3129
+    },
+    {
+      "lesson": 6,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1222
+    },
+    {
+      "lesson": 6,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 991
+    },
+    {
+      "lesson": 6,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 464
+    },
+    {
+      "lesson": 6,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 4512
+    },
+    {
+      "lesson": 6,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 1317
+    },
+    {
+      "lesson": 7,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 991
+    },
+    {
+      "lesson": 7,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 989
+    },
+    {
+      "lesson": 7,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1076
+    },
+    {
+      "lesson": 7,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1075
+    },
+    {
+      "lesson": 7,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 672
+    },
+    {
+      "lesson": 7,
+      "step": 6,
+      "status": "passed",
+      "durationMs": 1054
+    },
+    {
+      "lesson": 8,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 2855
+    },
+    {
+      "lesson": 8,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 2056
+    },
+    {
+      "lesson": 8,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 2107
+    },
+    {
+      "lesson": 8,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 433
+    },
+    {
+      "lesson": 9,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1084
+    },
+    {
+      "lesson": 9,
+      "step": 2,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 9,
+      "step": 3,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 9,
+      "step": 4,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 9,
+      "step": 5,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 9,
+      "step": 6,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 10,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 950
+    },
+    {
+      "lesson": 10,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1023
+    },
+    {
+      "lesson": 10,
+      "step": 3,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 10,
+      "step": 4,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 10,
+      "step": 5,
+      "status": "not run",
+      "reason": "optional, needs a Cloudflare account and a token in labs/.env"
+    },
+    {
+      "lesson": 11,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1109
+    },
+    {
+      "lesson": 11,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1103
+    },
+    {
+      "lesson": 11,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1119
+    },
+    {
+      "lesson": 11,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1108
+    },
+    {
+      "lesson": 12,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1188
+    },
+    {
+      "lesson": 12,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1130
+    },
+    {
+      "lesson": 12,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1143
+    },
+    {
+      "lesson": 12,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1120
+    },
+    {
+      "lesson": 12,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 644
+    },
+    {
+      "lesson": 13,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1136
+    },
+    {
+      "lesson": 13,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1177
+    },
+    {
+      "lesson": 13,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 611
+    },
+    {
+      "lesson": 13,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 493
+    },
+    {
+      "lesson": 14,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1540
+    },
+    {
+      "lesson": 14,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1081
+    },
+    {
+      "lesson": 14,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 476
+    },
+    {
+      "lesson": 14,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 587
+    },
+    {
+      "lesson": 15,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1041
+    },
+    {
+      "lesson": 15,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1025
+    },
+    {
+      "lesson": 15,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1140
+    },
+    {
+      "lesson": 15,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1094
+    },
+    {
+      "lesson": 15,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 1142
+    },
+    {
+      "lesson": 15,
+      "step": 6,
+      "status": "passed",
+      "durationMs": 1163
+    },
+    {
+      "lesson": 15,
+      "step": 7,
+      "status": "passed",
+      "durationMs": 1181
+    },
+    {
+      "lesson": 16,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1983
+    },
+    {
+      "lesson": 16,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 961
+    },
+    {
+      "lesson": 16,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 2571
+    },
+    {
+      "lesson": 16,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1214
+    },
+    {
+      "lesson": 16,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 1777
+    },
+    {
+      "lesson": 17,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1515
+    },
+    {
+      "lesson": 17,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 924
+    },
+    {
+      "lesson": 17,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1662
+    },
+    {
+      "lesson": 17,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1330
+    },
+    {
+      "lesson": 17,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 945
+    },
+    {
+      "lesson": 18,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1111
+    },
+    {
+      "lesson": 18,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1092
+    },
+    {
+      "lesson": 18,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1986
+    },
+    {
+      "lesson": 18,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 926
+    },
+    {
+      "lesson": 18,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 610
+    },
+    {
+      "lesson": 19,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1193
+    },
+    {
+      "lesson": 19,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1234
+    },
+    {
+      "lesson": 19,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 1820
+    },
+    {
+      "lesson": 19,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1106
+    },
+    {
+      "lesson": 19,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 592
+    },
+    {
+      "lesson": 20,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 14520
+    },
+    {
+      "lesson": 20,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1002
+    },
+    {
+      "lesson": 20,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 2964
+    },
+    {
+      "lesson": 20,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1695
+    },
+    {
+      "lesson": 20,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 628
+    },
+    {
+      "lesson": 21,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 1115
+    },
+    {
+      "lesson": 21,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1098
+    },
+    {
+      "lesson": 21,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 609
+    },
+    {
+      "lesson": 21,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 479
+    },
+    {
+      "lesson": 21,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 500
+    },
+    {
+      "lesson": 22,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 2878
+    },
+    {
+      "lesson": 22,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 2910
+    },
+    {
+      "lesson": 22,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 7646
+    },
+    {
+      "lesson": 22,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 979
+    },
+    {
+      "lesson": 22,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 1040
+    },
+    {
+      "lesson": 22,
+      "step": 6,
+      "status": "passed",
+      "durationMs": 479
+    },
+    {
+      "lesson": 23,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 2592
+    },
+    {
+      "lesson": 23,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1001
+    },
+    {
+      "lesson": 23,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 2261
+    },
+    {
+      "lesson": 23,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1050
+    },
+    {
+      "lesson": 24,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 479
+    },
+    {
+      "lesson": 24,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 1045
+    },
+    {
+      "lesson": 24,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 456
+    },
+    {
+      "lesson": 24,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 512
+    },
+    {
+      "lesson": 25,
+      "step": 1,
+      "status": "passed",
+      "durationMs": 915
+    },
+    {
+      "lesson": 25,
+      "step": 2,
+      "status": "passed",
+      "durationMs": 999
+    },
+    {
+      "lesson": 25,
+      "step": 3,
+      "status": "passed",
+      "durationMs": 5913
+    },
+    {
+      "lesson": 25,
+      "step": 4,
+      "status": "passed",
+      "durationMs": 1137
+    },
+    {
+      "lesson": 25,
+      "step": 5,
+      "status": "passed",
+      "durationMs": 634
+    },
+    {
+      "lesson": 25,
+      "step": 6,
+      "status": "passed",
+      "durationMs": 2468
+    }
+  ]
+}

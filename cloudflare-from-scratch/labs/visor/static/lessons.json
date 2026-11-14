@@ -1,0 +1,1004 @@
+{
+ "version": "1.0.0",
+ "lessons": [
+  {
+   "id": 0,
+   "title": {
+    "en": "Before you start",
+    "es": "Antes de empezar"
+   }
+  },
+  {
+   "id": 1,
+   "title": {
+    "en": "A request goes through the edge",
+    "es": "Un pedido pasa por el borde"
+   }
+  },
+  {
+   "id": 2,
+   "title": {
+    "en": "DNS with or without the proxy",
+    "es": "DNS con proxy o sin proxy"
+   }
+  },
+  {
+   "id": 3,
+   "title": {
+    "en": "TLS in two legs",
+    "es": "TLS en dos tramos"
+   }
+  },
+  {
+   "id": 4,
+   "title": {
+    "en": "An origin with no open ports",
+    "es": "Un origen sin puertos abiertos"
+   }
+  },
+  {
+   "id": 5,
+   "title": {
+    "en": "An isolate, not a container",
+    "es": "Un isolate, no un contenedor"
+   }
+  },
+  {
+   "id": 6,
+   "title": {
+    "en": "Wrangler and the configuration",
+    "es": "Wrangler y la configuración"
+   }
+  },
+  {
+   "id": 7,
+   "title": {
+    "en": "A Worker in front of your API",
+    "es": "Un Worker delante de tu API"
+   }
+  },
+  {
+   "id": 8,
+   "title": {
+    "en": "Testing a Worker",
+    "es": "Probar un Worker"
+   }
+  },
+  {
+   "id": 9,
+   "title": {
+    "en": "Deploy and observe",
+    "es": "Desplegar y observar"
+   }
+  },
+  {
+   "id": 10,
+   "title": {
+    "en": "What the edge keeps",
+    "es": "Qué guarda el borde"
+   }
+  },
+  {
+   "id": 11,
+   "title": {
+    "en": "The cache key and its traps",
+    "es": "La clave de cache y sus trampas"
+   }
+  },
+  {
+   "id": 12,
+   "title": {
+    "en": "Cache from a Worker",
+    "es": "Cache desde un Worker"
+   }
+  },
+  {
+   "id": 13,
+   "title": {
+    "en": "WAF: rules on the request",
+    "es": "WAF: reglas sobre el pedido"
+   }
+  },
+  {
+   "id": 14,
+   "title": {
+    "en": "Rate limiting",
+    "es": "Rate limiting"
+   }
+  },
+  {
+   "id": 15,
+   "title": {
+    "en": "Access: identity before the origin",
+    "es": "Access: identidad antes del origen"
+   }
+  },
+  {
+   "id": 16,
+   "title": {
+    "en": "KV: fast reads, eventual writes",
+    "es": "KV: leer rápido, escribir eventual"
+   }
+  },
+  {
+   "id": 17,
+   "title": {
+    "en": "D1: SQLite at the edge",
+    "es": "D1: SQLite en el borde"
+   }
+  },
+  {
+   "id": 18,
+   "title": {
+    "en": "R2: objects without egress fees",
+    "es": "R2: objetos sin costo de salida"
+   }
+  },
+  {
+   "id": 19,
+   "title": {
+    "en": "Durable Objects: one place per thing",
+    "es": "Durable Objects: un lugar por cosa"
+   }
+  },
+  {
+   "id": 20,
+   "title": {
+    "en": "Durable Objects over time",
+    "es": "Durable Objects en el tiempo"
+   }
+  },
+  {
+   "id": 21,
+   "title": {
+    "en": "Hyperdrive: your Postgres from the edge",
+    "es": "Hyperdrive: tu Postgres desde el borde"
+   }
+  },
+  {
+   "id": 22,
+   "title": {
+    "en": "Queues: at least once",
+    "es": "Queues: al menos una vez"
+   }
+  },
+  {
+   "id": 23,
+   "title": {
+    "en": "Workflows: steps that survive",
+    "es": "Workflows: pasos que sobreviven"
+   }
+  },
+  {
+   "id": 24,
+   "title": {
+    "en": "Cron and platform events",
+    "es": "Cron y eventos de la plataforma"
+   }
+  },
+  {
+   "id": 25,
+   "title": {
+    "en": "An edge you can defend",
+    "es": "Un borde que se puede defender"
+   }
+  }
+ ],
+ "commands": [
+  {
+   "lesson": 0,
+   "step": 4,
+   "argv": [
+    "get",
+    "/api/shipments/R-1042"
+   ]
+  },
+  {
+   "lesson": 0,
+   "step": 5,
+   "argv": [
+    "help"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 1,
+   "argv": [
+    "trace"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 2,
+   "argv": [
+    "headers"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 3,
+   "argv": [
+    "cf"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 4,
+   "argv": [
+    "get",
+    "/echo"
+   ]
+  },
+  {
+   "lesson": 1,
+   "step": 5,
+   "argv": [
+    "origin",
+    "/echo"
+   ]
+  },
+  {
+   "lesson": 2,
+   "step": 1,
+   "argv": [
+    "dns",
+    "www.cloudflare.com"
+   ]
+  },
+  {
+   "lesson": 2,
+   "step": 2,
+   "argv": [
+    "dns",
+    "github.com"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 2,
+   "argv": [
+    "tls",
+    "flexible"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 3,
+   "argv": [
+    "tls",
+    "full",
+    "impostor"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 4,
+   "argv": [
+    "tls",
+    "strict",
+    "origin"
+   ]
+  },
+  {
+   "lesson": 3,
+   "step": 5,
+   "argv": [
+    "tls",
+    "strict",
+    "impostor"
+   ]
+  },
+  {
+   "lesson": 4,
+   "step": 3,
+   "argv": [
+    "tunnel"
+   ]
+  },
+  {
+   "lesson": 5,
+   "step": 1,
+   "argv": [
+    "isolate"
+   ]
+  },
+  {
+   "lesson": 5,
+   "step": 2,
+   "argv": [
+    "isolate"
+   ]
+  },
+  {
+   "lesson": 5,
+   "step": 4,
+   "argv": [
+    "isolate"
+   ]
+  },
+  {
+   "lesson": 6,
+   "step": 2,
+   "argv": [
+    "config"
+   ]
+  },
+  {
+   "lesson": 6,
+   "step": 4,
+   "argv": [
+    "config"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 1,
+   "argv": [
+    "get",
+    "/api/shipments/R-1043"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 2,
+   "argv": [
+    "options",
+    "/api/shipments/R-1042",
+    "https://shop.example"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 3,
+   "argv": [
+    "options",
+    "/api/shipments/R-1042",
+    "https://other.example"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 4,
+   "argv": [
+    "get",
+    "/api/admin/users"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 5,
+   "argv": [
+    "spans",
+    "4"
+   ]
+  },
+  {
+   "lesson": 7,
+   "step": 6,
+   "argv": [
+    "get",
+    "/lab/last-request"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 2,
+   "argv": [
+    "account"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 3,
+   "argv": [
+    "wrangler",
+    "deploy",
+    "--tag",
+    "v1"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 4,
+   "argv": [
+    "wrangler",
+    "versions",
+    "upload",
+    "--tag",
+    "v2",
+    "--var",
+    "VERSION:v2"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 5,
+   "argv": [
+    "wrangler",
+    "versions",
+    "deploy",
+    "--version-tag",
+    "v1@90%",
+    "--version-tag",
+    "v2@10%",
+    "-y"
+   ]
+  },
+  {
+   "lesson": 9,
+   "step": 6,
+   "argv": [
+    "split",
+    "/version",
+    "40"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 1,
+   "argv": [
+    "get",
+    "/track/R-1042"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 2,
+   "argv": [
+    "get",
+    "/api/shipments/R-1042"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 3,
+   "argv": [
+    "remote",
+    "/c/public",
+    "2"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 4,
+   "argv": [
+    "remote",
+    "/c/cookie",
+    "2"
+   ]
+  },
+  {
+   "lesson": 10,
+   "step": 5,
+   "argv": [
+    "remote",
+    "/c/silent",
+    "2"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 1,
+   "argv": [
+    "get",
+    "/lab/cache/profile",
+    "-H",
+    "x-user:ana"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 2,
+   "argv": [
+    "get",
+    "/lab/cache/profile",
+    "-H",
+    "x-user:beto"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 3,
+   "argv": [
+    "get",
+    "/lab/cache/profile-safe",
+    "-H",
+    "x-user:ana"
+   ]
+  },
+  {
+   "lesson": 11,
+   "step": 4,
+   "argv": [
+    "get",
+    "/lab/cache/profile-safe",
+    "-H",
+    "x-user:beto"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 1,
+   "argv": [
+    "get",
+    "/lab/cache/rate?zone=dub"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 2,
+   "argv": [
+    "get",
+    "/lab/cache/rate?zone=dub"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 3,
+   "argv": [
+    "get",
+    "/lab/cache/purge?zone=dub"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 4,
+   "argv": [
+    "get",
+    "/lab/cache/rate?zone=dub"
+   ]
+  },
+  {
+   "lesson": 12,
+   "step": 5,
+   "argv": [
+    "spans",
+    "4"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 1,
+   "argv": [
+    "get",
+    "/api/admin/users"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 2,
+   "argv": [
+    "get",
+    "/API/admin/users"
+   ]
+  },
+  {
+   "lesson": 13,
+   "step": 3,
+   "argv": [
+    "spans",
+    "2"
+   ]
+  },
+  {
+   "lesson": 14,
+   "step": 1,
+   "argv": [
+    "limit",
+    "k1"
+   ]
+  },
+  {
+   "lesson": 14,
+   "step": 2,
+   "argv": [
+    "limit",
+    "k2",
+    "3"
+   ]
+  },
+  {
+   "lesson": 14,
+   "step": 4,
+   "argv": [
+    "spans",
+    "2"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 1,
+   "argv": [
+    "panel"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 2,
+   "argv": [
+    "token"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 3,
+   "argv": [
+    "panel",
+    "--token"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 4,
+   "argv": [
+    "panel",
+    "--aud",
+    "other-app"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 5,
+   "argv": [
+    "panel",
+    "--expired"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 6,
+   "argv": [
+    "panel",
+    "--tampered"
+   ]
+  },
+  {
+   "lesson": 15,
+   "step": 7,
+   "argv": [
+    "panel",
+    "--direct"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 2,
+   "argv": [
+    "get",
+    "/api/shipments/R-1042"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 3,
+   "argv": [
+    "get",
+    "/api/shipments/R-1042"
+   ]
+  },
+  {
+   "lesson": 16,
+   "step": 4,
+   "argv": [
+    "race",
+    "kv"
+   ]
+  },
+  {
+   "lesson": 17,
+   "step": 2,
+   "argv": [
+    "quote",
+    "MAD",
+    "2.5"
+   ]
+  },
+  {
+   "lesson": 17,
+   "step": 5,
+   "argv": [
+    "quote",
+    "XYZ",
+    "1"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 1,
+   "argv": [
+    "proof",
+    "put",
+    "R-1043",
+    "signed",
+    "by",
+    "Ana"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 2,
+   "argv": [
+    "proof",
+    "get",
+    "R-1043"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 4,
+   "argv": [
+    "proof",
+    "get",
+    "R-1044"
+   ]
+  },
+  {
+   "lesson": 18,
+   "step": 5,
+   "argv": [
+    "spans",
+    "3"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 1,
+   "argv": [
+    "race",
+    "do"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 2,
+   "argv": [
+    "race",
+    "kv"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 3,
+   "argv": [
+    "race",
+    "do",
+    "200"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 4,
+   "argv": [
+    "get",
+    "/shipments/R-1043/state"
+   ]
+  },
+  {
+   "lesson": 19,
+   "step": 5,
+   "argv": [
+    "spans",
+    "1"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 1,
+   "argv": [
+    "live",
+    "R-1044"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 2,
+   "argv": [
+    "get",
+    "/shipments/R-1044/state"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 3,
+   "argv": [
+    "webhook",
+    "w-1",
+    "R-1044",
+    "delivered"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 4,
+   "argv": [
+    "get",
+    "/shipments/R-1044/state"
+   ]
+  },
+  {
+   "lesson": 20,
+   "step": 5,
+   "argv": [
+    "spans",
+    "8"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 1,
+   "argv": [
+    "get",
+    "/direct/shipments/R-1044"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 2,
+   "argv": [
+    "get",
+    "/api/shipments/R-1044"
+   ]
+  },
+  {
+   "lesson": 21,
+   "step": 3,
+   "argv": [
+    "spans",
+    "2"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 1,
+   "argv": [
+    "webhook",
+    "m-1",
+    "R-1042",
+    "delivered"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 2,
+   "argv": [
+    "webhook",
+    "m-1",
+    "R-1042",
+    "delivered"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 3,
+   "argv": [
+    "webhook",
+    "m-2",
+    "R-1042",
+    "lost",
+    "in",
+    "space"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 4,
+   "argv": [
+    "dead"
+   ]
+  },
+  {
+   "lesson": 22,
+   "step": 5,
+   "argv": [
+    "movements",
+    "R-1042"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 1,
+   "argv": [
+    "return",
+    "start",
+    "r-1",
+    "R-1043"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 2,
+   "argv": [
+    "return",
+    "status",
+    "r-1"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 3,
+   "argv": [
+    "return",
+    "approve",
+    "r-1",
+    "ana"
+   ]
+  },
+  {
+   "lesson": 23,
+   "step": 4,
+   "argv": [
+    "return",
+    "start",
+    "r-1",
+    "R-1043"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 2,
+   "argv": [
+    "cron"
+   ]
+  },
+  {
+   "lesson": 24,
+   "step": 4,
+   "argv": [
+    "spans",
+    "3"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 1,
+   "argv": [
+    "get",
+    "/api/admin/users"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 2,
+   "argv": [
+    "panel",
+    "--direct"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 3,
+   "argv": [
+    "webhook",
+    "c-1",
+    "R-1043",
+    "delivered"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 3,
+   "argv": [
+    "webhook",
+    "c-1",
+    "R-1043",
+    "delivered"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 4,
+   "argv": [
+    "race",
+    "do"
+   ]
+  },
+  {
+   "lesson": 25,
+   "step": 5,
+   "argv": [
+    "spans",
+    "6"
+   ]
+  }
+ ]
+}

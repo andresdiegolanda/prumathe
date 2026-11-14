@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rumbo · edge viewer</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="visor.css">
+<script src="visor.js" defer></script>
+</head>
+<body>
+<header>
+  <h1 id="title">Rumbo · edge viewer</h1>
+  <span class="live" id="live" role="status"><i></i><span id="live-text">connecting</span></span>
+  <span class="spacer"></span>
+  <button class="btn" id="follow" type="button" aria-pressed="true">Follow the latest</button>
+  <button class="btn" id="pause" type="button" aria-pressed="false">Pause</button>
+  <button class="btn" id="lang" type="button">ES</button>
+  <button class="btn" id="theme" type="button">Dark</button>
+</header>
+<main>
+  <section class="feed" aria-labelledby="feed-title">
+    <h2 class="eyebrow" id="feed-title">What happened at the edge</h2>
+    <div id="feed"></div>
+  </section>
+  <section class="center" aria-labelledby="scene-title">
+    <h2 class="eyebrow" id="scene-title">The path of the event</h2>
+    <div class="scene" id="scene"></div>
+    <div class="bar">
+      <span id="show-label">Show:</span>
+      <button class="btn" type="button" data-kind="request" aria-pressed="true">requests</button>
+      <button class="btn" type="button" data-kind="queue" aria-pressed="true">queue</button>
+      <button class="btn" type="button" data-kind="alarm" aria-pressed="true">alarms</button>
+      <button class="btn" type="button" data-kind="cron" aria-pressed="true">cron</button>
+      <span class="spacer"></span>
+      <span id="hatch-note">The hatched pieces do not run in the kit; the viewer does not make them up.</span>
+    </div>
+  </section>
+  <aside class="side" aria-labelledby="event-title">
+    <h2 class="eyebrow" id="event-title">The event, span by span</h2>
+    <div class="wf" id="wf"></div>
+    <div class="attrs" id="attrs"></div>
+    <h2 class="eyebrow" id="piece-title">The piece</h2>
+    <div id="card"></div>
+  </aside>
+</main>
+</body>
+</html>

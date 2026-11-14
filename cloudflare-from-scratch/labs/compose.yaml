@@ -1,0 +1,94 @@
+# The kit of the course: docker compose up -d --wait
+# Only the edge is published: the Worker on 127.0.0.1:18097 and its live viewer on 127.0.0.1:18098.
+# The origin has no port on the host.
+name: prumathe-cf
+services:
+  db:
+    image: postgres:18.7-bookworm@sha256:ece55f7868da684e400f82f1030a050718adbdd65c23aa500c486f6e2950dc0f
+    environment:
+      POSTGRES_DB: rumbo
+      POSTGRES_USER: rumbo
+      POSTGRES_PASSWORD: rumbo
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U rumbo -d rumbo]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  origin:
+    build: ./origin
+    image: prumathe-cf-origin:1.0.0
+    depends_on:
+      db: {condition: service_healthy}
+    # 8443 opens last, after the API on 8080: healthy means both answer.
+    healthcheck:
+      test: [CMD, bash, -c, "exec 3<>/dev/tcp/127.0.0.1/8443"]
+      interval: 30s
+      timeout: 3s
+      start_period: 90s
+      start_interval: 2s
+
+  edge:
+    build: ./edge
+    image: prumathe-cf-edge:1.0.0
+    # 8788 is the live viewer (./visor), which runs next to wrangler dev and only reads its spans.
+    ports: ["127.0.0.1:18097:8787", "127.0.0.1:18098:8788"]
+    environment:
+      EDGE: http://127.0.0.1:8787
+    volumes:
+      - ./edge/src:/edge/src
+      - ./edge/test:/edge/test
+      - ./visor:/visor:ro
+      - edge-state:/edge/.wrangler
+    depends_on:
+      origin: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS -o /dev/null 'http://127.0.0.1:8787/health?poll=lab' && curl -fsS -o /dev/null http://127.0.0.1:8788/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 90s
+      start_interval: 2s
+
+  # The command of the lessons: docker compose run --rm lab <command>
+  lab:
+    image: prumathe-cf-edge:1.0.0
+    pull_policy: never
+    profiles: [tools]
+    entrypoint: [node, /edge/lab/lab.mjs]
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./edge/deploy/src:/edge/deploy/src
+
+  # Lesson 03: an HTTPS server that pretends to be the origin, with a self-signed certificate.
+  impostor:
+    image: prumathe-cf-origin:1.0.0
+    pull_policy: never
+    profiles: [tls]
+    environment:
+      TLS_KEYSTORE: /opt/rumbo/tls/impostor.p12
+      TLS_MESSAGE: "Not Rumbo: an impostor"
+    healthcheck:
+      test: [CMD, bash, -c, "exec 3<>/dev/tcp/127.0.0.1/8443"]
+      interval: 30s
+      timeout: 3s
+      start_period: 90s
+      start_interval: 2s
+    depends_on:
+      db: {condition: service_healthy}
+
+  # Lesson 04: a quick tunnel from Cloudflare to the origin, with no port open on the host.
+  tunnel:
+    image: cloudflare/cloudflared:2026.11.0@sha256:b94b96edf2c9c4360f8879c8580cfaa99077f19c849ec595ca2f711b27d4f344
+    profiles: [tunnel]
+    command: [tunnel, --no-autoupdate, --metrics, "0.0.0.0:2000", --url, "http://origin:8080"]
+    depends_on:
+      origin: {condition: service_healthy}
+
+volumes:
+  db-data:
+  edge-state:

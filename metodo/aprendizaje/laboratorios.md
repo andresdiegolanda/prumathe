@@ -175,3 +175,38 @@ Un contador que entrega una biblioteca puede sumar varios pedidos; antes de expl
 
 Origen: LLMs, RAG y MCP 1.0.0: los 974 y 1399 tokens de prompt que informa Spring AI en el ciclo de tools eran la suma de dos pedidos (443 y 531, 652 y 747), y las lecciones 12 y 23 los presentaban como uno ([revisión](../../reviews/2026-10-20-llm-rag-mcp-from-scratch-v1.0.0.md), 3.3).
 Control: el registro del servidor de chat por pedido, en la medición que cita VALIDATION.
+
+### Un comando que espera el efecto de su pedido lo reconoce por una marca propia
+
+Cuando el lab manda algo que se procesa después (un mensaje a una cola, un paso de un workflow) y espera ver el resultado, marca el pedido con un valor que genera él y espera el registro con esa marca. Un registro anterior del mismo evento no confirma el pedido nuevo, y la hora tampoco alcanza para distinguirlos.
+
+Origen: Cloudflare 1.0.0: el paso 22.2 manda dos veces el mismo webhook; en la primera corrida completa, `lab webhook` dio por terminada la segunda entrega con el registro de la primera, antes de que el consumidor la procesara ([VALIDATION](../../cloudflare-from-scratch/docs/VALIDATION.md)).
+Control: el paso 22.2 de la suite espera `already saved: not saved again`, que solo aparece si se leyó la segunda entrega.
+
+### Una herramienta local que controla el encabezado Host se usa desde su propio contenedor
+
+Las herramientas de un servidor de desarrollo que rechazan otro Host se invocan con `docker compose exec` en el contenedor que las sirve, contra localhost; no desde otro contenedor por el nombre del servicio ni cambiando el encabezado.
+
+Origen: Cloudflare 1.0.0: el explorador local de wrangler dev respondía `Invalid Host header` a `edge:8787` desde el contenedor del lab; `spans` y `cron` pasaron a `docker compose exec edge lab` ([TEACHING](../../cloudflare-from-scratch/docs/TEACHING.md)).
+Control: `lab.mjs` no usa el explorador si su dirección no es 127.0.0.1 o localhost.
+
+### Una hora que registra el runtime no ordena los eventos
+
+Para decir "los últimos N pedidos", se usa el orden de llegada que guarda el registro, no la hora que anota el runtime, que puede quedar atrás del reloj.
+
+Origen: Cloudflare 1.0.0: en una corrida, el span de un pedido quedó con un `start_ms` 2,2 s anterior al del pedido previo, y `lab spans` lo dejó afuera; el paso 13.3 falló ([VALIDATION](../../cloudflare-from-scratch/docs/VALIDATION.md)).
+Control: `lab spans` ordena los pedidos por `rowid`, el orden en que el explorador los guardó; dentro de un pedido, las llamadas siguen ordenadas por `start_ms`.
+
+### Lo recién publicado no se espera en el DNS
+
+Un nombre nuevo puede tardar en aparecer en el DNS, y un resolvedor que preguntó antes lo recuerda como inexistente. Si el servicio enruta por nombre, el lab le habla a una dirección conocida con el nombre nuevo, y la espera queda en manos del servicio.
+
+Origen: Cloudflare 1.0.0: el túnel rápido de la lección 04 respondió en unos 14 s en las primeras corridas y no respondió en 50 s en otra; medido después, el borde lo enrutó a los 37 s y los servidores del nombre lo publicaron a los 73 s ([VALIDATION](../../cloudflare-from-scratch/docs/VALIDATION.md)).
+Control: el paso 04.3 de la suite.
+
+### Lo que el visor no puede saber, el comando lo marca
+
+Si lo que se observa no dice qué comando lo causó, cada comando deja antes una marca en el mismo registro, en orden con lo demás. La herramienta de la lección la deja afuera, y el visor la usa para nombrar el paso.
+
+Origen: Cloudflare 1.0.0: los spans de wrangler dev no guardan los encabezados del pedido. `lab` pide `/health?run=<comando>&poll=lab` antes de cada comando, y `lab spans` deja afuera lo que termina en `poll=lab` ([TEACHING](../../cloudflare-from-scratch/docs/TEACHING.md)).
+Control: `npm run test:visor` exige que cada evento con paso lleve el comando de ese paso, y eventos en 21 lecciones.

@@ -1,0 +1,19 @@
+{
+  "name": "rumbo-edge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The Worker of Rumbo, run locally by wrangler dev in the course kit.",
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8787",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "postgres": "4.1.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.8.2",
+    "vitest": "5.1.0",
+    "wrangler": "4.162.0"
+  }
+}

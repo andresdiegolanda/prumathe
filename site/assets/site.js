@@ -104,6 +104,21 @@
           ['what-llms-rag-and-mcp-are.html', B('What they are', 'Qué son'), false],
         ],
       },
+      {
+        slug: 'cloudflare-from-scratch',
+        tech: 'Cloudflare',
+        title: B('Cloudflare from scratch', 'Cloudflare desde cero'),
+        text: B(
+          'One request followed from DNS to your origin: proxied DNS, TLS, tunnels, Workers, cache, WAF, rate limiting and Access, and state at the edge with KV, D1, R2, Durable Objects, Queues and Workflows, simulated on your machine.',
+          'Un pedido seguido desde el DNS hasta tu origen: DNS con proxy, TLS, túneles, Workers, cache, WAF, rate limiting y Access, y estado en el borde con KV, D1, R2, Durable Objects, Queues y Workflows, simulados en tu máquina.',
+        ),
+        stats: [B('26 lessons', '26 lecciones'), B('129 lab steps', '129 pasos de lab'), B('Workers and Spring Boot', 'Workers y Spring Boot')],
+        needs: B('Docker with Compose v2, about 1 GB of free memory and 3 GB of disk; a free Cloudflare account only for the optional steps.', 'Docker con Compose v2, alrededor de 1 GB de memoria libre y 3 GB de disco; una cuenta gratuita de Cloudflare solo para los pasos opcionales.'),
+        links: [
+          ['index.html', B('Open the course', 'Abrir el curso'), true],
+          ['what-cloudflare-is.html', B('What it is', 'Qué es'), false],
+        ],
+      },
     ],
     startLesson: B('Start with lesson 00', 'Empezar por la lección 00'),
     methodTitle: B('Always the same way', 'Siempre de la misma manera'),

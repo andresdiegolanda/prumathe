@@ -2,6 +2,12 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-11-14]
+
+### Agregado
+
+- Curso [`cloudflare-from-scratch/`](cloudflare-from-scratch/) 1.0.0, en inglés y español rioplatense: 26 lecciones en 8 unidades, 78 escenas, 78 preguntas, 129 pasos (8 opcionales, sobre una cuenta gratuita), glosario de 51 términos, cuatro apariencias, la página "Qué es Cloudflare" y el mapa de Cloudflare: cada pieza en una escena, con su ficha (qué es, para qué sirve, qué no hace, plan gratuito, lección) y siete escenarios parada por parada. Visor en vivo en http://127.0.0.1:18098 (`labs/visor/`), dentro del contenedor del borde: lee los spans de wrangler dev y dibuja cada pedido, mensaje de la cola, alarma y cron sobre las piezas del kit, con el comando de lab y el paso de la lección que lo causó; `npm run test:visor` pasó sus 11 controles. Kit de Docker Compose sin cuenta: el Worker de Rumbo, una plataforma ficticia de seguimiento de envíos, en wrangler dev 4.162.0 con KV, D1, R2, Durable Objects, Queues, Workflows, Hyperdrive y rate limiting simulados, un origen Spring Boot 4.1.2 con PostgreSQL 18.7, cloudflared para un túnel rápido y el comando `lab`; solo publica 127.0.0.1:18097 y 127.0.0.1:18098. [Validación](cloudflare-from-scratch/docs/VALIDATION.md) (121 de 129 pasos en una corrida secuencial desde cero; los 8 de cuenta, no) y [revisión](reviews/2026-11-14-cloudflare-from-scratch-v1.0.0.md). Tarjeta en la portada ([`site/`](site/)), entrada en el [`README.md`](README.md), workflow [`validate-cloudflare.yml`](.github/workflows/validate-cloudflare.yml), cards en el [`tablero.md`](tablero.md) (pasos de cuenta, publicación, foro, macOS y Linux, y el paso a `cf`) y los puertos de Microsoft Entra y de este curso en la card de puertos. Aprendizajes agregados en [`laboratorios.md`](metodo/aprendizaje/laboratorios.md) (esperar un pedido por una marca propia, usar una herramienta que controla el Host desde su contenedor, ordenar eventos por llegada, no esperar en el DNS un nombre recién publicado y marcar desde el comando lo que el visor no puede saber) y en [`interfaz.md`](metodo/aprendizaje/interfaz.md) (medir cada texto de un dibujo dentro de su caja, en cada estado).
+
 ## [2026-10-29]
 
 ### Agregado

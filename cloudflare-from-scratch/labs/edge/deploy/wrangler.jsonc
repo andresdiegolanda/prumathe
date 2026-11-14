@@ -1,0 +1,12 @@
+// The Worker that goes to your Cloudflare account in the steps marked "account" (lessons 09 and 10).
+// It has no bindings, so it fits the free plan, and Workers Cache sits in front of it.
+// docker compose run --rm lab wrangler deploy  publishes it at rumbo-edge-demo.<your subdomain>.workers.dev
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "rumbo-edge-demo",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "vars": { "VERSION": "v1" },
+  "cache": { "enabled": true }
+}

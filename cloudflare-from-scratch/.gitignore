@@ -1,0 +1,10 @@
+dist/
+release/
+node_modules/
+.qa/
+target/
+*.log
+.env
+.dev.vars
+.wrangler/
+worker-configuration.d.ts

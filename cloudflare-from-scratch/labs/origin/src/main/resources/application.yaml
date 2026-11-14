@@ -1,0 +1,25 @@
+# The origin of Rumbo. Plain HTTP on 8080 inside the Compose network; TlsServer adds HTTPS on 8443.
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:db}:5432/rumbo
+    username: rumbo
+    password: rumbo
+  main:
+    banner-mode: "off"
+rumbo:
+  # The panel accepts tokens of the course's TEST issuer, served by the edge. With Cloudflare Access,
+  # these three values become the team domain, its certs URL and the AUD tag of the application.
+  access:
+    issuer: ${ACCESS_ISSUER:http://test-issuer.local}
+    certs: ${ACCESS_CERTS:http://edge:8787/test-issuer/certs}
+    audience: ${ACCESS_AUD:rumbo-panel}
+  tls:
+    keystore: ${TLS_KEYSTORE:/opt/rumbo/tls/origin.p12}
+    message: ${TLS_MESSAGE:Rumbo origin over TLS}
+    port: ${TLS_PORT:8443}
+logging:
+  level:
+    root: warn
+    rumbo: info

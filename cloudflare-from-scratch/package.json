@@ -1,0 +1,17 @@
+{
+  "name": "cloudflare-from-scratch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare in front of an application and as a platform to run code next to the user, through visual models and real labs, EN / ES",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "preview": "node scripts/serve.mjs",
+    "test:labs": "node scripts/test-labs.mjs",
+    "test:visor": "node scripts/test-visor.mjs",
+    "release": "npm run build && npm run check && node scripts/package.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
