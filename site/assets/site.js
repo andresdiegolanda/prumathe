@@ -34,10 +34,10 @@
         tech: 'Microsoft Entra ID',
         title: B('Microsoft Entra from scratch', 'Microsoft Entra desde cero'),
         text: B(
-          'Follow authentication and authorization through an Angular client, a Spring API and PostgreSQL: Windows sign-in and its Primary Refresh Token, PKCE, tokens, scopes, roles, ownership, row security and transaction boundaries. This course is entirely in English.',
-          'Seguí la autenticación y la autorización en una app Angular, una API Spring y PostgreSQL: el inicio de sesión de Windows con su Primary Refresh Token, PKCE, tokens, scopes, roles, propiedad de filas, RLS y transacciones. Este curso está íntegramente en inglés.',
+          'Follow authentication and authorization through an Angular client, a Spring API and PostgreSQL: Windows sign-in and its Primary Refresh Token, PKCE, tokens, scopes, roles, ownership, row security and transaction boundaries.',
+          'Seguí la autenticación y la autorización en una app Angular, una API Spring y PostgreSQL: el inicio de sesión de Windows con su Primary Refresh Token, PKCE, tokens, scopes, roles, propiedad de filas, RLS y transacciones.',
         ),
-        stats: [B('25 lessons', '25 lecciones'), B('50 local assertions', '50 aserciones locales'), B('English', 'Inglés')],
+        stats: [B('25 lessons', '25 lecciones'), B('50 local assertions', '50 aserciones locales'), B('Angular and Spring', 'Angular y Spring')],
         needs: B('Node.js 24 and Docker with Compose v2. An Entra practice tenant for the separate online workbook.', 'Node.js 24 y Docker con Compose v2. Un tenant de práctica de Entra para el recorrido en línea separado.'),
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],
@@ -157,8 +157,8 @@
       {
         title: B('Two languages, the same content', 'En dos idiomas, el mismo contenido'),
         text: B(
-          'Most courses offer English and Rioplatense Spanish, with technical terms as they appear in the tools. The Microsoft Entra course is in English.',
-          'La mayoría de los cursos ofrece inglés y español rioplatense, con los términos técnicos tal como aparecen en las herramientas. El curso de Microsoft Entra está en inglés.',
+          'Every course is in English and Rioplatense Spanish, with technical terms as they appear in the tools.',
+          'Todos los cursos están en inglés y en español rioplatense, con los términos técnicos tal como aparecen en las herramientas.',
         ),
       },
       {

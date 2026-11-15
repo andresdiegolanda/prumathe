@@ -1,6 +1,17 @@
 # Validation record
 
-Release 1.2.1. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, release 1.2.1 on 15 November 2026.
+Release 1.3.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, releases 1.2.1 and 1.3.0 on 15 November 2026.
+
+## Release 1.3.0
+
+What changed: the course is in English and Rioplatense Spanish, with the same content and structure. EN and ES in the header choose the language. Both languages cover the 25 lessons with their scenes, questions and activities, the 9 model families with their controls, the glossary, the orientation page, the big picture, the downloadable notes (`downloads/course-notes-en.txt` and `downloads/course-notes-es.txt`) and the documents of the kit (`labs/README.md`, `labs/TENANT.md`, `labs/TENANT-EVIDENCE.txt`, `labs/CAPSTONE.md` and `labs/WORKSHEET.txt`, both languages in the same file). The kit code and its output, the Angular application and the maintainer documents stay in English. The English text is unchanged: the English notes differ from 1.2.1 only in the version line. Below 1000 px wide, the course name wraps and the lesson tabs scroll sideways, so the header no longer overflows the page; at 390 px it already did in 1.2.1, cutting the lesson on the right.
+
+- `node scripts/check.mjs`: every text of the curriculum, the orientation page and the glossary has a non-empty English and Spanish version; every model state renders under four palettes in both languages; the notes of each language name every lesson; the rest as in 1.2.1. The engine validates both languages of the big picture.
+- Browser pass in Chromium under the course CSP: the home page, the orientation page and the four views of every lesson (204 pages) in both languages at 1440x900, 1366x768, 1920x1080, 820x1180, 761x900, 390x844 and 360x740, with no page error, no element reaching past the viewport, no broken value and no English sentence left in the Spanish pages. Every text of every model measured inside its box in both languages, for every single-control variation (408 renders).
+- Big picture: every stop of every journey walked with the keyboard in both languages at 1440x900 (Classic), 1366x768 (Dark), 390x844 (Classic) and 1920x1080 (Projector), 132 stops each, with no problem and no console error; every label inside its box under the four skins in both languages.
+- Spanish names of Entra admin center screens, checked on 15 November 2026 against Microsoft Learn in Spanish (quickstarts to register an application and to expose a web API, app roles, assigning users and groups to an enterprise application, registering an application for Microsoft Graph). Names given consistently are shown in parentheses on first appearance. Application (client) ID, Directory (tenant) ID, Application ID URI, Accounts in this organizational directory only and Manifest stay in English only, because that documentation translates them in different ways or does not name them; `labs/TENANT.md` says so.
+- NOT EXECUTED: the tenant workbook in either language, section F included.
+- Observed during the pass, unchanged by this release: on every lesson page, the sidebar progress bar sets an inline style that the course CSP (`style-src 'self'`) refuses, and the browser logs it as a console error.
 
 ## Release 1.2.1
 

@@ -1,12 +1,13 @@
 # Microsoft Entra from scratch
 
-**Understand authentication and authorization by following one request through Angular, Spring and PostgreSQL.** Entirely in English.
+**Understand authentication and authorization by following one request through Angular, Spring and PostgreSQL.** In English and Rioplatense Spanish.
 
 Open [index.html](index.html) in a browser. Start with [What Microsoft Entra ID does](what-entra-is.html), then lesson 00. The [big picture](big-picture.html) shows every piece of the course on one scene and follows a request through it, stop by stop. No server, account, external scripts or network connection is required for the course itself. The downloadable application lab declares its own dependencies.
 
 - 25 lessons in 7 units, 75 scenes and 75 conceptual questions.
 - 9 interactive model families: component boundaries, registration objects, PKCE, tokens, Windows sign-in, permission predicates, rows, database connections and token lifetime.
 - 102 guided activity steps, 51 glossary terms, four display modes and browser-local progress.
+- English and Rioplatense Spanish, chosen with EN and ES: lessons, models, glossary, big picture, notes and the documents of the kit. The kit code and its output stay in English.
 - A big picture: 28 pieces on one scene, 14 journeys with 132 stops (Windows sign-in and its PRT, single sign-on to the app, a day later, sign-in, 200, approval race, 401, 403, 404, RLS, a removed role, tenant setup, browser threats, another API), a card for every piece and for every token, key and cookie with where it is, moment by moment, and a text version.
 - A complete Angular/MSAL client, Spring Security resource server and PostgreSQL database with explicit owner/tenant rules and RLS.
 - 50 local assertions, including invalid tokens, scope/role failures, object isolation, pooled context and concurrent approval.
@@ -28,10 +29,10 @@ node scripts/check.mjs
 node scripts/serve.mjs
 ```
 
-Preview: http://127.0.0.1:4175. Build generates lesson shells, English notes, `downloads/entra-labs.zip` and the static `dist` folder. The kit excludes caches, dependency folders, local configuration and evidence. Follow [labs/README.md](labs/README.md) to start the application; use [docs/VALIDATION.md](docs/VALIDATION.md) to inspect the evidence and limits.
+Preview: http://127.0.0.1:4175. Build generates lesson shells, notes in English and in Spanish, `downloads/entra-labs.zip` and the static `dist` folder. The kit excludes caches, dependency folders, local configuration and evidence. Follow [labs/README.md](labs/README.md) to start the application; use [docs/VALIDATION.md](docs/VALIDATION.md) to inspect the evidence and limits.
 
 The local suite leaves its services running. Its concurrency case resets only practice row 42. Stop with `docker compose stop` from labs; stop Angular with Ctrl+C. Do not run fixture checks against a tenant exercise in progress.
 
-Version 1.2.1. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
+Version 1.3.0. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026; the Spanish names of portal screens, 15 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
 
 See [teaching and editing](docs/TEACHING.md), [deployment](docs/DEPLOYMENT.md), [validation](docs/VALIDATION.md) and the [MIT license](LICENSE).

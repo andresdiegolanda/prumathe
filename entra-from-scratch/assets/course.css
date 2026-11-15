@@ -1945,6 +1945,18 @@ html[data-theme='reading'] .home-footnote {
     font-size: 0.625rem;
   }
 }
+/* Below 1000px the course name wraps, so the language switch and the help button keep their
+   place; on narrow screens the tabs also scroll sideways instead of widening the page. */
+@media (max-width: 1000px) {
+  .brand { min-width: 0; flex-shrink: 1; }
+  .brand strong { display: block; white-space: normal; line-height: 1.15; }
+  .brand small { display: none; }
+}
+@media (max-width: 760px) {
+  .brand { max-width: 45%; }
+  .tabs { gap: 14px; min-width: 0; overflow-x: auto; }
+  .tabs button { white-space: nowrap; flex: none; }
+}
 
 /* Commands support an experiment; prediction and explanation stay primary. */
 .command-reference { margin: 1rem 0; border: 1px solid var(--line); border-radius: .5rem; padding: .75rem; }

@@ -6,7 +6,12 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 
 ### Cambiado
 
+- Microsoft Entra 1.3.0, en inglés y en español rioplatense: las 25 lecciones con sus escenas, preguntas y actividades, los 9 modelos con sus controles, el glosario, la página de orientación, el panorama, los apuntes (`downloads/course-notes-es.txt`, nuevo) y los documentos del kit (`labs/README.md`, `labs/TENANT.md`, `labs/TENANT-EVIDENCE.txt`, `labs/CAPSTONE.md` y `labs/WORKSHEET.txt`, con los dos idiomas en el mismo archivo). EN y ES, en la cabecera, eligen el idioma. El código del kit y su salida, la app Angular y los documentos de mantenimiento siguen en inglés. Las pantallas del Entra admin center se nombran en inglés, con el nombre en español entre paréntesis donde la documentación de Microsoft en español lo da de forma coherente; los que no, marcados en [`entra-from-scratch/labs/TENANT.md`](entra-from-scratch/labs/TENANT.md). [`entra-from-scratch/scripts/check.mjs`](entra-from-scratch/scripts/check.mjs) exige los dos idiomas en cada texto. La portada de Prumathe ([`site/assets/site.js`](site/assets/site.js)), el [`README.md`](README.md) y el [`tablero.md`](tablero.md) dejan de decir que el curso está solo en inglés. Lo verificado, en [`entra-from-scratch/docs/VALIDATION.md`](entra-from-scratch/docs/VALIDATION.md).
 - Microsoft Entra 1.2.1: en el panorama, el inicio de sesión de Windows pasa a ser una pieza propia ("Windows sign-in", LogonUI y LSA), adonde llega la línea de Alice antes de CloudAP, y el TPM sale de la zona de Windows y queda junto al navegador, como hardware del equipo (28 piezas, 132 paradas). Los tres recorridos de Windows van primero: los L, M y N de la 1.2.0 son ahora A, B y C, y los anteriores A a K pasan a D a N, con las referencias entre recorridos y la actividad de la lección 10 al día. Lo verificado, en [`entra-from-scratch/docs/VALIDATION.md`](entra-from-scratch/docs/VALIDATION.md); versión al día en el README del curso, [`README.md`](README.md) y [`tablero.md`](tablero.md).
+
+### Corregido
+
+- Microsoft Entra: en pantallas de menos de 1000 px de ancho, la cabecera ya no se sale de la página (en 390 px ya pasaba en la 1.2.1 y recortaba la lección por la derecha); el nombre del curso se parte en dos líneas y las pestañas de la lección se desplazan de costado ([`entra-from-scratch/assets/course.css`](entra-from-scratch/assets/course.css)).
 
 ## [2026-11-14]
 

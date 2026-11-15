@@ -8,7 +8,11 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const c={window:{}};
 for(const name of ['curriculum','reference','about','visuals'])vm.runInNewContext(read('assets/'+name+'.js'),c);
-const course=c.window.ENTRA_COURSE,refs=c.window.ENTRA_REFERENCE,visuals=c.window.EntraVisuals;
+const course=c.window.ENTRA_COURSE,refs=c.window.ENTRA_REFERENCE,visuals=c.window.EntraVisuals,about=c.window.ENTRA_ABOUT;
+// Every text exists in English and in Rioplatense Spanish, and neither is empty.
+const pair=(v,label)=>{assert.equal(typeof v?.en,'string',label);assert.equal(typeof v?.es,'string',label);assert.ok(v.en.trim()&&v.es.trim(),label);};
+const pairs=(node,where)=>{if(Array.isArray(node))return node.forEach((x,i)=>pairs(x,where+'.'+i));if(node&&typeof node==='object'){if('en' in node||'es' in node)return pair(node,where);for(const [k,v] of Object.entries(node))pairs(v,where+'.'+k);}};
+course.units.forEach((u,i)=>pair(u,'unit '+i));
 assert.equal(course.lessons.length,25);assert.equal(course.units.length,7);
 assert.equal(new Set(course.lessons.map(l=>l.slug)).size,25);
 const answers=[];
@@ -17,20 +21,24 @@ const runner=read('labs/lab.mjs');
 for(const [index,l] of course.lessons.entries()){
   assert.equal(l.id,index);assert.ok(course.units[l.unit]);assert.equal(l.frames.length,3);assert.equal(l.quiz.length,3);
   assert.ok(refs.sources[l.source]);assert.ok(fs.existsSync(path.join(root,'lessons',l.slug+'.html')));
-  for(const f of l.frames){assert.ok(f.text.en.length>150);assert.ok(f.rule.en.length>20);}
-  for(const q of l.quiz){assert.equal(q.options.length,3);assert.ok(q.correct>=0&&q.correct<3);assert.ok(q.explanation.en.length>30);answers.push(q.correct);}
-  for(const s of l.lab){assert.ok(s.text.en&&s.expected.en);if(s.command?.startsWith('node lab.mjs ')){commands++;const scenario=s.command.split(' ').at(-1);assert.ok(scenario==='all'||runner.includes('async '+scenario+'()'),scenario);}}
-  for(const theme of ['light','dark','reading','projector'])for(let i=0;i<3;i++){
-    const model=visuals.render(l.visual,i,{},'en',theme);
+  for(const key of ['title','intro','experiment'])pair(l[key],l.slug+' '+key);
+  for(const f of l.frames){pair(f.title,l.slug);pair(f.text,l.slug);pair(f.rule,l.slug);assert.ok(f.text.en.length>150);assert.ok(f.rule.en.length>20);}
+  for(const q of l.quiz){pair(q.question,l.slug);q.options.forEach(o=>pair(o,l.slug));pair(q.explanation,l.slug);assert.equal(q.options.length,3);assert.ok(q.correct>=0&&q.correct<3);assert.ok(q.explanation.en.length>30);answers.push(q.correct);}
+  for(const s of l.lab){pair(s.title,l.slug);pair(s.text,l.slug);pair(s.expected,l.slug);if(s.command?.startsWith('node lab.mjs ')){commands++;const scenario=s.command.split(' ').at(-1);assert.ok(scenario==='all'||runner.includes('async '+scenario+'()'),scenario);}}
+  for(const theme of ['light','dark','reading','projector'])for(const lang of ['en','es'])for(let i=0;i<3;i++){
+    const model=visuals.render(l.visual,i,{},lang,theme);
     assert.ok(model.svg.includes('role="group"'));assert.ok(model.controls.length);assert.ok(!/undefined|NaN/.test(model.svg));
-    for(const control of model.controls)for(const value of control.options||[]){
-      const variant=visuals.render(l.visual,i,{[control.key]:value},'en',theme);assert.ok(!/undefined|NaN/.test(variant.svg));
-    }
+    for(const control of model.controls){assert.ok(typeof control.label==='string'&&control.label.trim(),l.slug+' control');for(const option of control.options||[]){
+      const value=option?.value??option;if(typeof option==='object')pair(option.label,l.slug+' option');
+      const variant=visuals.render(l.visual,i,{[control.key]:value},lang,theme);assert.ok(!/undefined|NaN/.test(variant.svg));
+    }}
   }
 }
 for(let period=1;period<=6;period++)assert.ok(!answers.every((v,i)=>v===answers[i%period]),'Repeating answer pattern');
 for(let answer=0;answer<3;answer++)assert.ok(answers.filter(x=>x===answer).length>=15);
-for(const g of refs.glossary)assert.ok(course.lessons[g[4]]);
+for(const g of refs.glossary){assert.ok(g.slice(0,4).every(x=>typeof x==='string'&&x.trim()));assert.ok(course.lessons[g[4]]);}
+pairs(about,'about');
+for(const lang of ['en','es']){const notes=read(`downloads/course-notes-${lang}.txt`);for(const l of course.lessons)assert.ok(notes.includes(`${String(l.id).padStart(2,'0')}. ${l.title[lang]}`),'notes '+lang+' '+l.slug);}
 assert.equal(JSON.parse(read('package.json')).version,course.version);
 const frontend=JSON.parse(read('labs/frontend/package.json'));
 assert.equal(frontend.dependencies['@angular/core'],course.angular);assert.equal(frontend.dependencies['@azure/msal-browser'],course.msal);

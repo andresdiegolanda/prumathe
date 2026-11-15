@@ -1,28 +1,33 @@
-ENTRA TENANT EVIDENCE
-Date:
-Observer:
-Route: REAL TENANT / CASE STUDY
+ENTRA TENANT EVIDENCE / EVIDENCIA DEL TENANT DE ENTRA
+Date / Fecha:
+Observer / Observador:
+Route / Recorrido: REAL TENANT / CASE STUDY (TENANT REAL / CASO DE ESTUDIO)
 No tokens, secrets, passwords, cookies or personal fields belong here.
+Acá no van tokens, secretos, contraseñas, cookies ni datos personales.
 
 For each entry record: EXECUTED with sanitized observation, or NOT EXECUTED.
-1. Two single-tenant registrations and exact SPA redirect URI:
-2. API v2 access-token configuration:
-3. Delegated scopes and required tenant consent:
-4. API user-role assignment:
-5. Real sign-in and callback:
-6. Alice own read 200:
-7. Alice other-owner read 404:
-8. Alice self-approval 404:
-9. Alice approves Bob's pending request 200:
-10. Repeated approval 404:
-11. Bob own read 200:
-12. Bob approval without role 403:
-13. Fixture credential rejected by Entra-mode API 401:
-14. Optional: Windows device joined to the practice tenant, AzureAdPrt YES:
-15. Optional: app sign-in without a password, Edge profile signed in as Alice:
-16. Optional: credential request in an InPrivate window:
-17. Fixture restored / practice cloud objects reviewed for cleanup:
+En cada entrada anotá: EXECUTED con la observación saneada, o NOT EXECUTED.
+1. Two single-tenant registrations and exact SPA redirect URI / Dos registros de un solo tenant y la redirect URI exacta de la SPA:
+2. API v2 access-token configuration / Configuración de access tokens v2 de la API:
+3. Delegated scopes and required tenant consent / Scopes delegados y consentimiento que exige el tenant:
+4. API user-role assignment / Asignación del rol de usuario de la API:
+5. Real sign-in and callback / Inicio de sesión real y callback:
+6. Alice own read 200 / Alice lee lo propio, 200:
+7. Alice other-owner read 404 / Alice lee lo de otro dueño, 404:
+8. Alice self-approval 404 / Alice aprueba lo propio, 404:
+9. Alice approves Bob's pending request 200 / Alice aprueba la solicitud pendiente de Bob, 200:
+10. Repeated approval 404 / Aprobación repetida, 404:
+11. Bob own read 200 / Bob lee lo propio, 200:
+12. Bob approval without role 403 / Bob aprueba sin el rol, 403:
+13. Fixture credential rejected by Entra-mode API 401 / La API en modo Entra rechaza la credencial del fixture, 401:
+14. Optional: Windows device joined to the practice tenant, AzureAdPrt YES / Opcional: dispositivo Windows unido al tenant de práctica, AzureAdPrt YES:
+15. Optional: app sign-in without a password, Edge profile signed in as Alice / Opcional: inicio de sesión en la app sin contraseña, perfil de Edge con la sesión de Alice:
+16. Optional: credential request in an InPrivate window / Opcional: pedido de credenciales en una ventana InPrivate:
+17. Fixture restored / practice cloud objects reviewed for cleanup / Fixture restaurado y objetos de práctica en la nube revisados para limpiarlos:
 
-What remains unverified:
+What remains unverified / Qué queda sin verificar:
 Do not infer MFA, Conditional Access, CAE, role-removal latency, key rotation
 behavior or production transport protection from the local suite.
+No deduzcas de la suite local MFA, Conditional Access, CAE, la demora al quitar
+un rol, el comportamiento de la rotación de claves ni la protección del
+transporte de producción.

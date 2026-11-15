@@ -4,13 +4,15 @@
 
 Teach the decision before the syntax. Every lesson has three scenes, three questions with plausible misconceptions, an interactive model and a guided activity. Every scene names a limit. The capstone requires a request trace, explicit policies, positive and negative evidence, and residual risks. The learner's progress is a declaration stored by lesson slug; it does not certify an executed lab.
 
-English is the sole language of this course. Introduce authentication, authorization, principal and resource before scopes and app roles. Keep user identity, client identity and database identity separate. Use tid plus oid for the course's identity key. Do not use a readable name as an authorization key.
+The course is in English and Rioplatense Spanish, with the same content and structure; Spanish uses voseo. Technical terms stay in English as they are used in practice (token, scope, tenant, refresh token, PRT) and are explained the first time they appear; claims, values and tool output stay exactly as they are. Screens and options of the Entra admin center keep their English name; on its first appearance in a piece, the Spanish name used by Microsoft's Spanish documentation follows in parentheses, only when that documentation names it consistently. `labs/TENANT.md` lists the names that could not be verified. Recurring choices: purchase request is "solicitud de compra", an HTTP request is "pedido", capstone is "trabajo final", the big picture is "Panorama" and fixture stays as it is. The kit code and its output, the Angular application and these maintainer documents stay in English.
+
+Introduce authentication, authorization, principal and resource before scopes and app roles. Keep user identity, client identity and database identity separate. Use tid plus oid for the course's identity key. Do not use a readable name as an authorization key.
 
 The local kit is intentionally a resource-server experiment, not an identity-provider emulator. The fixture does not implement sign-in, code exchange, consent or refresh. The tenant workbook supplies those observations separately. Never describe the hash exercise as a completed PKCE flow or a decoded token as a validated token.
 
 ## Sources of truth
 
-- `assets/curriculum.js`: version, review date, pinned baseline, units, lesson slugs, scenes, questions and activity commands.
+- `assets/curriculum.js`: version, review date, pinned baseline, units, lesson slugs, scenes, questions and activity commands. Every text is `{ en, es }`; a plain string reads the same in both languages, and `check.mjs` requires both.
 - `assets/reference.js`: primary sources and glossary. Glossary relations are declared by slug and resolved for the presentation shell.
 - `assets/about.js`: orientation, historical milestones with primary sources, scope and design judgments.
 - `assets/visuals.js`: deterministic models with selectable objects and controls, under all four palettes.
@@ -21,7 +23,7 @@ The local kit is intentionally a resource-server experiment, not an identity-pro
 
 Versions duplicated in package.json, the frontend package/lock files, pom.xml and compose.yaml are controlled by the static checker. The Docker runtime uses the Java 21 feature line; concrete image digests from validation belong in VALIDATION. Future patch rebuilds must be rechecked.
 
-The course has seven units with stable slugs. A lesson insertion must not transfer progress to a different lesson. The English shell retains Classic, Dark, Reading and Projector. Reading uses one scrolling document. The public course never calls localhost; the application is opened separately.
+The course has seven units with stable slugs. A lesson insertion must not transfer progress to a different lesson. The shell retains Classic, Dark, Reading and Projector in both languages; EN and ES choose the language, which is kept in the browser and in the URL. Reading uses one scrolling document. The public course never calls localhost; the application is opened separately.
 
 ## The big picture
 
