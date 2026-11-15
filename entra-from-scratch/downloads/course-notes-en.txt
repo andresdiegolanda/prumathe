@@ -1,5 +1,5 @@
 MICROSOFT ENTRA FROM SCRATCH
-Version 1.1.0 | Sources reviewed 2026-10-29
+Version 1.2.0 | Sources reviewed 2026-10-29
 Angular 21.2.25 | MSAL Browser 5.27.0 | Spring Boot 4.1.2 | PostgreSQL 18.6
 
 What Microsoft Entra ID does
@@ -674,7 +674,81 @@ https://learn.microsoft.com/en-us/entra/msal/javascript/browser/redirect-bridge
 MSAL v5 migration
 https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration
 
-10. Validate before trusting
+10. Windows sign-in and the Primary Refresh Token
+=================================================================
+On a device joined to Entra, Windows holds a token before the app asks for one.
+Evidence route: tenant
+
+Windows signs in to Entra first
+On a Windows device joined to Entra, the sign-in screen does more than unlock the desktop. LogonUI hands the credentials to the Local Security Authority, whose CloudAP provider passes them to its Microsoft Entra plugin. The plugin gets a nonce from Entra, signs a request with the device key held in the TPM and sends it. Entra checks the credentials, the nonce and the device, then issues a Primary Refresh Token (PRT) and a session key encrypted for this device. The TPM unwraps the session key and wraps it again with its own key; CloudAP keeps both in its cache. A sign-in with Windows Hello for Business adds an MFA claim to the PRT.
+Rule: The first Entra token of the day belongs to the device's sign-in broker, not to an application.
+
+The browser borrows the session, never the PRT
+When MSAL sends the tab to /authorize, Edge with a profile signed in to the work account, or Chrome with the Microsoft Single Sign On extension, recognizes an Entra sign-in URL and asks CloudAP for a PRT cookie. CloudAP builds it with the nonce from that URL and has the TPM sign it with the session key. The browser sends it in the x-ms-RefreshTokenCredential header; page scripts never see it. Entra validates the signature, the nonce and the device, signs Alice in without a password and sets its own session cookie, bound to the device. The code, PKCE and tokens then follow as before. Private windows do not use the PRT.
+Rule: Single sign-on changes how Alice proves who she is, not which tokens the app receives.
+
+Each credential has its own place and clock
+Device keys stay in the TPM. The PRT and its session key stay in CloudAP's cache; the PRT is valid for 90 days and CloudAP renews it at Windows sign-in every 4 hours. A PRT cookie exists for one request. Entra's session cookie lives in the browser's cookies for login.microsoftonline.com. The ID, access and refresh tokens live in the tab's sessionStorage, and a refresh token issued to a SPA lasts 24 hours without sliding. Deleting or disabling the user or the device, or a password change when the PRT came from the password, invalidates the PRT; none of this recalls an access token already issued. Native applications ask WAM, the Windows token broker, which keeps their refresh tokens encrypted with DPAPI. This browser app does not use it.
+Rule: For every credential, name who issues it, where it waits and when it stops working.
+
+MODEL EXPERIMENT: Choose the moment, then the device and the browser. Predict whether /authorize asks Alice for a password before you read the result.
+
+ACTIVITY
+1. Predict the sign-in
+Write two predictions before touching a device. On a Windows device joined to the tenant, will the app ask Alice for a password in a browser profile signed in to her work account? And in a private window? Name the credential that makes the difference.
+Observe: Two predictions and the credential that decides them.
+
+2. Read the device state
+On a Windows 10 or 11 device joined to Entra, open a terminal as the signed-in user, not as administrator, and run the reference command. Read three lines only, and do not copy the output anywhere: it names the device, the tenant and the user.
+Reference: dsregcmd /status
+Observe: AzureAdJoined : YES under Device State, AzureAdPrt : YES under SSO State, and TpmProtected under Device Details.
+
+3. Follow the tenant workbook
+Complete TENANT.md section F on a device joined to your practice tenant: sign in to the Angular application in Edge with a profile signed in as Alice, then in an InPrivate window. Use a practice tenant and invented purchase requests.
+Observe: In the signed-in profile, the account picker the app asks for and no password request. In the InPrivate window, a credential request.
+
+4. Account-free case study
+Use journeys L, M and N of the big picture. For the device keys, the PRT, the session key, the PRT cookie, Entra's session cookie and the ID, access and refresh tokens, write who issues each one, where it waits and when it stops working.
+Observe: Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.
+
+5. Explain the result
+Draw the before and after. Mark what Windows holds, what the browser holds, what the tab holds and what the API receives. Keep raw tokens, cookies and device identifiers out of the notebook.
+Observe: State the observation route and one guarantee it cannot establish: dsregcmd shows that a PRT exists, not what Entra will decide for the app.
+
+CHECKPOINT
+1. Where does the PRT stay on a device joined to Entra?
+A. In the tab's sessionStorage, next to MSAL's tokens
+B. In the browser's cookies for login.microsoftonline.com
+C. In CloudAP's cache inside LSA, with a session key protected by the TPM
+
+2. What does the browser add to the request to /authorize to use the device session?
+A. A PRT cookie in x-ms-RefreshTokenCredential, signed with the session key
+B. The PRT itself, in an Authorization header
+C. Alice's Windows password, encrypted by the TPM
+
+3. Alice signed in to the app without typing a password. What reaches the purchase API?
+A. The PRT, so the API can trust the device
+B. An access token for the API's audience, validated as always
+C. Entra's session cookie
+
+ANSWERS AND REASONS
+1. C: CloudAP receives the PRT at Windows sign-in and keeps it with the TPM-protected session key. The browser and the app only ever see values derived from it.
+2. A: CloudAP builds a PRT cookie for that request and its nonce. The PRT, the session key and the password stay on the device.
+3. B: Single sign-on changes how Entra authenticates Alice. The API still receives, and checks, an access token issued for it.
+
+SOURCES
+Primary Refresh Token (PRT)
+https://learn.microsoft.com/en-us/entra/identity/devices/concept-primary-refresh-token
+Troubleshoot devices with dsregcmd
+https://learn.microsoft.com/en-us/entra/identity/devices/troubleshoot-device-dsregcmd
+Microsoft Edge identity support and configuration
+https://learn.microsoft.com/en-us/deployedge/microsoft-edge-security-identity
+Handle third-party cookie blocking in SPAs
+https://learn.microsoft.com/en-us/entra/identity-platform/reference-third-party-cookies-spas
+Prompt behavior in MSAL.js
+https://learn.microsoft.com/en-us/entra/msal/javascript/browser/prompt-behavior
+
+11. Validate before trusting
 =================================================================
 A signature is one check in a larger resource-server contract.
 Evidence route: local
@@ -736,7 +810,7 @@ SOURCES
 Spring Security resource server JWT
 https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
 
-11. From claims to Spring authorities
+12. From claims to Spring authorities
 =================================================================
 Preserve the meaning of each claim while translating it into policy.
 Evidence route: local
@@ -798,7 +872,7 @@ SOURCES
 Spring Security method authorization
 https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html
 
-12. Read a denial correctly
+13. Read a denial correctly
 =================================================================
 Separate invalid credentials, missing permission and hidden resources.
 Evidence route: local
@@ -860,7 +934,7 @@ SOURCES
 HTTP semantics, RFC 9110
 https://www.rfc-editor.org/rfc/rfc9110.html
 
-13. Ownership is an authorization rule
+14. Ownership is an authorization rule
 =================================================================
 Knowing an identifier does not entitle the caller to its row.
 Evidence route: local
@@ -922,7 +996,7 @@ SOURCES
 OWASP broken object-level authorization
 https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization/
 
-14. PostgreSQL authenticates the API
+15. PostgreSQL authenticates the API
 =================================================================
 Database authentication and end-user authorization are separate layers.
 Evidence route: local
@@ -986,7 +1060,7 @@ https://www.postgresql.org/docs/18/client-authentication.html
 Azure Database for PostgreSQL Entra authentication
 https://learn.microsoft.com/en-us/azure/postgresql/security/security-entra-concepts
 
-15. Row-level security as a second boundary
+16. Row-level security as a second boundary
 =================================================================
 Let the database filter rows, and understand who can bypass the filter.
 Evidence route: local
@@ -1050,7 +1124,7 @@ https://www.postgresql.org/docs/18/ddl-rowsecurity.html
 PostgreSQL 18 transaction isolation
 https://www.postgresql.org/docs/18/transaction-iso.html
 
-16. Transactions, pools and races
+17. Transactions, pools and races
 =================================================================
 Authorization must survive connection reuse and concurrent requests.
 Evidence route: local
@@ -1113,7 +1187,7 @@ SOURCES
 PostgreSQL 18 transaction isolation
 https://www.postgresql.org/docs/18/transaction-iso.html
 
-17. Expiry, renewal and sign-out
+18. Expiry, renewal and sign-out
 =================================================================
 A token is a time-bounded snapshot, not a live directory query.
 Evidence route: local
@@ -1177,7 +1251,7 @@ https://learn.microsoft.com/en-us/entra/msal/javascript/browser/token-lifetimes
 Continuous access evaluation: supported scenarios
 https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-continuous-access-evaluation
 
-18. Connect a real Entra tenant
+19. Connect a real Entra tenant
 =================================================================
 Replace the source of identity evidence while preserving the application policy.
 Evidence route: tenant
@@ -1202,7 +1276,7 @@ Predict how the first real user's oid differs from the seeded Alice value.
 Observe: Write a prediction before opening the tenant or reading the case.
 
 2. Follow the tenant workbook
-Complete TENANT.md sections E and F. Recreate the API in Entra mode, provision invented rows for two practice identities and execute the acceptance matrix. Use TENANT.md in the lab kit. Use a practice tenant and invented purchase requests.
+Complete TENANT.md sections E and G. Recreate the API in Entra mode, provision invented rows for two practice identities and execute the acceptance matrix. Use TENANT.md in the lab kit. Use a practice tenant and invented purchase requests.
 Observe: Own read succeeds, missing role is denied, permitted non-owner approval succeeds, fixture credentials are rejected.
 
 3. Account-free case study
@@ -1242,7 +1316,7 @@ https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in
 Access tokens and token versions
 https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
 
-19. Users, workloads and downstream APIs
+20. Users, workloads and downstream APIs
 =================================================================
 Choose the principal before choosing the grant.
 Evidence route: local
@@ -1306,7 +1380,7 @@ https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of
 Client credentials flow
 https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow
 
-20. Browser threats and architecture choices
+21. Browser threats and architecture choices
 =================================================================
 Understand what CORS, PKCE and a BFF each change.
 Evidence route: local
@@ -1370,7 +1444,7 @@ https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
 OAuth 2.0 security best current practice, RFC 9700
 https://www.rfc-editor.org/rfc/rfc9700.html
 
-21. Debug without leaking credentials
+22. Debug without leaking credentials
 =================================================================
 Follow evidence in order instead of granting more power until the error disappears.
 Evidence route: local
@@ -1432,7 +1506,7 @@ SOURCES
 Validate claims in applications and APIs
 https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation
 
-22. Review the whole design
+23. Review the whole design
 =================================================================
 Find the smallest counterexample that breaks an overbroad claim.
 Evidence route: local
@@ -1494,7 +1568,7 @@ SOURCES
 OAuth 2.0 security best current practice, RFC 9700
 https://www.rfc-editor.org/rfc/rfc9700.html
 
-23. Capstone: defend one request
+24. Capstone: defend one request
 =================================================================
 Deliver an explanation that survives a skeptical review.
 Evidence route: local
@@ -1574,6 +1648,13 @@ PKCE: A challenge and verifier binding the code redemption to the initiating cli
 State: A value used to correlate an authorization response with the initiated interaction.
 Nonce: An OIDC value that binds identity-token evidence to the authentication request.
 Redirect URI: The registered callback destination for an authorization response.
+Primary Refresh Token (PRT): A token Entra issues to the device's sign-in broker at Windows sign-in for single sign-on; never given to an application.
+CloudAP: The Windows sign-in provider inside LSA; its Entra plugin obtains, caches and renews the PRT.
+TPM: A hardware module that keeps the device's private keys and protects the PRT session key.
+Session key: The proof-of-possession key issued with the PRT; requests that use the PRT are signed with it.
+PRT cookie: A value CloudAP signs for one sign-in request; the browser sends it in x-ms-RefreshTokenCredential.
+Single sign-on: Signing in to another application by reusing an established session instead of entering credentials again.
+WAM: Web Account Manager, the Windows token broker that native applications use; this browser app does not use it.
 ID token: The OIDC sign-in result intended for the client; not the purchase API credential.
 Access token: A credential intended for a resource, which validates it and enforces policy.
 Refresh token: A renewal credential used with the identity provider through the client library.
@@ -1726,3 +1807,39 @@ K. Another API, another audience
   3. Controller: The right design: a confidential middle tier uses the on-behalf-of flow at Entra's token endpoint to get a token whose audience is Graph.
   4. Another API: That token is for Graph, under Graph's consent. A nightly job with no user would instead use client credentials and its own endpoint policy.
   A token is for one audience. Reaching another API on the user's behalf is a separate design, with its own consent and threat model; the kit leaves it as an exercise.
+L. Windows sign-in: the PRT
+  1. Alice: Alice signs in to Windows on a device joined to the tenant, with her work password or with Windows Hello for Business. No app is open yet.
+  2. CloudAP: LogonUI hands the credentials to LSA, which passes them to CloudAP and its Microsoft Entra plugin. The plugin gets a nonce from Entra and builds a request with the credentials and the nonce.
+  3. TPM: The request is signed with the private device key, inside the TPM. The key never leaves it.
+  4. Devices: Entra checks the credentials, the nonce and the signature against the public device key, and that the device is valid in the tenant.
+  5. Devices: It issues the PRT, and a session key encrypted with the device's public transport key.
+  6. CloudAP: Both reach CloudAP. Only this device can open the session key: that needs the private transport key.
+  7. TPM: The TPM decrypts the session key with the transport key and wraps it again with its own key.
+  8. CloudAP: CloudAP stores the PRT and the wrapped session key in its cache, inside LSA. Nothing has reached the browser.
+  Before any app is opened, CloudAP holds a PRT for Alice and a session key that only this TPM can use. Neither ever reaches the browser or the app: journey M shows what the browser gets instead.
+M. Open the app: no password
+  1. Angular app: On the same device, Alice opens the app in Edge, whose profile is signed in to her work account, and chooses Sign in.
+  2. MSAL Browser: MSAL makes a verifier and its challenge, as in journey A, and starts loginRedirect with prompt=select_account.
+  3. Browser: The browser navigates the tab to /authorize. It recognizes an Entra sign-in URL and asks Windows for a PRT cookie, passing the nonce from the URL.
+  4. CloudAP: CloudAP builds a PRT cookie for that nonce from the PRT in its cache. The PRT itself stays there.
+  5. TPM: The TPM signs the PRT cookie with the session key.
+  6. Browser: The PRT cookie goes back to the browser, not to the page: MSAL and any injected script never see it.
+  7. Sign-in endpoint: The request reaches /authorize with the client, the scopes and the challenge, and the PRT cookie in the x-ms-RefreshTokenCredential header.
+  8. Devices: Entra validates the session key signature and the nonce, and checks that the device is valid in the tenant.
+  9. Sign-in endpoint: Alice is signed in from the device session. The app asked for select_account, so Entra shows its account picker; choosing her account needs no password. Entra returns the code, and a session cookie for its own site.
+  10. Browser: The browser keeps Entra's session cookie for login.microsoftonline.com, bound to this device, and follows the redirect to /redirect with the code.
+  11. MSAL Browser: From here it is journey A: the MSAL bridge hands the code over, and MSAL redeems it with the verifier.
+  12. Token endpoint: Entra checks the verifier against the challenge and issues the ID, access and refresh tokens.
+  13. Token cache: The three tokens land in sessionStorage, exactly as without Windows. The PRT changed how Alice proved who she is, not what the app holds.
+  Every credential stayed in its place: the PRT and its session key in CloudAP, the PRT cookie on one request, Entra's session cookie in the browser, the app's tokens in sessionStorage. The API still receives only an access token for its audience.
+N. A day later: three clocks
+  1. Token cache: The tab stayed open overnight. Its refresh token was issued yesterday, and a refresh token issued to a SPA lasts 24 hours from issue, a window that does not slide.
+  2. MSAL Browser: acquireTokenSilent finds the access token expired, and the refresh token too.
+  3. Sign-in endpoint: MSAL tries a hidden iframe to /authorize. Where the browser blocks third-party cookies, that silent attempt fails and MSAL raises InteractionRequiredAuthError.
+  4. Angular app: The app answers with an interactive redirect, never with a loop of silent retries.
+  5. Browser: A top-level navigation to /authorize. The browser asks CloudAP for a fresh PRT cookie, for the new nonce.
+  6. CloudAP: The PRT is still good: CloudAP renews it at Windows sign-in every 4 hours, and a PRT stays valid for 90 days while the device is used.
+  7. Sign-in endpoint: With the PRT cookie and Entra's session cookie, Entra returns a new code without asking for a password. New tokens follow, as in journey M.
+  8. Devices: The PRT stops working when Alice or the device is deleted or disabled in Entra, or when she changes her password, if the PRT came from it. From then on it gets her nothing.
+  9. Token cache: None of that reaches tokens already issued: the access token in sessionStorage stays valid until its exp, as in journey H.
+  Three clocks run at once: the SPA refresh token (24 hours, not sliding), the PRT (renewed at Windows sign-in every 4 hours, valid 90 days) and each access token's exp. Losing the PRT stops new sign-ins; it does not withdraw tokens already issued.

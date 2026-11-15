@@ -61,7 +61,24 @@ node tenant-probe.mjs
 
 Expected evidence: tenant-issued requests satisfy the allowed paths and fail the denied paths. The fixture credential remains rejected. Write observations in `TENANT-EVIDENCE.txt` with no raw token values.
 
-## F. Diagnose, then clean up
+## F. Optional: sign in from a Windows device joined to the tenant
+
+This section needs a Windows 10 or 11 device, a virtual machine is enough, joined to your practice tenant (Microsoft Entra joined or hybrid joined), with Alice signed in to Windows. Joining a device is outside this workbook: follow your tenant's process. Step 1 also works on any device joined to an Entra tenant; steps 2 and 3 need the practice tenant, because the SPA registration is single tenant.
+
+1. Open a terminal as the signed-in user, not as administrator, and run:
+
+```text
+dsregcmd /status
+```
+
+Read three lines: `AzureAdJoined : YES` under Device State, `AzureAdPrt : YES` under SSO State and `TpmProtected` under Device Details. `AzureAdPrtUpdateTime` says when the Primary Refresh Token (PRT) was last renewed. Do not copy or share the output: it names the device, the tenant and the user.
+
+2. Open Microsoft Edge with a profile signed in as Alice. In Chrome, the Microsoft Single Sign On extension plays that role.
+3. With the local application in Entra mode (section D), open `http://localhost:18094` and choose Sign in. The app asks Entra for `prompt=select_account`, so Entra shows its account picker; choose Alice's account. Expect no password request. Repeat in an InPrivate window: expect a credential request, because private windows do not use the PRT.
+
+Expected evidence: a PRT on the device, sign-in to the app without a password in the signed-in profile, and a credential request in the private window. Conditional Access in your tenant may still ask for more; record what you observed, not what you expected. The API receives the same thing either way: an access token for its audience. Write observations in `TENANT-EVIDENCE.txt`, without device, tenant or user identifiers.
+
+## G. Diagnose, then clean up
 
 If sign-in fails, inspect tenant registration and the exact redirect URI. If token acquisition fails, inspect requested resource/scopes and consent. If the API returns 401, inspect its expected issuer, audience, tenant, token version and allowed SPA ID. If approval returns 403, inspect scope and API role assignment. If a read returns 404, inspect the invented row's validated tenant and object IDs. Never remove a check merely to obtain 200.
 
@@ -89,3 +106,6 @@ Explain: why Token 1 is rejected; why Token 2 reads 41 but not 42; why Token 3 c
 - [Permissions and consent](https://learn.microsoft.com/en-us/entra/identity-platform/permissions-consent-overview)
 - [Access tokens and token version](https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens)
 - [MSAL redirect bridge](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/redirect-bridge)
+- [Primary Refresh Token](https://learn.microsoft.com/en-us/entra/identity/devices/concept-primary-refresh-token)
+- [Troubleshoot devices with dsregcmd](https://learn.microsoft.com/en-us/entra/identity/devices/troubleshoot-device-dsregcmd)
+- [Microsoft Edge identity support](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-security-identity)

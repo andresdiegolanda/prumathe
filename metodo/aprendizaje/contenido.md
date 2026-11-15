@@ -116,3 +116,10 @@ Sus respuestas repiten reglas del prompt, mezclan idiomas y a veces afirman acci
 
 Origen: LLMs, RAG y MCP 1.0.0, lecciones 18 (el juez y los controles), 19 (la regla que no alcanzó), 24 (un cierre afirmado que no ocurrió) y 25.
 Control: revisión de lectura contra los logs de medición.
+
+### Cada credencial se cuenta con su lugar y su reloj
+
+Un token, una clave o una cookie se explican diciendo quién los emite, dónde esperan en cada momento y cuándo dejan de servir. Lo que pasa antes de la app también cuenta: en un equipo unido a la identidad corporativa, el inicio de sesión del sistema ya consiguió una credencial antes de que el usuario abra nada.
+
+Origen: Microsoft Entra 1.2.0, lección 10 y recorridos L, M y N del panorama; cada token, clave y cookie del panorama tiene su lista de dónde está, momento a momento ([CHANGELOG](../../CHANGELOG.md), 2026-11-14).
+Control: `check.mjs` valida cada entrada de esa lista; que cada elemento la tenga se revisa a mano.

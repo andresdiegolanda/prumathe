@@ -87,7 +87,7 @@ The setup, PKCE hash and fixture claim inspection are narrow local observations.
 | `api/src/main/java/course/entra/Requests.java` | Scope and role requirements; transaction-local context; parameterized row rules; atomic approval |
 | `database/init.sql` | Restricted runtime role, grants, invented rows and RLS policy |
 | `fixture/issuer.mjs` | Local test credentials, including deliberately invalid variants |
-| `TENANT.md` | Real registration and sign-in route |
+| `TENANT.md` | Real registration and sign-in route, including sign-in from a Windows device joined to the tenant |
 
 Use `WORKSHEET.txt` after each activity. Use `CAPSTONE.md` for the final review. The standalone lesson notes explain the concepts without requiring command recall.
 

@@ -1,6 +1,17 @@
 # Validation record
 
-Release 1.1.0. Validation date: 29 October 2026; the big picture was validated on 14 November 2026.
+Release 1.2.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026.
+
+## Release 1.2.0
+
+What changed: lesson 10, "Windows sign-in and the Primary Refresh Token", in unit 2 after "Angular and MSAL". Later lessons move one number; progress is stored by lesson slug, so no recorded progress moves to another lesson. The tenant workbook gains section F, an optional sign-in from a Windows device joined to the tenant, and the evidence sheet three optional lines; the former section F is now G. The big picture gains Windows (CloudAP and the TPM), the browser itself and Entra's device record, five tokens, keys and cookies (device keys, PRT, session key, PRT cookie, Entra session cookie), three journeys (L, M and N), and for every token, key and cookie an ordered list of where it is, moment by moment. That list is an optional field of the shared engine, validated like the rest of the data.
+
+- `node scripts/check.mjs`: 25 lessons, 75 scenes, 75 questions, 102 activity steps, 51 glossary entries, every model state, the new Windows sign-in model included, under four palettes. Big picture: 27 pieces, 35 lines, 13 tokens, keys and cookies, 14 journeys and 131 stops; ids, geometry, texts, lessons, lab commands (`dsregcmd /status` is accepted because the lesson prints it) and that each journey moves only along lines.
+- Browser pass in Chromium under the course CSP from `_headers`: every stop of every journey walked with the keyboard at 1440x900 (Classic), 1366x768 (Dark), 390x844 (Classic) and 1920x1080 (Projector), 131 stops each, with no problem and no console error. Every label measured inside its box under the four skins; zone labels clear of lines and pieces. The scene grew from 1226 by 672 to 1296 by 762; at 1440x900 it is drawn at 0.786, piece names at 11.8 px and subtitles at 9.4 px. Token cards, the catalog of tokens, keys and cookies, and "Where they live" checked by screenshot.
+- Lesson 10 rendered at 1440x900, 1366x768, 390x844, 1920x1080 and in Reading without horizontal overflow; every text of the Windows sign-in model measured inside its box for all control states.
+- The lesson's claims were checked on 14 November 2026 against Microsoft Learn: the Primary Refresh Token concept page, dsregcmd troubleshooting, Microsoft Edge identity support, MSAL.js token lifetimes and prompt behavior, and third-party cookie blocking in SPAs.
+- NOT EXECUTED: tenant workbook section F. No Windows device joined to a practice tenant was used, so the dsregcmd lines, the account picker without a password request and the credential request in an InPrivate window remain to be observed.
+- Observed during the pass, unchanged by this release: on every lesson page, the sidebar progress bar sets an inline style that the course CSP (`style-src 'self'`) refuses, and the browser logs it as a console error.
 
 ## Big picture (1.1.0)
 

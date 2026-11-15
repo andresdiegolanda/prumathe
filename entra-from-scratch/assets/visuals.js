@@ -107,6 +107,29 @@ window.EntraVisuals = (() => {
       body+=box('snapshot',170,240,420,'roles: [Approver]','Snapshot, not a directory query','The JWT does not rewrite itself when an assignment changes. Additional online enforcement and renewal behavior need an explicit design.');
       result=time==='After token expiry'?'401 · expired beyond the allowed clock skew':time==='After role removal'?'Local JWT validation may still accept the older role claim':'Proceed only if every API and row check also passes';
       detail='Sign-out, cache clearing, token expiry and online revocation are separate events.';
+    } else if(kind==='device') {
+      const moments=['Windows sign-in','Open the app','After 24 hours'];
+      const moment=select('moment','Moment',moments,moments[scene]);
+      const joined=select('device','Device',['Joined to Entra','No Entra identity'],'Joined to Entra')==='Joined to Entra';
+      const profile=select('window','Browser',['Profile signed in','Private window'],'Profile signed in')==='Profile signed in';
+      const sso=joined&&profile;
+      body+=box('cloudap',40,40,250,'CloudAP · LSA',joined?'Holds the PRT + session key':'No PRT on this device','Inside the Local Security Authority. Its Entra plugin turns Windows sign-in into a PRT, keeps it with the session key and builds a PRT cookie when the browser asks for one.',joined?C.green:C.orange);
+      body+=box('entra',470,40,250,'Microsoft Entra ID','Devices, /authorize, /token','Issues the PRT to a joined device, accepts a PRT cookie at /authorize, and issues the app\'s code and tokens as usual.');
+      body+=box('tpm',40,190,250,'TPM','Private keys, wrapped session key','Keeps the private device and transport keys. No other component can use the session key it wraps.');
+      body+=box('browser',470,190,250,'Browser + MSAL',profile?'Profile signed in':'Private window','The browser adds a PRT cookie and Entra\'s session cookie to the navigation. MSAL keeps the app\'s tokens in the tab\'s sessionStorage.',profile?C.green:C.orange);
+      body+=arrow(292,81,462,81)+text(377,70,'PRT request',13,C.muted)+arrow(165,124,165,184)+arrow(595,184,595,128)+arrow(462,231,298,231)+text(380,222,'PRT cookie?',13,C.muted);
+      body+=band(290,'PRT in CloudAP\'s cache',joined?'PRESENT':'NONE',joined);
+      if(moment==='Windows sign-in') {
+        body+=band(345,'Windows sign-in reaches Entra',joined?'PRT ISSUED':'LOCAL ONLY',joined);
+        result=joined?'PRT issued · CloudAP keeps it, the TPM protects its session key':'No Entra identity · Windows sign-in obtains no PRT';
+      } else if(moment==='Open the app') {
+        body+=band(345,'Password request at /authorize',sso?'NONE':'ASKED',sso);
+        result=sso?'No password · a PRT cookie signed Alice in; code and tokens follow as usual':joined?'Credentials asked · private windows do not use the PRT':'Credentials asked, unless Entra\'s session cookie is still valid';
+      } else {
+        body+=band(345,'SPA refresh token, 24 hours',sso?'RENEWED BY REDIRECT':'SIGN IN AGAIN',sso);
+        result=sso?'Refresh token expired · the redirect completes without a password':'Refresh token expired · Alice signs in again, unless a session remains';
+      }
+      detail='The model illustrates where credentials live. It contacts no device, browser or tenant.';
     } else throw new Error('Unknown visual: '+kind);
     body+=`<rect x="25" y="412" width="710" height="92" rx="12" fill="${C.panel}"/>`+text(380,447,result,17,C.ink)+text(380,478,detail,12,C.muted);
     return {svg:`<svg viewBox="0 0 760 530" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="${esc(kind+' illustrative model')}"><defs><marker id="arrow-${theme}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="${C.green}"/></marker></defs><g font-family="Segoe UI,system-ui,sans-serif">${body}</g></svg>`,details,controls};

@@ -34,10 +34,10 @@
         tech: 'Microsoft Entra ID',
         title: B('Microsoft Entra from scratch', 'Microsoft Entra desde cero'),
         text: B(
-          'Follow authentication and authorization through an Angular client, a Spring API and PostgreSQL: PKCE, tokens, scopes, roles, ownership, row security and transaction boundaries. This course is entirely in English.',
-          'Seguí la autenticación y la autorización en una app Angular, una API Spring y PostgreSQL: PKCE, tokens, scopes, roles, propiedad de filas, RLS y transacciones. Este curso está íntegramente en inglés.',
+          'Follow authentication and authorization through an Angular client, a Spring API and PostgreSQL: Windows sign-in and its Primary Refresh Token, PKCE, tokens, scopes, roles, ownership, row security and transaction boundaries. This course is entirely in English.',
+          'Seguí la autenticación y la autorización en una app Angular, una API Spring y PostgreSQL: el inicio de sesión de Windows con su Primary Refresh Token, PKCE, tokens, scopes, roles, propiedad de filas, RLS y transacciones. Este curso está íntegramente en inglés.',
         ),
-        stats: [B('24 lessons', '24 lecciones'), B('50 local assertions', '50 aserciones locales'), B('English', 'Inglés')],
+        stats: [B('25 lessons', '25 lecciones'), B('50 local assertions', '50 aserciones locales'), B('English', 'Inglés')],
         needs: B('Node.js 24 and Docker with Compose v2. An Entra practice tenant for the separate online workbook.', 'Node.js 24 y Docker con Compose v2. Un tenant de práctica de Entra para el recorrido en línea separado.'),
         links: [
           ['index.html', B('Open the course', 'Abrir el curso'), true],

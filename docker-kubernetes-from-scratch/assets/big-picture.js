@@ -22,7 +22,7 @@
       hint: 'Click the dot or press → for the next stop', drag: 'Drag to move · wheel or pinch to zoom · click a piece',
       zoomIn: 'Zoom in', zoomOut: 'Zoom out', fit: 'Fit', follow: 'Follow', on: 'on', off: 'off',
       what: 'What it is', holds: 'What it holds', not: 'What it does not do', through: 'Journeys through here',
-      noneThrough: 'No journey stops here.', comesFrom: 'Comes from', endsUp: 'Ends up', heldBy: 'Held by',
+      noneThrough: 'No journey stops here.', comesFrom: 'Comes from', endsUp: 'Ends up', heldBy: 'Held by', lives: 'Where it is, moment by moment',
       carriedIn: 'Carried in', overview: 'Overview', end: 'End of the journey', nextJourney: 'Next: journey',
       again: 'Again', backTo: 'Back to the stop', piece: 'Piece', item: 'Item', where: 'Where you see it',
       edges: 'Lines', nodes: 'Pieces', tags: 'Evidence', stamps: 'Stamps', dot: 'The dot',
@@ -55,7 +55,7 @@
       hint: 'Hacé clic en el punto o apretá → para la parada siguiente', drag: 'Arrastrá para mover · rueda o pellizco para acercar · clic en una pieza',
       zoomIn: 'Acercar', zoomOut: 'Alejar', fit: 'Ajustar', follow: 'Seguir', on: 'sí', off: 'no',
       what: 'Qué es', holds: 'Qué guarda', not: 'Qué no hace', through: 'Recorridos que pasan por acá',
-      noneThrough: 'Ningún recorrido para acá.', comesFrom: 'De dónde viene', endsUp: 'Dónde termina', heldBy: 'Lo guarda',
+      noneThrough: 'Ningún recorrido para acá.', comesFrom: 'De dónde viene', endsUp: 'Dónde termina', heldBy: 'Lo guarda', lives: 'Dónde está, momento a momento',
       carriedIn: 'Viaja en', overview: 'Inicio', end: 'Fin del recorrido', nextJourney: 'Sigue: recorrido',
       again: 'Otra vez', backTo: 'Volver a la parada', piece: 'Pieza', item: 'Elemento', where: 'Dónde se ve',
       edges: 'Líneas', nodes: 'Piezas', tags: 'Evidencia', stamps: 'Sellos', dot: 'El punto',
@@ -226,6 +226,11 @@
       letters.add(it.letter);
       if (!/^c[1-8]$/.test(it.color)) fail(`item ${id}: color ${it.color}`);
       for (const l of it.lessons || []) if (!lessons.has(l)) fail(`item ${id}: unknown lesson ${l}`);
+      (it.lives || []).forEach((x, i) => {
+        text(x.when, `item ${id}.lives ${i}`);
+        text(x.where, `item ${id}.lives ${i}`);
+        if (x.node && !nodes[x.node]) fail(`item ${id}.lives ${i}: unknown node ${x.node}`);
+      });
     }
     const pairs = new Set();
     for (const [i, e] of D.edges.entries()) {
@@ -301,7 +306,7 @@
       h += `<dt id="bp-text-${esc(id)}">${esc(L(n.label, lang))}${n.sub ? ` · ${esc(L(n.sub, lang))}` : ''}</dt><dd>${esc(L(n.what, lang))}${facts(n, true).map((f) => ` <em>${esc(L(f.label, lang))}:</em> ${esc(L(f.text, lang))}`).join('')} <em>${u.not}:</em> ${esc(L(n.not, lang))}${facts(n, false).map((f) => ` <em>${esc(L(f.label, lang))}:</em> ${esc(L(f.text, lang))}`).join('')}${(n.lessons || []).length ? ' ' + n.lessons.map(lessonLink).join(', ') : ''}</dd>`;
     }
     h += `</dl></section><section><h3>${esc(L(D.config.items, lang))}</h3><dl>`;
-    for (const [, it] of items) h += `<dt>${esc(it.letter)} · ${esc(L(it.name, lang))}</dt><dd>${esc(L(it.what, lang))} <em>${u.comesFrom}:</em> ${esc(L(it.from, lang))} <em>${u.endsUp}:</em> ${esc(L(it.to, lang))}</dd>`;
+    for (const [, it] of items) h += `<dt>${esc(it.letter)} · ${esc(L(it.name, lang))}</dt><dd>${esc(L(it.what, lang))} <em>${u.comesFrom}:</em> ${esc(L(it.from, lang))} <em>${u.endsUp}:</em> ${esc(L(it.to, lang))}${it.lives?.length ? ` <em>${u.lives}:</em> ${it.lives.map((x) => `${esc(L(x.when, lang))}: ${esc(L(x.where, lang))}`).join(' ')}` : ''}</dd>`;
     return h + '</dl></section>';
   };
   BP.ui = UI;
@@ -844,12 +849,19 @@ ${facts(n, false).map((f) => `<h4>${esc(T(f.label))}</h4><p>${esc(T(f.text))}</p
 ${n.lessons?.length ? `<h4>${U.deeper}</h4>${n.lessons.map(lessonLink).join('')}` : ''}
 <h4>${U.through}</h4>${passList(passes((s) => s.node === id))}</div>`;
   }
+  // Where an item is at each moment: an ordered list, each step with the piece that keeps it.
+  function livesList(it, heading = true) {
+    if (!it.lives?.length) return '';
+    const list = `<ol class="bp-lives">${it.lives.map((x) => `<li><span class="bp-lives-when">${esc(T(x.when))}</span>${esc(T(x.where))}${x.node ? ` <button type="button" class="bp-chip" data-piece="${esc(x.node)}">${esc(T(NODES[x.node].label))}</button>` : ''}</li>`).join('')}</ol>`;
+    return heading ? `<h4>${u().lives}</h4>${list}` : list;
+  }
   function itemView(id) {
     const U = u(), it = ITEMS[id];
     const holders = IDS.filter((n) => NODES[n].holds?.includes(id));
     return `${panelHead(`${esc(T(D.config.item))}`, true)}<div class="bp-panel-body">
 <div class="bp-card-title"><span class="bp-letter bp-big bp-${it.color}" aria-hidden="true">${esc(it.letter)}</span><div><h3>${esc(T(it.name))}</h3></div></div>
 <h4>${U.what}</h4><p>${esc(T(it.what))}</p><h4>${U.comesFrom}</h4><p>${esc(T(it.from))}</p><h4>${U.endsUp}</h4><p>${esc(T(it.to))}</p>
+${livesList(it)}
 ${holders.length ? `<h4>${U.heldBy}</h4><div class="bp-chips">${holders.map((n) => `<button type="button" class="bp-chip" data-piece="${n}">${esc(T(NODES[n].label))}</button>`).join('')}</div>` : ''}
 ${it.lessons?.length ? `<h4>${U.deeper}</h4>${it.lessons.map(lessonLink).join('')}` : ''}
 <h4>${U.carriedIn}</h4>${passList(passes((s) => s.carries?.includes(id)))}</div>`;
@@ -1034,7 +1046,7 @@ ${D.tags ? `<h3>${U.tags}</h3><dl>${Object.keys(D.tags).map((k) => `<dt>${tagBad
   }
   function itemsDialog() {
     const U = u();
-    return `${D.config.itemsIntro ? `<p>${esc(T(D.config.itemsIntro))}</p>` : ''}<div class="bp-catalog">${ITEM_IDS.map((i) => { const it = ITEMS[i]; return `<article><h3><span class="bp-letter bp-${it.color}" aria-hidden="true">${esc(it.letter)}</span>${esc(T(it.name))}</h3><p>${esc(T(it.what))}</p><dl><dt>${U.comesFrom}</dt><dd>${esc(T(it.from))}</dd><dt>${U.endsUp}</dt><dd>${esc(T(it.to))}</dd></dl><button type="button" class="btn bp-small" data-item="${i}">${U.carriedIn} →</button></article>`; }).join('')}</div>`;
+    return `${D.config.itemsIntro ? `<p>${esc(T(D.config.itemsIntro))}</p>` : ''}<div class="bp-catalog">${ITEM_IDS.map((i) => { const it = ITEMS[i]; return `<article><h3><span class="bp-letter bp-${it.color}" aria-hidden="true">${esc(it.letter)}</span>${esc(T(it.name))}</h3><p>${esc(T(it.what))}</p><dl><dt>${U.comesFrom}</dt><dd>${esc(T(it.from))}</dd><dt>${U.endsUp}</dt><dd>${esc(T(it.to))}</dd>${it.lives?.length ? `<dt>${U.lives}</dt><dd>${livesList(it, false)}</dd>` : ''}</dl><button type="button" class="btn bp-small" data-item="${i}">${U.carriedIn} →</button></article>`; }).join('')}</div>`;
   }
 
   /* Events. */

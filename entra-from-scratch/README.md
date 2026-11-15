@@ -4,10 +4,10 @@
 
 Open [index.html](index.html) in a browser. Start with [What Microsoft Entra ID does](what-entra-is.html), then lesson 00. The [big picture](big-picture.html) shows every piece of the course on one scene and follows a request through it, stop by stop. No server, account, external scripts or network connection is required for the course itself. The downloadable application lab declares its own dependencies.
 
-- 24 lessons in 7 units, 72 scenes and 72 conceptual questions.
-- 8 interactive model families: component boundaries, registration objects, PKCE, tokens, permission predicates, rows, database connections and token lifetime.
-- 97 guided activity steps, 44 glossary terms, four display modes and browser-local progress.
-- A big picture: 23 pieces on one scene, 11 journeys with 101 stops (sign-in, 200, approval race, 401, 403, 404, RLS, a removed role, tenant setup, browser threats, another API), a card for every piece and every token, and a text version.
+- 25 lessons in 7 units, 75 scenes and 75 conceptual questions.
+- 9 interactive model families: component boundaries, registration objects, PKCE, tokens, Windows sign-in, permission predicates, rows, database connections and token lifetime.
+- 102 guided activity steps, 51 glossary terms, four display modes and browser-local progress.
+- A big picture: 27 pieces on one scene, 14 journeys with 131 stops (sign-in, 200, approval race, 401, 403, 404, RLS, a removed role, tenant setup, browser threats, another API, Windows sign-in and its PRT, single sign-on to the app, a day later), a card for every piece and for every token, key and cookie with where it is, moment by moment, and a text version.
 - A complete Angular/MSAL client, Spring Security resource server and PostgreSQL database with explicit owner/tenant rules and RLS.
 - 50 local assertions, including invalid tokens, scope/role failures, object isolation, pooled context and concurrent approval.
 - A real Entra tenant workbook with an account-free case study, a separate evidence sheet and a capstone rubric.
@@ -18,7 +18,7 @@ The learning cycle is **predict, observe, explain, name the limit**. Commands ar
 
 One workforce tenant, one public SPA client and a separate API resource. A user can read their own purchase request. An approver with the delegated approval scope can approve somebody else's pending request in the same tenant. The API validates credentials, enforces scope and role, and constrains SQL. PostgreSQL authenticates a restricted application role and enforces a row policy using transaction-local context.
 
-The local issuer is a **test-token dispenser**, not Entra or an OIDC emulator. Local tests establish the API and database behavior. They do not establish real sign-in, consent, MFA, Conditional Access, role propagation or CAE. Those distinctions are explicit throughout the course.
+The local issuer is a **test-token dispenser**, not Entra or an OIDC emulator. Local tests establish the API and database behavior. They do not establish real sign-in, Windows single sign-on, consent, MFA, Conditional Access, role propagation or CAE. Those distinctions are explicit throughout the course.
 
 ## Run and maintain
 
@@ -32,6 +32,6 @@ Preview: http://127.0.0.1:4175. Build generates lesson shells, English notes, `d
 
 The local suite leaves its services running. Its concurrency case resets only practice row 42. Stop with `docker compose stop` from labs; stop Angular with Ctrl+C. Do not run fixture checks against a tenant exercise in progress.
 
-Version 1.1.0. Sources reviewed 29 October 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
+Version 1.2.0. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
 
 See [teaching and editing](docs/TEACHING.md), [deployment](docs/DEPLOYMENT.md), [validation](docs/VALIDATION.md) and the [MIT license](LICENSE).

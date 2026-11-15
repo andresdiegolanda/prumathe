@@ -18,7 +18,10 @@ For each entry record: EXECUTED with sanitized observation, or NOT EXECUTED.
 11. Bob own read 200:
 12. Bob approval without role 403:
 13. Fixture credential rejected by Entra-mode API 401:
-14. Fixture restored / practice cloud objects reviewed for cleanup:
+14. Optional: Windows device joined to the practice tenant, AzureAdPrt YES:
+15. Optional: app sign-in without a password, Edge profile signed in as Alice:
+16. Optional: credential request in an InPrivate window:
+17. Fixture restored / practice cloud objects reviewed for cleanup:
 
 What remains unverified:
 Do not infer MFA, Conditional Access, CAE, role-removal latency, key rotation
