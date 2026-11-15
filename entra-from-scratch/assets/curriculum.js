@@ -146,7 +146,7 @@ window.ENTRA_COURSE = (() => {
     S('Predict the sign-in', 'Write two predictions before touching a device. On a Windows device joined to the tenant, will the app ask Alice for a password in a browser profile signed in to her work account? And in a private window? Name the credential that makes the difference.', 'Two predictions and the credential that decides them.'),
     S('Read the device state', 'On a Windows 10 or 11 device joined to Entra, open a terminal as the signed-in user, not as administrator, and run the reference command. Read three lines only, and do not copy the output anywhere: it names the device, the tenant and the user.', 'AzureAdJoined : YES under Device State, AzureAdPrt : YES under SSO State, and TpmProtected under Device Details.', 'dsregcmd /status'),
     S('Follow the tenant workbook', 'Complete TENANT.md section F on a device joined to your practice tenant: sign in to the Angular application in Edge with a profile signed in as Alice, then in an InPrivate window. Use a practice tenant and invented purchase requests.', 'In the signed-in profile, the account picker the app asks for and no password request. In the InPrivate window, a credential request.'),
-    S('Account-free case study', 'Use journeys L, M and N of the big picture. For the device keys, the PRT, the session key, the PRT cookie, Entra\'s session cookie and the ID, access and refresh tokens, write who issues each one, where it waits and when it stops working.', 'Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.'),
+    S('Account-free case study', 'Use journeys A, B and C of the big picture. For the device keys, the PRT, the session key, the PRT cookie, Entra\'s session cookie and the ID, access and refresh tokens, write who issues each one, where it waits and when it stops working.', 'Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.'),
     S('Explain the result', 'Draw the before and after. Mark what Windows holds, what the browser holds, what the tab holds and what the API receives. Keep raw tokens, cookies and device identifiers out of the notebook.', 'State the observation route and one guarantee it cannot establish: dsregcmd shows that a PRT exists, not what Entra will decide for the app.')
   ], 'prt', 'tenant');
 
@@ -305,5 +305,5 @@ window.ENTRA_COURSE = (() => {
     S('Defend the residual risk', 'Use the rubric to explain a compromised browser, compromised API, a removed role with an existing token and an identity-provider outage. Stop the lab when finished with docker compose stop.', 'A reviewer can see the guarantee, its assumptions and the next validation needed.')
   ], 'security-review');
 
-  return { version: '1.2.0', date: '2026-10-29', angular: '21.2.25', msal: '5.27.0', spring: '4.1.2', postgres: '18.6', units, lessons };
+  return { version: '1.2.1', date: '2026-10-29', angular: '21.2.25', msal: '5.27.0', spring: '4.1.2', postgres: '18.6', units, lessons };
 })();

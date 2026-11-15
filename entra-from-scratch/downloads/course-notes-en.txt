@@ -1,5 +1,5 @@
 MICROSOFT ENTRA FROM SCRATCH
-Version 1.2.0 | Sources reviewed 2026-10-29
+Version 1.2.1 | Sources reviewed 2026-10-29
 Angular 21.2.25 | MSAL Browser 5.27.0 | Spring Boot 4.1.2 | PostgreSQL 18.6
 
 What Microsoft Entra ID does
@@ -708,7 +708,7 @@ Complete TENANT.md section F on a device joined to your practice tenant: sign in
 Observe: In the signed-in profile, the account picker the app asks for and no password request. In the InPrivate window, a credential request.
 
 4. Account-free case study
-Use journeys L, M and N of the big picture. For the device keys, the PRT, the session key, the PRT cookie, Entra's session cookie and the ID, access and refresh tokens, write who issues each one, where it waits and when it stops working.
+Use journeys A, B and C of the big picture. For the device keys, the PRT, the session key, the PRT cookie, Entra's session cookie and the ID, access and refresh tokens, write who issues each one, where it waits and when it stops working.
 Observe: Label this route CASE STUDY. It demonstrates reasoning, not an Entra execution.
 
 5. Explain the result
@@ -1684,7 +1684,44 @@ BFF: A backend for frontend that can retain OAuth tokens server-side and provide
 CAE: Continuous access evaluation for supported resources and scenarios, not automatically provided by local JWT validation.
 
 BIG PICTURE
-A. Sign in: a code and PKCE
+A. Windows sign-in: the PRT
+  1. Alice: Alice signs in to Windows on a device joined to the tenant, with her work password or with Windows Hello for Business. No app is open yet.
+  2. Windows sign-in: The sign-in screen, LogonUI, takes the credentials and hands them to LSA, the Local Security Authority.
+  3. CloudAP: Inside LSA, CloudAP passes them to its Microsoft Entra plugin, which gets a nonce from Entra and builds a request with the credentials and the nonce.
+  4. TPM: The request is signed with the private device key, inside the TPM. The key never leaves it.
+  5. Devices: Entra checks the credentials, the nonce and the signature against the public device key, and that the device is valid in the tenant.
+  6. Devices: It issues the PRT, and a session key encrypted with the device's public transport key.
+  7. CloudAP: Both reach CloudAP. Only this device can open the session key: that needs the private transport key.
+  8. TPM: The TPM decrypts the session key with the transport key and wraps it again with its own key.
+  9. CloudAP: CloudAP stores the PRT and the wrapped session key in its cache, inside LSA. Nothing has reached the browser.
+  Before any app is opened, CloudAP holds a PRT for Alice and a session key that only this TPM can use. Neither ever reaches the browser or the app: journey B shows what the browser gets instead.
+B. Open the app: no password
+  1. Angular app: On the same device, Alice opens the app in Edge, whose profile is signed in to her work account, and chooses Sign in.
+  2. MSAL Browser: MSAL makes a verifier and its challenge, which journey D follows in detail, and starts loginRedirect with prompt=select_account.
+  3. Browser: The browser navigates the tab to /authorize. It recognizes an Entra sign-in URL and asks Windows for a PRT cookie, passing the nonce from the URL.
+  4. CloudAP: CloudAP builds a PRT cookie for that nonce from the PRT in its cache. The PRT itself stays there.
+  5. TPM: The TPM signs the PRT cookie with the session key.
+  6. Browser: The PRT cookie goes back to the browser, not to the page: MSAL and any injected script never see it.
+  7. Sign-in endpoint: The request reaches /authorize with the client, the scopes and the challenge, and the PRT cookie in the x-ms-RefreshTokenCredential header.
+  8. Devices: Entra validates the session key signature and the nonce, and checks that the device is valid in the tenant.
+  9. Sign-in endpoint: Alice is signed in from the device session. The app asked for select_account, so Entra shows its account picker; choosing her account needs no password. Entra returns the code, and a session cookie for its own site.
+  10. Browser: The browser keeps Entra's session cookie for login.microsoftonline.com, bound to this device, and follows the redirect to /redirect with the code.
+  11. MSAL Browser: From here it is journey D: the MSAL bridge hands the code over, and MSAL redeems it with the verifier.
+  12. Token endpoint: Entra checks the verifier against the challenge and issues the ID, access and refresh tokens.
+  13. Token cache: The three tokens land in sessionStorage, exactly as without Windows. The PRT changed how Alice proved who she is, not what the app holds.
+  Every credential stayed in its place: the PRT and its session key in CloudAP, the PRT cookie on one request, Entra's session cookie in the browser, the app's tokens in sessionStorage. The API still receives only an access token for its audience.
+C. A day later: three clocks
+  1. Token cache: The tab stayed open overnight. Its refresh token was issued yesterday, and a refresh token issued to a SPA lasts 24 hours from issue, a window that does not slide.
+  2. MSAL Browser: acquireTokenSilent finds the access token expired, and the refresh token too.
+  3. Sign-in endpoint: MSAL tries a hidden iframe to /authorize. Where the browser blocks third-party cookies, that silent attempt fails and MSAL raises InteractionRequiredAuthError.
+  4. Angular app: The app answers with an interactive redirect, never with a loop of silent retries.
+  5. Browser: A top-level navigation to /authorize. The browser asks CloudAP for a fresh PRT cookie, for the new nonce.
+  6. CloudAP: The PRT is still good: CloudAP renews it at Windows sign-in every 4 hours, and a PRT stays valid for 90 days while the device is used.
+  7. Sign-in endpoint: With the PRT cookie and Entra's session cookie, Entra returns a new code without asking for a password. New tokens follow, as in journey B.
+  8. Devices: The PRT stops working when Alice or the device is deleted or disabled in Entra, or when she changes her password, if the PRT came from it. From then on it gets her nothing.
+  9. Token cache: None of that reaches tokens already issued: the access token in sessionStorage stays valid until its exp, as in journey K.
+  Three clocks run at once: the SPA refresh token (24 hours, not sliding), the PRT (renewed at Windows sign-in every 4 hours, valid 90 days) and each access token's exp. Losing the PRT stops new sign-ins; it does not withdraw tokens already issued.
+D. Sign in: a code and PKCE
   1. Alice: Alice opens the app and chooses Sign in. Nothing has been checked yet: the page is public code running in her browser.
   2. Angular app: The app calls loginRedirect with the API's two scopes. It will never see Alice's password.
   3. MSAL Browser: MSAL makes a fresh verifier, hashes it into an S256 challenge and keeps the verifier in this tab. It adds a state and a nonce to tie the answer to this request.
@@ -1697,12 +1734,12 @@ A. Sign in: a code and PKCE
   10. Token endpoint: Three tokens come back: an ID token for the app, an access token for the purchase API and a refresh token for MSAL.
   11. MSAL Browser: MSAL matches the answer with the state and nonce it sent, sets Alice as the active account and stores the three tokens.
   12. Token cache: They wait in this tab's sessionStorage: gone when the tab closes, but readable by any script running in this origin.
-  Alice is signed in to the app and MSAL holds three tokens. Nothing has reached the API yet: a sign-in is not an authorization. Journey B sends the first request.
-B. Read my own request: 200
+  Alice is signed in to the app and MSAL holds three tokens. Nothing has reached the API yet: a sign-in is not an authorization. Journey E sends the first request.
+E. Read my own request: 200
   1. Angular app: Alice asks for request 41. Before calling the API, the app asks MSAL for a token for exactly the API's scopes.
   2. MSAL Browser: acquireTokenSilent looks in the cache first, for this account and these scopes.
   3. Token cache: A valid access token for this API is there. No network call is needed.
-  4. MSAL Browser: MSAL hands it to the app. Had it expired, MSAL would renew it with the refresh token: journey H.
+  4. MSAL Browser: MSAL hands it to the app. Had it expired, MSAL would renew it with the refresh token: journey K.
   5. Angular app: The app attaches the token to one fixed URL, http://localhost:18095/api/requests/41, and to no other destination.
   6. CORS and bearer filter: First CORS: the browser's preflight asks whether localhost:18094 may send an Authorization header, and the API names that exact origin. Then the bearer filter takes the token.
   7. JwtDecoder: The decoder checks the signature with the cached public key, then issuer, expiry and not-before, audience, tenant, version 2.0, the allowed client and a well-formed oid.
@@ -1716,7 +1753,7 @@ B. Read my own request: 200
   15. Controller: The row comes back. COMMIT ends the transaction, and the context disappears with it.
   16. Angular app: HTTP 200 with request 41. The app shows it; it decided nothing.
   One read crossed four independent checks: the token, the operation, the endpoint's query and the row policy. Removing any one of them is a test that should fail.
-C. Approve a colleague's request
+F. Approve a colleague's request
   1. node lab.mjs: The lab asks for the approver case: Alice's identity, with the Approver role.
   2. Token dispenser: The dispenser signs it with the kit's key: scp lists both scopes, roles lists Approver.
   3. node lab.mjs: Two POST /api/requests/42/approve leave at the same moment. Request 42 is Bob's, and PENDING.
@@ -1730,7 +1767,7 @@ C. Approve a colleague's request
   11. Controller: One row changed: 200 APPROVED. No row: 404, the same answer as for a request that does not exist.
   12. node lab.mjs: The lab sees exactly one 200 and one 404, and PostgreSQL says APPROVED. Approving her own request 41 also gives 404: the owner may not approve.
   A role is one condition among several. The method rule checks scope and role; one SQL statement checks tenant, not-the-owner and PENDING together, so a race cannot approve twice.
-D. 401: the token is not accepted
+G. 401: the token is not accepted
   1. node lab.mjs: The lab asks the dispenser for broken tokens, one case at a time.
   2. Token dispenser: Each case breaks one thing: expired, valid only in the future, signed by a stranger's key, another issuer, another audience, an ID token, another client, no oid, another tenant.
   3. node lab.mjs: Each one goes out as GET /api/requests/41.
@@ -1739,7 +1776,7 @@ D. 401: the token is not accepted
   6. CORS and bearer filter: The filter chain answers 401 with WWW-Authenticate: Bearer. No controller ran and no SQL was sent.
   7. node lab.mjs: The lab expects 401 for every case, and still 200 for Alice's valid token.
   401 means the API did not accept the credential. Signing in again does not fix a wrong audience: configuration does. Every fix keeps its negative test.
-E. 403: accepted, not allowed
+H. 403: accepted, not allowed
   1. node lab.mjs: Two genuine tokens that each lack something: no-role has the scopes but not Approver; app-only has Approver but no scp, because no user signed in.
   2. Token dispenser: Both are signed with the kit's key, for the right audience, tenant and client.
   3. node lab.mjs: Each one asks to approve request 42.
@@ -1750,7 +1787,7 @@ E. 403: accepted, not allowed
   8. CORS and bearer filter: The filter chain turns the refusal into 403. The controller never ran.
   9. node lab.mjs: Both get 403. A token with only Requests.Read gets 403 to approve and still 200 to read: scopes are per operation.
   403: the API knows who is calling and refuses this operation. A hidden button never protected anything; this rule does.
-F. 404: Alice asks for Bob's request
+I. 404: Alice asks for Bob's request
   1. Angular app: Alice types 42 instead of 41. The page lets her: the input is not the boundary.
   2. CORS and bearer filter: A genuine token for Alice reaches the API.
   3. Method rule: Valid, with SCOPE_Requests.Read: the operation is allowed. Allowed to read is not allowed to read everything.
@@ -1760,7 +1797,7 @@ F. 404: Alice asks for Bob's request
   7. Controller: No row: 404, the same answer as for a number that does not exist, so the API does not reveal which requests exist.
   8. Angular app: Alice sees 404. Bob, with his own token, gets 200 for 42. Request 43 lives in another tenant: Alice gets 404 for it, and a token from that tenant gets 401.
   Ownership is an authorization rule, enforced with identity taken from the validated token and never from the request. RLS repeats it underneath.
-G. RLS, the second boundary
+J. RLS, the second boundary
   1. node lab.mjs: The lab connects to PostgreSQL directly and switches to app_runtime, the role the API uses.
   2. RLS policy: No context has been set, so the policy compares tenant_id with NULL: no row qualifies.
   3. purchase_request: SELECT count(*) returns 0. Not an error: an empty, safe answer.
@@ -1769,7 +1806,7 @@ G. RLS, the second boundary
   6. RLS policy: After COMMIT, the same connection sees 0 rows again: set_config(name, value, true) belonged to that transaction only.
   7. app_runtime: And the role itself is neither superuser nor BYPASSRLS, the table forces RLS, and app_runtime may not rewrite owner_oid.
   RLS is a second boundary, not the first: it trusts the context the API sets. What it buys is that a forgotten WHERE returns nothing instead of everything.
-H. A removed role meets an older token
+K. A removed role meets an older token
   1. Administrator: Alice approved requests yesterday. Today the administrator removes her Approver assignment.
   2. Enterprise applications: The assignment is gone from the API's enterprise application. Nothing is pushed to tokens already issued.
   3. Token endpoint: Entra will leave roles: Approver out of the next access token it issues for Alice.
@@ -1782,7 +1819,7 @@ H. A removed role meets an older token
   10. Angular app: Alice signs out. logoutRedirect clears MSAL's cache for her account.
   11. Sign-in endpoint: Entra ends her session at its sign-out endpoint. Tokens already issued are not recalled: they stay valid until they expire.
   Three different things: a token's lifetime, a session and an assignment. Renewal connects them; nothing withdraws a token already issued, so lifetimes matter.
-I. Set up the tenant
+L. Set up the tenant
   1. Administrator: In the Entra admin center, the administrator registers two applications, not one: the token's recipient must be visible.
   2. App registrations: The API registration: Application ID URI api://API_CLIENT_ID, delegated scopes Requests.Read and Requests.Approve, the user app role Approver, v2 access tokens. The SPA registration: a public client with the redirect URI http://localhost:18094/redirect, no secret.
   3. Enterprise applications: Each registration gets a service principal in the tenant: its enterprise application.
@@ -1792,7 +1829,7 @@ I. Set up the tenant
   7. JwtDecoder: With AUTH_MODE=entra, the decoder trusts only https://login.microsoftonline.com/TENANT_ID/v2.0 and its keys. The kit's key is no longer trusted.
   8. Token dispenser: A test token now gets 401. The probe proves the switch, not that a real person signed in.
   Registrations are configuration, not proof. The tenant workbook records only what you observed: a sign-in, an own read, a role denial and a permitted approval.
-J. What CORS and PKCE do not stop
+M. What CORS and PKCE do not stop
   1. Injected script: A script slips into the page through unsafe rendering or a compromised dependency. It runs with the page's origin.
   2. MSAL Browser: It can ask MSAL for a token just as the app does. PKCE protected the code exchange; it does nothing against code already running in the page.
   3. Injected script: Now it holds a valid access token.
@@ -1801,45 +1838,9 @@ J. What CORS and PKCE do not stop
   6. node lab.mjs: CORS is a rule that browsers follow. The lab calls with no Origin header at all, and the API answers as it would anyone: 401 without a token, 200 with a valid one.
   7. CORS and bearer filter: A preflight from https://stranger.invalid gets 403: a browser would block that page. CORS never replaced the token.
   CORS and PKCE each close one door. Neither protects the API from a caller that holds a valid token: validation and authorization do, and prevention keeps scripts out.
-K. Another API, another audience
+N. Another API, another audience
   1. Controller: Suppose the controller must read Alice's manager from Microsoft Graph.
   2. Another API: Forwarding the incoming token fails: its audience is the purchase API, and Graph must reject it.
   3. Controller: The right design: a confidential middle tier uses the on-behalf-of flow at Entra's token endpoint to get a token whose audience is Graph.
   4. Another API: That token is for Graph, under Graph's consent. A nightly job with no user would instead use client credentials and its own endpoint policy.
   A token is for one audience. Reaching another API on the user's behalf is a separate design, with its own consent and threat model; the kit leaves it as an exercise.
-L. Windows sign-in: the PRT
-  1. Alice: Alice signs in to Windows on a device joined to the tenant, with her work password or with Windows Hello for Business. No app is open yet.
-  2. CloudAP: LogonUI hands the credentials to LSA, which passes them to CloudAP and its Microsoft Entra plugin. The plugin gets a nonce from Entra and builds a request with the credentials and the nonce.
-  3. TPM: The request is signed with the private device key, inside the TPM. The key never leaves it.
-  4. Devices: Entra checks the credentials, the nonce and the signature against the public device key, and that the device is valid in the tenant.
-  5. Devices: It issues the PRT, and a session key encrypted with the device's public transport key.
-  6. CloudAP: Both reach CloudAP. Only this device can open the session key: that needs the private transport key.
-  7. TPM: The TPM decrypts the session key with the transport key and wraps it again with its own key.
-  8. CloudAP: CloudAP stores the PRT and the wrapped session key in its cache, inside LSA. Nothing has reached the browser.
-  Before any app is opened, CloudAP holds a PRT for Alice and a session key that only this TPM can use. Neither ever reaches the browser or the app: journey M shows what the browser gets instead.
-M. Open the app: no password
-  1. Angular app: On the same device, Alice opens the app in Edge, whose profile is signed in to her work account, and chooses Sign in.
-  2. MSAL Browser: MSAL makes a verifier and its challenge, as in journey A, and starts loginRedirect with prompt=select_account.
-  3. Browser: The browser navigates the tab to /authorize. It recognizes an Entra sign-in URL and asks Windows for a PRT cookie, passing the nonce from the URL.
-  4. CloudAP: CloudAP builds a PRT cookie for that nonce from the PRT in its cache. The PRT itself stays there.
-  5. TPM: The TPM signs the PRT cookie with the session key.
-  6. Browser: The PRT cookie goes back to the browser, not to the page: MSAL and any injected script never see it.
-  7. Sign-in endpoint: The request reaches /authorize with the client, the scopes and the challenge, and the PRT cookie in the x-ms-RefreshTokenCredential header.
-  8. Devices: Entra validates the session key signature and the nonce, and checks that the device is valid in the tenant.
-  9. Sign-in endpoint: Alice is signed in from the device session. The app asked for select_account, so Entra shows its account picker; choosing her account needs no password. Entra returns the code, and a session cookie for its own site.
-  10. Browser: The browser keeps Entra's session cookie for login.microsoftonline.com, bound to this device, and follows the redirect to /redirect with the code.
-  11. MSAL Browser: From here it is journey A: the MSAL bridge hands the code over, and MSAL redeems it with the verifier.
-  12. Token endpoint: Entra checks the verifier against the challenge and issues the ID, access and refresh tokens.
-  13. Token cache: The three tokens land in sessionStorage, exactly as without Windows. The PRT changed how Alice proved who she is, not what the app holds.
-  Every credential stayed in its place: the PRT and its session key in CloudAP, the PRT cookie on one request, Entra's session cookie in the browser, the app's tokens in sessionStorage. The API still receives only an access token for its audience.
-N. A day later: three clocks
-  1. Token cache: The tab stayed open overnight. Its refresh token was issued yesterday, and a refresh token issued to a SPA lasts 24 hours from issue, a window that does not slide.
-  2. MSAL Browser: acquireTokenSilent finds the access token expired, and the refresh token too.
-  3. Sign-in endpoint: MSAL tries a hidden iframe to /authorize. Where the browser blocks third-party cookies, that silent attempt fails and MSAL raises InteractionRequiredAuthError.
-  4. Angular app: The app answers with an interactive redirect, never with a loop of silent retries.
-  5. Browser: A top-level navigation to /authorize. The browser asks CloudAP for a fresh PRT cookie, for the new nonce.
-  6. CloudAP: The PRT is still good: CloudAP renews it at Windows sign-in every 4 hours, and a PRT stays valid for 90 days while the device is used.
-  7. Sign-in endpoint: With the PRT cookie and Entra's session cookie, Entra returns a new code without asking for a password. New tokens follow, as in journey M.
-  8. Devices: The PRT stops working when Alice or the device is deleted or disabled in Entra, or when she changes her password, if the PRT came from it. From then on it gets her nothing.
-  9. Token cache: None of that reaches tokens already issued: the access token in sessionStorage stays valid until its exp, as in journey H.
-  Three clocks run at once: the SPA refresh token (24 hours, not sliding), the PRT (renewed at Windows sign-in every 4 hours, valid 90 days) and each access token's exp. Losing the PRT stops new sign-ins; it does not withdraw tokens already issued.

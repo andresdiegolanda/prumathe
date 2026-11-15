@@ -1,6 +1,7 @@
 /* The big picture of Microsoft Entra from scratch: one purchase request from Alice's Windows sign-in
-   to a row, every piece that can say no on the way, and fourteen journeys through them. Drawn by
-   assets/big-picture.js; checked by scripts/check.mjs. Coordinates are on a 1296 by 762 scene.
+   to a row, every piece that can say no on the way, and fourteen journeys through them, the Windows
+   sign-in first. Drawn by assets/big-picture.js; checked by scripts/check.mjs. Coordinates are on a
+   1296 by 762 scene.
    Every stop names how to see it: KIT (the local kit), TENANT (a real tenant), WINDOWS (a device
    joined to that tenant) or MODEL (lessons only). */
 window.BIG_PICTURE = {
@@ -92,15 +93,21 @@ window.BIG_PICTURE = {
       not: 'She never gives her password to the app, and nothing she can change in her browser decides what she may read or approve.',
       lessons: [0, 2, 10],
     },
+    logon: {
+      zone: 'windows', x: 34, y: 84, w: 132, h: 60, icon: 'door', label: 'Windows sign-in', sub: 'LogonUI, LSA', short: 'Sign-in',
+      what: 'The Windows sign-in screen, LogonUI. It takes Alice\'s credentials, her work password or Windows Hello for Business, and hands them to LSA, the Local Security Authority, where CloudAP signs her in to Entra.',
+      not: 'It does not talk to Entra itself, and the app never sees what Alice types here.',
+      lessons: [10],
+    },
     tpm: {
-      zone: 'windows', x: 34, y: 84, w: 88, h: 56, icon: 'chip', label: 'TPM', sub: 'private keys', short: 'TPM',
+      zone: 'device', x: 34, y: 178, w: 106, h: 56, icon: 'chip', label: 'TPM', sub: 'private keys', short: 'TPM',
       holds: ['D'],
       what: 'The Trusted Platform Module, a hardware component. It keeps the private device key, which signs the PRT request, and the private transport key, which opens the session key that Entra sends. Then it wraps the session key with a key of its own.',
       not: 'It never hands out a private key, and no other component of Windows can use the session key it protects. Where a device has no usable TPM, the keys cannot be bound to hardware.',
       lessons: [10],
     },
     cloudap: {
-      zone: 'windows', x: 150, y: 84, w: 170, h: 56, icon: 'lock', label: 'CloudAP', sub: 'in LSA, Entra plugin', short: 'CloudAP',
+      zone: 'windows', x: 186, y: 84, w: 134, h: 60, icon: 'lock', label: 'CloudAP', sub: 'in LSA, Entra plugin', short: 'CloudAP',
       holds: ['P', 'S'],
       what: 'The Windows sign-in provider inside the Local Security Authority (LSA). Its Microsoft Entra plugin turns Alice\'s Windows sign-in into a PRT, keeps the PRT and the session key in its cache, renews the PRT at Windows sign-in every 4 hours, and builds a PRT cookie when the browser asks for one.',
       not: 'It never hands the PRT or the session key to the browser or to an application. Native applications ask WAM, the Windows token broker, which uses the same PRT and keeps their refresh tokens encrypted with DPAPI; this browser app does not.',
@@ -108,7 +115,7 @@ window.BIG_PICTURE = {
       lessons: [10],
     },
     browser: {
-      zone: 'device', x: 34, y: 178, w: 286, h: 56, icon: 'browser', label: 'Browser', sub: 'navigation, Entra\'s cookies, SSO', short: 'Browser',
+      zone: 'device', x: 160, y: 178, w: 160, h: 56, icon: 'browser', label: 'Browser', sub: 'navigation, Entra\'s cookies, SSO', short: 'Browser',
       holds: ['E'],
       what: 'The browser itself, not the page. It navigates the tab to Entra and back and keeps Entra\'s session cookie for login.microsoftonline.com. On a device joined to Entra, when it opens an Entra sign-in URL it asks Windows for a PRT cookie: Edge does it for a profile signed in to the work account, Chrome through the Microsoft Single Sign On extension.',
       not: 'Page scripts, MSAL included, never see the PRT cookie or Entra\'s cookies: they belong to another site. Private windows do not ask Windows for a PRT cookie.',
@@ -234,12 +241,13 @@ window.BIG_PICTURE = {
   },
   edges: [
     { from: 'person', to: 'spa', kind: 'call' },
-    { from: 'person', to: 'cloudap', kind: 'call', points: [[17, 571], [17, 164], [165, 164]] },
-    { from: 'cloudap', to: 'tpm', kind: 'call' },
+    { from: 'person', to: 'logon', kind: 'call', points: [[17, 571], [17, 114]] },
+    { from: 'logon', to: 'cloudap', kind: 'call' },
+    { from: 'cloudap', to: 'tpm', kind: 'call', points: [[200, 160], [87, 160]] },
     { from: 'cloudap', to: 'devices', kind: 'call' },
-    { from: 'browser', to: 'cloudap', kind: 'call', shift: 45 },
+    { from: 'browser', to: 'cloudap', kind: 'call', shift: 37 },
     { from: 'browser', to: 'authorize', kind: 'call' },
-    { from: 'msal', to: 'browser', kind: 'call', shift: 83 },
+    { from: 'msal', to: 'browser', kind: 'call', shift: 20 },
     { from: 'spa', to: 'msal', kind: 'call', shift: 28 },
     { from: 'msal', to: 'cache', kind: 'read' },
     { from: 'script', to: 'msal', kind: 'risk' },
@@ -405,8 +413,57 @@ window.BIG_PICTURE = {
   },
   journeys: [
     {
-      id: 'A', title: 'Sign in: a code and PKCE', summary: 'a code worth nothing alone',
-      outcome: 'Alice is signed in to the app and MSAL holds three tokens. Nothing has reached the API yet: a sign-in is not an authorization. Journey B sends the first request.',
+      id: 'A', title: 'Windows sign-in: the PRT', summary: 'the device gets a token first',
+      outcome: 'Before any app is opened, CloudAP holds a PRT for Alice and a session key that only this TPM can use. Neither ever reaches the browser or the app: journey B shows what the browser gets instead.',
+      stops: [
+        { node: 'person', tag: 'windows', lesson: 10, text: 'Alice signs in to Windows on a device joined to the tenant, with her work password or with Windows Hello for Business. No app is open yet.' },
+        { node: 'logon', tag: 'windows', lesson: 10, text: 'The sign-in screen, LogonUI, takes the credentials and hands them to LSA, the Local Security Authority.' },
+        { node: 'cloudap', tag: 'windows', lesson: 10, text: 'Inside LSA, CloudAP passes them to its Microsoft Entra plugin, which gets a nonce from Entra and builds a request with the credentials and the nonce.' },
+        { node: 'tpm', tag: 'windows', lesson: 10, carries: ['D'], text: 'The request is signed with the private device key, inside the TPM. The key never leaves it.' },
+        { node: 'devices', via: ['cloudap'], tag: 'windows', lesson: 10, stamp: { text: 'device ✓', tone: 'ok' }, text: 'Entra checks the credentials, the nonce and the signature against the public device key, and that the device is valid in the tenant.' },
+        { node: 'devices', tag: 'windows', lesson: 10, carries: ['P', 'S'], text: 'It issues the PRT, and a session key encrypted with the device\'s public transport key.', detail: 'A sign-in with Windows Hello for Business gives the PRT an MFA claim, refreshed together with the PRT.' },
+        { node: 'cloudap', tag: 'windows', lesson: 10, carries: ['P', 'S'], text: 'Both reach CloudAP. Only this device can open the session key: that needs the private transport key.' },
+        { node: 'tpm', tag: 'windows', lesson: 10, carries: ['S'], text: 'The TPM decrypts the session key with the transport key and wraps it again with its own key.' },
+        { node: 'cloudap', tag: 'windows', lesson: 10, lab: 'dsregcmd /status', carries: ['P', 'S'], stamp: { text: 'PRT cached', tone: 'ok' }, text: 'CloudAP stores the PRT and the wrapped session key in its cache, inside LSA. Nothing has reached the browser.', detail: 'Run as the signed-in user, dsregcmd /status shows AzureAdPrt : YES and when the PRT was last renewed. Its output names the device, the tenant and the user: keep it private.' },
+      ],
+    },
+    {
+      id: 'B', title: 'Open the app: no password', summary: 'the browser borrows the device session',
+      outcome: 'Every credential stayed in its place: the PRT and its session key in CloudAP, the PRT cookie on one request, Entra\'s session cookie in the browser, the app\'s tokens in sessionStorage. The API still receives only an access token for its audience.',
+      stops: [
+        { node: 'spa', tag: 'windows', lesson: 9, text: 'On the same device, Alice opens the app in Edge, whose profile is signed in to her work account, and chooses Sign in.' },
+        { node: 'msal', tag: 'windows', lesson: 5, carries: ['V'], text: 'MSAL makes a verifier and its challenge, which journey D follows in detail, and starts loginRedirect with prompt=select_account.' },
+        { node: 'browser', tag: 'windows', lesson: 10, carries: ['V'], text: 'The browser navigates the tab to /authorize. It recognizes an Entra sign-in URL and asks Windows for a PRT cookie, passing the nonce from the URL.', detail: 'Edge does this for a profile signed in to the work account; Chrome needs the Microsoft Single Sign On extension. Private windows skip it.' },
+        { node: 'cloudap', tag: 'windows', lesson: 10, carries: ['W'], text: 'CloudAP builds a PRT cookie for that nonce from the PRT in its cache. The PRT itself stays there.' },
+        { node: 'tpm', tag: 'windows', lesson: 10, carries: ['W'], text: 'The TPM signs the PRT cookie with the session key.' },
+        { node: 'browser', via: ['cloudap'], tag: 'windows', lesson: 10, carries: ['W'], text: 'The PRT cookie goes back to the browser, not to the page: MSAL and any injected script never see it.' },
+        { node: 'authorize', tag: 'windows', lesson: 10, carries: ['V', 'W'], text: 'The request reaches /authorize with the client, the scopes and the challenge, and the PRT cookie in the x-ms-RefreshTokenCredential header.' },
+        { node: 'devices', tag: 'windows', lesson: 10, stamp: { text: 'device ✓', tone: 'ok' }, text: 'Entra validates the session key signature and the nonce, and checks that the device is valid in the tenant.' },
+        { node: 'authorize', tag: 'windows', lesson: 10, carries: ['C', 'E'], stamp: { text: 'no password', tone: 'ok' }, text: 'Alice is signed in from the device session. The app asked for select_account, so Entra shows its account picker; choosing her account needs no password. Entra returns the code, and a session cookie for its own site.' },
+        { node: 'browser', tag: 'windows', lesson: 10, carries: ['C', 'E'], text: 'The browser keeps Entra\'s session cookie for login.microsoftonline.com, bound to this device, and follows the redirect to /redirect with the code.' },
+        { node: 'msal', tag: 'tenant', lesson: 9, carries: ['C', 'V'], text: 'From here it is journey D: the MSAL bridge hands the code over, and MSAL redeems it with the verifier.' },
+        { node: 'tokenep', tag: 'tenant', lesson: 5, carries: ['C', 'V'], stamp: { text: 'S256 ✓', tone: 'ok' }, text: 'Entra checks the verifier against the challenge and issues the ID, access and refresh tokens.' },
+        { node: 'cache', via: ['msal'], tag: 'tenant', lesson: 10, carries: ['I', 'A', 'R'], text: 'The three tokens land in sessionStorage, exactly as without Windows. The PRT changed how Alice proved who she is, not what the app holds.' },
+      ],
+    },
+    {
+      id: 'C', title: 'A day later: three clocks', summary: '24 hours, 4 hours, 90 days',
+      outcome: 'Three clocks run at once: the SPA refresh token (24 hours, not sliding), the PRT (renewed at Windows sign-in every 4 hours, valid 90 days) and each access token\'s exp. Losing the PRT stops new sign-ins; it does not withdraw tokens already issued.',
+      stops: [
+        { node: 'cache', tag: 'windows', lesson: 10, carries: ['R'], text: 'The tab stayed open overnight. Its refresh token was issued yesterday, and a refresh token issued to a SPA lasts 24 hours from issue, a window that does not slide.' },
+        { node: 'msal', tag: 'windows', lesson: 9, carries: ['R'], stamp: { text: 'expired', tone: 'deny' }, text: 'acquireTokenSilent finds the access token expired, and the refresh token too.' },
+        { node: 'authorize', via: ['browser'], tag: 'model', lesson: 10, stamp: { text: 'blocked', tone: 'info' }, text: 'MSAL tries a hidden iframe to /authorize. Where the browser blocks third-party cookies, that silent attempt fails and MSAL raises InteractionRequiredAuthError.' },
+        { node: 'spa', via: ['browser', 'msal'], tag: 'windows', lesson: 9, text: 'The app answers with an interactive redirect, never with a loop of silent retries.' },
+        { node: 'browser', via: ['msal'], tag: 'windows', lesson: 10, text: 'A top-level navigation to /authorize. The browser asks CloudAP for a fresh PRT cookie, for the new nonce.' },
+        { node: 'cloudap', tag: 'windows', lesson: 10, carries: ['P'], stamp: { text: 'PRT valid', tone: 'ok' }, text: 'The PRT is still good: CloudAP renews it at Windows sign-in every 4 hours, and a PRT stays valid for 90 days while the device is used.' },
+        { node: 'authorize', via: ['browser'], tag: 'windows', lesson: 10, carries: ['W', 'E'], stamp: { text: 'no password', tone: 'ok' }, text: 'With the PRT cookie and Entra\'s session cookie, Entra returns a new code without asking for a password. New tokens follow, as in journey B.' },
+        { node: 'devices', tag: 'windows', lesson: 10, stamp: { text: 'what ends it', tone: 'deny' }, text: 'The PRT stops working when Alice or the device is deleted or disabled in Entra, or when she changes her password, if the PRT came from it. From then on it gets her nothing.' },
+        { node: 'cache', via: ['authorize', 'browser', 'msal'], tag: 'windows', lesson: 18, carries: ['A'], text: 'None of that reaches tokens already issued: the access token in sessionStorage stays valid until its exp, as in journey K.' },
+      ],
+    },
+    {
+      id: 'D', title: 'Sign in: a code and PKCE', summary: 'a code worth nothing alone',
+      outcome: 'Alice is signed in to the app and MSAL holds three tokens. Nothing has reached the API yet: a sign-in is not an authorization. Journey E sends the first request.',
       stops: [
         { node: 'person', tag: 'tenant', lesson: 9, text: 'Alice opens the app and chooses Sign in. Nothing has been checked yet: the page is public code running in her browser.' },
         { node: 'spa', tag: 'tenant', lesson: 9, text: 'The app calls loginRedirect with the API\'s two scopes. It will never see Alice\'s password.' },
@@ -423,13 +480,13 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'B', title: 'Read my own request: 200', summary: 'four checks, then one row',
+      id: 'E', title: 'Read my own request: 200', summary: 'four checks, then one row',
       outcome: 'One read crossed four independent checks: the token, the operation, the endpoint\'s query and the row policy. Removing any one of them is a test that should fail.',
       stops: [
         { node: 'spa', tag: 'kit', lesson: 9, text: 'Alice asks for request 41. Before calling the API, the app asks MSAL for a token for exactly the API\'s scopes.', detail: 'In the kit, fixture mode, the app asks the token dispenser instead; from the API boundary on, everything is the same.' },
         { node: 'msal', tag: 'tenant', lesson: 9, text: 'acquireTokenSilent looks in the cache first, for this account and these scopes.' },
         { node: 'cache', tag: 'tenant', lesson: 9, carries: ['A'], text: 'A valid access token for this API is there. No network call is needed.' },
-        { node: 'msal', tag: 'tenant', lesson: 18, carries: ['A'], text: 'MSAL hands it to the app. Had it expired, MSAL would renew it with the refresh token: journey H.' },
+        { node: 'msal', tag: 'tenant', lesson: 18, carries: ['A'], text: 'MSAL hands it to the app. Had it expired, MSAL would renew it with the refresh token: journey K.' },
         { node: 'spa', tag: 'kit', lesson: 9, carries: ['A'], text: 'The app attaches the token to one fixed URL, http://localhost:18095/api/requests/41, and to no other destination.' },
         { node: 'filters', tag: 'kit', lesson: 21, lab: 'node lab.mjs cors', carries: ['A'], text: 'First CORS: the browser\'s preflight asks whether localhost:18094 may send an Authorization header, and the API names that exact origin. Then the bearer filter takes the token.' },
         { node: 'decoder', tag: 'kit', lesson: 11, lab: 'node lab.mjs tokens', carries: ['A', 'K'], stamp: { text: 'valid', tone: 'ok' }, text: 'The decoder checks the signature with the cached public key, then issuer, expiry and not-before, audience, tenant, version 2.0, the allowed client and a well-formed oid.' },
@@ -445,7 +502,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'C', title: 'Approve a colleague\'s request', summary: '200 once, then 404',
+      id: 'F', title: 'Approve a colleague\'s request', summary: '200 once, then 404',
       outcome: 'A role is one condition among several. The method rule checks scope and role; one SQL statement checks tenant, not-the-owner and PENDING together, so a race cannot approve twice.',
       stops: [
         { node: 'runner', tag: 'kit', lesson: 8, lab: 'node lab.mjs atomic', text: 'The lab asks for the approver case: Alice\'s identity, with the Approver role.' },
@@ -463,7 +520,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'D', title: '401: the token is not accepted', summary: 'nine broken tokens, one gate',
+      id: 'G', title: '401: the token is not accepted', summary: 'nine broken tokens, one gate',
       outcome: '401 means the API did not accept the credential. Signing in again does not fix a wrong audience: configuration does. Every fix keeps its negative test.',
       stops: [
         { node: 'runner', tag: 'kit', lesson: 11, lab: 'node lab.mjs signature', text: 'The lab asks the dispenser for broken tokens, one case at a time.' },
@@ -476,7 +533,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'E', title: '403: accepted, not allowed', summary: 'a genuine token missing one authority',
+      id: 'H', title: '403: accepted, not allowed', summary: 'a genuine token missing one authority',
       outcome: '403: the API knows who is calling and refuses this operation. A hidden button never protected anything; this rule does.',
       stops: [
         { node: 'runner', tag: 'kit', lesson: 12, lab: 'node lab.mjs delegation', text: 'Two genuine tokens that each lack something: no-role has the scopes but not Approver; app-only has Approver but no scp, because no user signed in.' },
@@ -491,7 +548,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'F', title: '404: Alice asks for Bob\'s request', summary: 'identity from the token, never the URL',
+      id: 'I', title: '404: Alice asks for Bob\'s request', summary: 'identity from the token, never the URL',
       outcome: 'Ownership is an authorization rule, enforced with identity taken from the validated token and never from the request. RLS repeats it underneath.',
       stops: [
         { node: 'spa', tag: 'kit', lesson: 14, text: 'Alice types 42 instead of 41. The page lets her: the input is not the boundary.' },
@@ -505,7 +562,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'G', title: 'RLS, the second boundary', summary: 'the database without the API',
+      id: 'J', title: 'RLS, the second boundary', summary: 'the database without the API',
       outcome: 'RLS is a second boundary, not the first: it trusts the context the API sets. What it buys is that a forgotten WHERE returns nothing instead of everything.',
       stops: [
         { node: 'runner', tag: 'kit', lesson: 16, lab: 'node lab.mjs rls', text: 'The lab connects to PostgreSQL directly and switches to app_runtime, the role the API uses.' },
@@ -518,7 +575,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'H', title: 'A removed role meets an older token', summary: 'expiry, renewal and sign-out',
+      id: 'K', title: 'A removed role meets an older token', summary: 'expiry, renewal and sign-out',
       outcome: 'Three different things: a token\'s lifetime, a session and an assignment. Renewal connects them; nothing withdraws a token already issued, so lifetimes matter.',
       stops: [
         { node: 'admin', tag: 'tenant', lesson: 18, text: 'Alice approved requests yesterday. Today the administrator removes her Approver assignment.' },
@@ -535,7 +592,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'I', title: 'Set up the tenant', summary: 'two registrations, consent, one role',
+      id: 'L', title: 'Set up the tenant', summary: 'two registrations, consent, one role',
       outcome: 'Registrations are configuration, not proof. The tenant workbook records only what you observed: a sign-in, an own read, a role denial and a permitted approval.',
       stops: [
         { node: 'admin', tag: 'tenant', lesson: 4, text: 'In the Entra admin center, the administrator registers two applications, not one: the token\'s recipient must be visible.' },
@@ -549,7 +606,7 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'J', title: 'What CORS and PKCE do not stop', summary: 'a script inside, a caller outside',
+      id: 'M', title: 'What CORS and PKCE do not stop', summary: 'a script inside, a caller outside',
       outcome: 'CORS and PKCE each close one door. Neither protects the API from a caller that holds a valid token: validation and authorization do, and prevention keeps scripts out.',
       stops: [
         { node: 'script', tag: 'model', lesson: 21, text: 'A script slips into the page through unsafe rendering or a compromised dependency. It runs with the page\'s origin.' },
@@ -562,61 +619,13 @@ window.BIG_PICTURE = {
       ],
     },
     {
-      id: 'K', title: 'Another API, another audience', summary: 'no forwarding; on-behalf-of',
+      id: 'N', title: 'Another API, another audience', summary: 'no forwarding; on-behalf-of',
       outcome: 'A token is for one audience. Reaching another API on the user\'s behalf is a separate design, with its own consent and threat model; the kit leaves it as an exercise.',
       stops: [
         { node: 'controller', tag: 'model', lesson: 20, text: 'Suppose the controller must read Alice\'s manager from Microsoft Graph.' },
         { node: 'graph', tag: 'model', lesson: 20, carries: ['A'], stamp: { text: 'wrong aud', tone: 'deny' }, text: 'Forwarding the incoming token fails: its audience is the purchase API, and Graph must reject it.' },
         { node: 'controller', tag: 'model', lesson: 20, text: 'The right design: a confidential middle tier uses the on-behalf-of flow at Entra\'s token endpoint to get a token whose audience is Graph.' },
         { node: 'graph', tag: 'model', lesson: 20, stamp: { text: 'not in the kit', tone: 'info' }, text: 'That token is for Graph, under Graph\'s consent. A nightly job with no user would instead use client credentials and its own endpoint policy.' },
-      ],
-    },
-    {
-      id: 'L', title: 'Windows sign-in: the PRT', summary: 'the device gets a token first',
-      outcome: 'Before any app is opened, CloudAP holds a PRT for Alice and a session key that only this TPM can use. Neither ever reaches the browser or the app: journey M shows what the browser gets instead.',
-      stops: [
-        { node: 'person', tag: 'windows', lesson: 10, text: 'Alice signs in to Windows on a device joined to the tenant, with her work password or with Windows Hello for Business. No app is open yet.' },
-        { node: 'cloudap', tag: 'windows', lesson: 10, text: 'LogonUI hands the credentials to LSA, which passes them to CloudAP and its Microsoft Entra plugin. The plugin gets a nonce from Entra and builds a request with the credentials and the nonce.' },
-        { node: 'tpm', tag: 'windows', lesson: 10, carries: ['D'], text: 'The request is signed with the private device key, inside the TPM. The key never leaves it.' },
-        { node: 'devices', via: ['cloudap'], tag: 'windows', lesson: 10, stamp: { text: 'device ✓', tone: 'ok' }, text: 'Entra checks the credentials, the nonce and the signature against the public device key, and that the device is valid in the tenant.' },
-        { node: 'devices', tag: 'windows', lesson: 10, carries: ['P', 'S'], text: 'It issues the PRT, and a session key encrypted with the device\'s public transport key.', detail: 'A sign-in with Windows Hello for Business gives the PRT an MFA claim, refreshed together with the PRT.' },
-        { node: 'cloudap', tag: 'windows', lesson: 10, carries: ['P', 'S'], text: 'Both reach CloudAP. Only this device can open the session key: that needs the private transport key.' },
-        { node: 'tpm', tag: 'windows', lesson: 10, carries: ['S'], text: 'The TPM decrypts the session key with the transport key and wraps it again with its own key.' },
-        { node: 'cloudap', tag: 'windows', lesson: 10, lab: 'dsregcmd /status', carries: ['P', 'S'], stamp: { text: 'PRT cached', tone: 'ok' }, text: 'CloudAP stores the PRT and the wrapped session key in its cache, inside LSA. Nothing has reached the browser.', detail: 'Run as the signed-in user, dsregcmd /status shows AzureAdPrt : YES and when the PRT was last renewed. Its output names the device, the tenant and the user: keep it private.' },
-      ],
-    },
-    {
-      id: 'M', title: 'Open the app: no password', summary: 'the browser borrows the device session',
-      outcome: 'Every credential stayed in its place: the PRT and its session key in CloudAP, the PRT cookie on one request, Entra\'s session cookie in the browser, the app\'s tokens in sessionStorage. The API still receives only an access token for its audience.',
-      stops: [
-        { node: 'spa', tag: 'windows', lesson: 9, text: 'On the same device, Alice opens the app in Edge, whose profile is signed in to her work account, and chooses Sign in.' },
-        { node: 'msal', tag: 'windows', lesson: 5, carries: ['V'], text: 'MSAL makes a verifier and its challenge, as in journey A, and starts loginRedirect with prompt=select_account.' },
-        { node: 'browser', tag: 'windows', lesson: 10, carries: ['V'], text: 'The browser navigates the tab to /authorize. It recognizes an Entra sign-in URL and asks Windows for a PRT cookie, passing the nonce from the URL.', detail: 'Edge does this for a profile signed in to the work account; Chrome needs the Microsoft Single Sign On extension. Private windows skip it.' },
-        { node: 'cloudap', tag: 'windows', lesson: 10, carries: ['W'], text: 'CloudAP builds a PRT cookie for that nonce from the PRT in its cache. The PRT itself stays there.' },
-        { node: 'tpm', tag: 'windows', lesson: 10, carries: ['W'], text: 'The TPM signs the PRT cookie with the session key.' },
-        { node: 'browser', via: ['cloudap'], tag: 'windows', lesson: 10, carries: ['W'], text: 'The PRT cookie goes back to the browser, not to the page: MSAL and any injected script never see it.' },
-        { node: 'authorize', tag: 'windows', lesson: 10, carries: ['V', 'W'], text: 'The request reaches /authorize with the client, the scopes and the challenge, and the PRT cookie in the x-ms-RefreshTokenCredential header.' },
-        { node: 'devices', tag: 'windows', lesson: 10, stamp: { text: 'device ✓', tone: 'ok' }, text: 'Entra validates the session key signature and the nonce, and checks that the device is valid in the tenant.' },
-        { node: 'authorize', tag: 'windows', lesson: 10, carries: ['C', 'E'], stamp: { text: 'no password', tone: 'ok' }, text: 'Alice is signed in from the device session. The app asked for select_account, so Entra shows its account picker; choosing her account needs no password. Entra returns the code, and a session cookie for its own site.' },
-        { node: 'browser', tag: 'windows', lesson: 10, carries: ['C', 'E'], text: 'The browser keeps Entra\'s session cookie for login.microsoftonline.com, bound to this device, and follows the redirect to /redirect with the code.' },
-        { node: 'msal', tag: 'tenant', lesson: 9, carries: ['C', 'V'], text: 'From here it is journey A: the MSAL bridge hands the code over, and MSAL redeems it with the verifier.' },
-        { node: 'tokenep', tag: 'tenant', lesson: 5, carries: ['C', 'V'], stamp: { text: 'S256 ✓', tone: 'ok' }, text: 'Entra checks the verifier against the challenge and issues the ID, access and refresh tokens.' },
-        { node: 'cache', via: ['msal'], tag: 'tenant', lesson: 10, carries: ['I', 'A', 'R'], text: 'The three tokens land in sessionStorage, exactly as without Windows. The PRT changed how Alice proved who she is, not what the app holds.' },
-      ],
-    },
-    {
-      id: 'N', title: 'A day later: three clocks', summary: '24 hours, 4 hours, 90 days',
-      outcome: 'Three clocks run at once: the SPA refresh token (24 hours, not sliding), the PRT (renewed at Windows sign-in every 4 hours, valid 90 days) and each access token\'s exp. Losing the PRT stops new sign-ins; it does not withdraw tokens already issued.',
-      stops: [
-        { node: 'cache', tag: 'windows', lesson: 10, carries: ['R'], text: 'The tab stayed open overnight. Its refresh token was issued yesterday, and a refresh token issued to a SPA lasts 24 hours from issue, a window that does not slide.' },
-        { node: 'msal', tag: 'windows', lesson: 9, carries: ['R'], stamp: { text: 'expired', tone: 'deny' }, text: 'acquireTokenSilent finds the access token expired, and the refresh token too.' },
-        { node: 'authorize', via: ['browser'], tag: 'model', lesson: 10, stamp: { text: 'blocked', tone: 'info' }, text: 'MSAL tries a hidden iframe to /authorize. Where the browser blocks third-party cookies, that silent attempt fails and MSAL raises InteractionRequiredAuthError.' },
-        { node: 'spa', via: ['browser', 'msal'], tag: 'windows', lesson: 9, text: 'The app answers with an interactive redirect, never with a loop of silent retries.' },
-        { node: 'browser', via: ['msal'], tag: 'windows', lesson: 10, text: 'A top-level navigation to /authorize. The browser asks CloudAP for a fresh PRT cookie, for the new nonce.' },
-        { node: 'cloudap', tag: 'windows', lesson: 10, carries: ['P'], stamp: { text: 'PRT valid', tone: 'ok' }, text: 'The PRT is still good: CloudAP renews it at Windows sign-in every 4 hours, and a PRT stays valid for 90 days while the device is used.' },
-        { node: 'authorize', via: ['browser'], tag: 'windows', lesson: 10, carries: ['W', 'E'], stamp: { text: 'no password', tone: 'ok' }, text: 'With the PRT cookie and Entra\'s session cookie, Entra returns a new code without asking for a password. New tokens follow, as in journey M.' },
-        { node: 'devices', tag: 'windows', lesson: 10, stamp: { text: 'what ends it', tone: 'deny' }, text: 'The PRT stops working when Alice or the device is deleted or disabled in Entra, or when she changes her password, if the PRT came from it. From then on it gets her nothing.' },
-        { node: 'cache', via: ['authorize', 'browser', 'msal'], tag: 'windows', lesson: 18, carries: ['A'], text: 'None of that reaches tokens already issued: the access token in sessionStorage stays valid until its exp, as in journey H.' },
       ],
     },
   ],

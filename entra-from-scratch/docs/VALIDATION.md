@@ -1,6 +1,14 @@
 # Validation record
 
-Release 1.2.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026.
+Release 1.2.1. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, release 1.2.1 on 15 November 2026.
+
+## Release 1.2.1
+
+What changed: the Windows sign-in is a piece of its own on the scene ("Windows sign-in", LogonUI and LSA), where Alice's line arrives before CloudAP; the TPM moves out of the Windows zone, beside the browser, as hardware of the computer. The three Windows journeys come first: L, M and N of 1.2.0 are now A, B and C, and the earlier A to K are now D to N, with every cross reference between journeys and the activity of lesson 10 updated.
+
+- `node scripts/check.mjs`: big picture with 28 pieces, 36 lines, 13 tokens, keys and cookies, 14 journeys and 132 stops; the rest as in 1.2.0.
+- Browser pass in Chromium under the course CSP: every stop of every journey walked with the keyboard at 1440x900 (Classic), 1366x768 (Dark), 390x844 (Classic) and 1920x1080 (Projector), 132 stops each, with no problem and no console error; every label inside its box under the four skins, zone labels clear of lines and pieces. Scale and text sizes as in 1.2.0.
+- Tenant workbook section F: still NOT EXECUTED.
 
 ## Release 1.2.0
 

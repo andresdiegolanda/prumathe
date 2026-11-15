@@ -2,6 +2,12 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-11-15]
+
+### Cambiado
+
+- Microsoft Entra 1.2.1: en el panorama, el inicio de sesión de Windows pasa a ser una pieza propia ("Windows sign-in", LogonUI y LSA), adonde llega la línea de Alice antes de CloudAP, y el TPM sale de la zona de Windows y queda junto al navegador, como hardware del equipo (28 piezas, 132 paradas). Los tres recorridos de Windows van primero: los L, M y N de la 1.2.0 son ahora A, B y C, y los anteriores A a K pasan a D a N, con las referencias entre recorridos y la actividad de la lección 10 al día. Lo verificado, en [`entra-from-scratch/docs/VALIDATION.md`](entra-from-scratch/docs/VALIDATION.md); versión al día en el README del curso, [`README.md`](README.md) y [`tablero.md`](tablero.md).
+
 ## [2026-11-14]
 
 ### Agregado

@@ -7,7 +7,7 @@ Open [index.html](index.html) in a browser. Start with [What Microsoft Entra ID 
 - 25 lessons in 7 units, 75 scenes and 75 conceptual questions.
 - 9 interactive model families: component boundaries, registration objects, PKCE, tokens, Windows sign-in, permission predicates, rows, database connections and token lifetime.
 - 102 guided activity steps, 51 glossary terms, four display modes and browser-local progress.
-- A big picture: 27 pieces on one scene, 14 journeys with 131 stops (sign-in, 200, approval race, 401, 403, 404, RLS, a removed role, tenant setup, browser threats, another API, Windows sign-in and its PRT, single sign-on to the app, a day later), a card for every piece and for every token, key and cookie with where it is, moment by moment, and a text version.
+- A big picture: 28 pieces on one scene, 14 journeys with 132 stops (Windows sign-in and its PRT, single sign-on to the app, a day later, sign-in, 200, approval race, 401, 403, 404, RLS, a removed role, tenant setup, browser threats, another API), a card for every piece and for every token, key and cookie with where it is, moment by moment, and a text version.
 - A complete Angular/MSAL client, Spring Security resource server and PostgreSQL database with explicit owner/tenant rules and RLS.
 - 50 local assertions, including invalid tokens, scope/role failures, object isolation, pooled context and concurrent approval.
 - A real Entra tenant workbook with an account-free case study, a separate evidence sheet and a capstone rubric.
@@ -32,6 +32,6 @@ Preview: http://127.0.0.1:4175. Build generates lesson shells, English notes, `d
 
 The local suite leaves its services running. Its concurrency case resets only practice row 42. Stop with `docker compose stop` from labs; stop Angular with Ctrl+C. Do not run fixture checks against a tenant exercise in progress.
 
-Version 1.2.0. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
+Version 1.2.1. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
 
 See [teaching and editing](docs/TEACHING.md), [deployment](docs/DEPLOYMENT.md), [validation](docs/VALIDATION.md) and the [MIT license](LICENSE).
