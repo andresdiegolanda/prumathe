@@ -1,6 +1,16 @@
 # Validation record
 
-Release 1.3.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, releases 1.2.1 and 1.3.0 on 15 November 2026.
+Release 1.4.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, releases 1.2.1, 1.3.0 and 1.4.0 on 15 November 2026.
+
+## Release 1.4.0
+
+What changed: every zone of the big picture has a card, like a piece. A click on its name or on its empty space, or Enter when it has the focus, opens it in the panel: what it is, what it does not do, what is inside, lessons and the journeys that cross it. A drag that starts on a zone still moves the scene and opens nothing. The ten zones have text in both languages; the Microsoft Entra ID zone explains what a tenant is. A piece card links to its zone, `?zone=` opens a card, Esc goes back as for a piece, and the text version lists the zones. The card is an optional field of the shared engine, validated like the rest of the data; the engine goes identical to the six courses.
+
+- `node scripts/check.mjs`: as in 1.3.0; the engine now also validates, for every zone with a card, both texts in both languages and its lessons. The other five courses pass their own checks with the new engine.
+- Browser pass in Chromium under the course CSP: the ten zone cards opened by a click on empty space, in both languages at 1440x900 (Classic), 1366x768 (Dark), 390x844 (Classic), 1920x1080 (Projector) and in Reading, with the URL, the selected zone and the card checked each time; a drag starting on a zone opens nothing; Enter opens a focused zone; links from a piece to its zone, from a zone to an inner zone and back, and from a zone to a journey work; no console error. No zone card overflows the panel at 1440, 1366, 1024, 390 and 1920 px in either language; the panel text now wraps a long URL.
+- Big picture: every stop of every journey walked with the keyboard in both languages at the four sizes, 132 stops each, with no problem and no console error; every label inside its box under the four skins in both languages.
+- The definition of a tenant was checked on 15 November 2026 against Microsoft Learn, Microsoft Entra fundamentals: a dedicated and trusted instance of Microsoft Entra ID that generally represents a single organization or security boundary, with its users, groups, devices and applications.
+- NOT EXECUTED: the tenant workbook, as in 1.3.0.
 
 ## Release 1.3.0
 

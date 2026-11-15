@@ -4,6 +4,20 @@ Two layers of evidence: what the Docker suites proved on the platform, and what 
 
 Dos capas de evidencia: lo que las suites Docker probaron sobre la plataforma, y lo que las verificaciones estáticas y las pasadas de navegador probaron sobre el sitio. Cada entrada dice cuándo corrió y contra qué versión, y las verificaciones no ejecutadas figuran como tales.
 
+## 1.8.0, 15 November 2026 / 1.8.0, 15 de noviembre de 2026
+
+Zone cards in the big picture: each of the 7 zones opens its card with a click on its name or its empty space, or with Enter: what it is, what it does not do, what is inside, lessons and the journeys that cross it, in English and Spanish. The shared engine is the one of Microsoft Entra 1.4.0; `npm run check` validates both texts of every card in both languages and its lessons.
+
+Browser pass in Chromium under the CSP of `_headers`: every zone opened by a click on its empty space at 1440x900 (Classic, Spanish), 1366x768 (Dark, English), 390x844 (Classic, Spanish), 1920x1080 (Projector, English) and 1440x900 (Reading, English). In each: the URL and the marked zone follow the card, the card does not overflow the panel, a drag that starts on a zone opens nothing, Enter opens a focused zone, and the first button of "What is inside" and the first journey of every card work, with no console error. Every stop of every journey walked again with the keyboard at 1440x900 (Classic, English), 1366x768 (Dark, Spanish), 390x844 (Classic, Spanish) and 1920x1080 (Projector, English), with no problem and no console error, and every label inside its box under the four skins in both languages.
+
+Not executed: the lab. The zone cards run no command and change nothing in the kit; the image tags move to 1.8.0 only because they carry the course version.
+
+Fichas de zona en el panorama: cada una de las 7 zonas abre su ficha con un clic en su nombre o en su espacio libre, o con Enter: qué es, qué no hace, qué hay adentro, lecciones y los recorridos que la cruzan, en inglés y español. El motor común es el de Microsoft Entra 1.4.0; `npm run check` valida los dos textos de cada ficha en los dos idiomas y sus lecciones.
+
+Pasada de navegador en Chromium con la CSP de `_headers`: cada zona abierta con un clic en su espacio libre en 1440x900 (Clásica, español), 1366x768 (Oscura, inglés), 390x844 (Clásica, español), 1920x1080 (Proyector, inglés) y 1440x900 (Lectura, inglés). En cada una: la URL y la zona marcada siguen a la ficha, la ficha no desborda el panel, un arrastre que empieza en una zona no abre nada, Enter abre una zona con el foco, y el primer botón de «Qué hay adentro» y el primer recorrido de cada ficha funcionan, sin errores de consola. Cada parada de cada recorrido, otra vez con el teclado en 1440x900 (Clásica, inglés), 1366x768 (Oscura, español), 390x844 (Clásica, español) y 1920x1080 (Proyector, inglés), sin problemas ni errores de consola, y cada rótulo dentro de su caja con los cuatro estilos en los dos idiomas.
+
+No ejecutado: el laboratorio. Las fichas de zona no corren ningún comando ni cambian nada del kit; las etiquetas de imagen pasan a 1.8.0 solo porque llevan la versión del curso.
+
 ## 1.7.0, 14 November 2026 / 1.7.0, 14 de noviembre de 2026
 
 The big picture: `big-picture.html`, opened from a button on the home page. 20 pieces, 23 lines, 7 items, 11 journeys and 81 stops, in English and Spanish. `npm run check` validates the data with the shared engine (ids, geometry, both languages, lessons, journeys that move only along lines), finds every command it shows among the lessons' commands and checks its partitions with the real Murmur2: order-42 and order-2 in partition 0 and order-1 in partition 1 of three; order-1 in partition 2 and order-2 in partition 3 of four.

@@ -25,6 +25,8 @@
       noneThrough: 'No journey stops here.', comesFrom: 'Comes from', endsUp: 'Ends up', heldBy: 'Held by', lives: 'Where it is, moment by moment',
       carriedIn: 'Carried in', overview: 'Overview', end: 'End of the journey', nextJourney: 'Next: journey',
       again: 'Again', backTo: 'Back to the stop', piece: 'Piece', item: 'Item', where: 'Where you see it',
+      zone: 'Area', zones: 'Areas', inside: 'What is inside', zoneJourneys: 'Journeys that cross it', noneCross: 'No journey crosses it.',
+      howZones: 'Click the name or the empty space of an area for its card: what it is, what it does not do and what is inside.',
       edges: 'Lines', nodes: 'Pieces', tags: 'Evidence', stamps: 'Stamps', dot: 'The dot',
       dotText: 'The dot is the request or the message of the journey; the letters next to it are what it carries.',
       stampText: 'A stamp marks a decision at a piece: green lets it pass, orange stops it, grey only notes.',
@@ -58,6 +60,8 @@
       noneThrough: 'Ningún recorrido para acá.', comesFrom: 'De dónde viene', endsUp: 'Dónde termina', heldBy: 'Lo guarda', lives: 'Dónde está, momento a momento',
       carriedIn: 'Viaja en', overview: 'Inicio', end: 'Fin del recorrido', nextJourney: 'Sigue: recorrido',
       again: 'Otra vez', backTo: 'Volver a la parada', piece: 'Pieza', item: 'Elemento', where: 'Dónde se ve',
+      zone: 'Zona', zones: 'Zonas', inside: 'Qué hay adentro', zoneJourneys: 'Recorridos que la cruzan', noneCross: 'Ningún recorrido la cruza.',
+      howZones: 'Hacé clic en el nombre o en el espacio libre de una zona para ver su ficha: qué es, qué no hace y qué hay adentro.',
       edges: 'Líneas', nodes: 'Piezas', tags: 'Evidencia', stamps: 'Sellos', dot: 'El punto',
       dotText: 'El punto es el pedido o el mensaje del recorrido; las letras que lo acompañan son lo que lleva.',
       stampText: 'Un sello marca una decisión en una pieza: verde deja pasar, naranja frena, gris solo anota.',
@@ -199,6 +203,10 @@
     D.intro.forEach((p, i) => text(p, 'intro ' + i));
     for (const z of D.zones) {
       text(z.label, 'zone ' + z.id);
+      if (z.note) text(z.note, `zone ${z.id}.note`);
+      // A zone may have a card, like a piece: what it is and what it does not do, both or neither.
+      if (z.what || z.not) for (const k of ['what', 'not']) text(z[k], `zone ${z.id}.${k}`);
+      for (const l of z.lessons || []) if (!lessons.has(l)) fail(`zone ${z.id}: unknown lesson ${l}`);
       if (z.x < 0 || z.y < 0 || z.x + z.w > D.scene.w || z.y + z.h > D.scene.h) fail('zone outside the scene: ' + z.id);
       if (z.parent && !D.zones.some((p) => p.id === z.parent && inside(z, p, 4))) fail('zone outside its parent: ' + z.id);
     }
@@ -301,6 +309,12 @@
       }
       h += `</ol><p><strong>${u.end}:</strong> ${esc(L(j.outcome, lang))}</p></section>`;
     }
+    const cards = D.zones.filter((z) => z.what);
+    if (cards.length) {
+      h += `<section><h3>${u.zones}</h3><dl>`;
+      for (const z of cards) h += `<dt id="bp-text-zone-${esc(z.id)}">${esc(L(z.label, lang))}${z.note ? ` · ${esc(L(z.note, lang))}` : ''}</dt><dd>${esc(L(z.what, lang))} <em>${u.not}:</em> ${esc(L(z.not, lang))}${(z.lessons || []).length ? ' ' + z.lessons.map(lessonLink).join(', ') : ''}</dd>`;
+      h += '</dl></section>';
+    }
     h += `<section><h3>${u.nodes}</h3><dl>`;
     for (const [id, n] of Object.entries(D.nodes)) {
       h += `<dt id="bp-text-${esc(id)}">${esc(L(n.label, lang))}${n.sub ? ` · ${esc(L(n.sub, lang))}` : ''}</dt><dd>${esc(L(n.what, lang))}${facts(n, true).map((f) => ` <em>${esc(L(f.label, lang))}:</em> ${esc(L(f.text, lang))}`).join('')} <em>${u.not}:</em> ${esc(L(n.not, lang))}${facts(n, false).map((f) => ` <em>${esc(L(f.label, lang))}:</em> ${esc(L(f.text, lang))}`).join('')}${(n.lessons || []).length ? ' ' + n.lessons.map(lessonLink).join(', ') : ''}</dd>`;
@@ -391,7 +405,7 @@
   const u = () => UI[lang] || UI.en, T = (x) => L(x, lang);
   const SPEEDS = { slow: 0.55, normal: 1, fast: 1.8 };
   const S = {
-    j: -1, s: 0, view: 'overview', piece: null, item: null, playing: false, speed: 'normal', held: false,
+    j: -1, s: 0, view: 'overview', piece: null, item: null, zone: null, playing: false, speed: 'normal', held: false,
     follow: false, cam: null, moving: false, bubble: true, from: null,
   };
   let svg, view, panel, bubble, dotG, player, live, timer = 0, anim = 0, camAnim = 0, measure, lastFocus = null;
@@ -480,7 +494,7 @@
     const f = family();
     const defs = `<defs>${Object.entries(ICONS).map(([k, p]) => `<symbol id="bp-i-${k}" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</g></symbol>`).join('')}
 ${['call', 'read', 'async', 'admin', 'risk', 'trail'].map((k) => `<marker id="bp-a-${k}" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="${k === 'trail' ? 13 : 10}" markerHeight="${k === 'trail' ? 13 : 10}" orient="auto-start-reverse"><path class="bp-arrow bp-arrow-${k}" d="M0 1L9 5L0 9z"/></marker>`).join('')}</defs>`;
-    const zones = D.zones.map((z) => `<g class="bp-zone bp-zone-${z.tone || 'plain'}${z.parent ? ' bp-zone-inner' : ''}"><rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="${z.parent ? 10 : 14}"/><text x="${z.x + 14 + (z.labelDx || 0)}" y="${z.labelBottom ? z.y + z.h - 10 : z.y + (z.parent ? 17 : 21)}" class="bp-zone-label">${esc(T(z.label).toUpperCase())}${z.note ? `<tspan class="bp-zone-note" dx="8">${esc(T(z.note))}</tspan>` : ''}</text></g>`).join('');
+    const zones = D.zones.map((z) => `<g class="bp-zone bp-zone-${z.tone || 'plain'}${z.parent ? ' bp-zone-inner' : ''}${z.what ? ' bp-zone-card" data-zone="' + esc(z.id) + '" tabindex="0" role="button" aria-label="' + esc(T(z.label) + (z.note ? ', ' + T(z.note) : '')) : ''}"><rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="${z.parent ? 10 : 14}"/><text x="${z.x + 14 + (z.labelDx || 0)}" y="${z.labelBottom ? z.y + z.h - 10 : z.y + (z.parent ? 17 : 21)}" class="bp-zone-label">${esc(T(z.label).toUpperCase())}${z.note ? `<tspan class="bp-zone-note" dx="8">${esc(T(z.note))}</tspan>` : ''}</text></g>`).join('');
     const edges = D.edges.map((e, i) => {
       const pts = route(NODES, e);
       const mid = at(pts, 0.5);
@@ -602,7 +616,8 @@ ${['call', 'read', 'async', 'admin', 'risk', 'trail'].map((k) => `<marker id="bp
       if (ev.target.closest('.bp-zoom, .bp-bubble, .bp-node, .bp-dot')) return;
       pointers.set(ev.pointerId, [ev.clientX, ev.clientY]);
       view.setPointerCapture(ev.pointerId);
-      drag = { x: ev.clientX, y: ev.clientY, cam: { ...S.cam }, moved: false };
+      // A press on an area with a card opens it on release, unless the press became a drag.
+      drag = { x: ev.clientX, y: ev.clientY, cam: { ...S.cam }, moved: false, zone: pointers.size === 1 ? ev.target.closest('.bp-zone-card')?.dataset.zone : undefined };
       cancelAnimationFrame(camAnim);
     });
     view.addEventListener('pointermove', (ev) => {
@@ -626,7 +641,7 @@ ${['call', 'read', 'async', 'admin', 'risk', 'trail'].map((k) => `<marker id="bp
       applyCam();
     });
     const up = (ev) => { pointers.delete(ev.pointerId); if (!pointers.size) drag = null; };
-    view.addEventListener('pointerup', up);
+    view.addEventListener('pointerup', (ev) => { const zone = drag && !drag.moved && drag.zone; up(ev); if (zone) openZone(zone); });
     view.addEventListener('pointercancel', up);
     view.addEventListener('wheel', (ev) => {
       ev.preventDefault();
@@ -643,6 +658,8 @@ ${['call', 'read', 'async', 'admin', 'risk', 'trail'].map((k) => `<marker id="bp
     svg.addEventListener('keydown', (ev) => {
       const n = ev.target.closest('.bp-node');
       if (n && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.stopPropagation(); openPiece(n.dataset.node); }
+      const z = ev.target.closest('.bp-zone-card');
+      if (z && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.stopPropagation(); openZone(z.dataset.zone); }
       if (ev.target.closest('.bp-dot') && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.stopPropagation(); next(); }
     });
     const near = (id, on) => {
@@ -674,6 +691,7 @@ ${['call', 'read', 'async', 'admin', 'risk', 'trail'].map((k) => `<marker id="bp
     const inJourney = new Set(j ? j.stops.flatMap((s) => [s.node, ...(s.via || [])]) : []);
     const visited = new Set(j ? j.stops.slice(0, S.s + 1).map((s) => s.node) : []);
     svg.classList.toggle('bp-active', !!j);
+    for (const g of svg.querySelectorAll('.bp-zone-card')) g.classList.toggle('bp-selected', S.view === 'zone' && S.zone === g.dataset.zone);
     for (const g of svg.querySelectorAll('.bp-node')) {
       const id = g.dataset.node;
       g.classList.toggle('bp-in', inJourney.has(id));
@@ -789,6 +807,7 @@ ${['call', 'read', 'async', 'admin', 'risk', 'trail'].map((k) => `<marker id="bp
     let h = '';
     if (S.view === 'piece' && S.piece) h = pieceView(S.piece);
     else if (S.view === 'item' && S.item) h = itemView(S.item);
+    else if (S.view === 'zone' && S.zone) h = zoneView(S.zone);
     else if (journey()) h = stopView();
     else h = overview();
     panel.innerHTML = h;
@@ -840,7 +859,7 @@ ${deeper}
     const U = u(), n = NODES[id], tone = n.tone || D.zones.find((z) => z.id === n.zone)?.tone;
     const zone = D.zones.find((z) => z.id === n.zone);
     return `${panelHead(`${U.piece}`, true)}<div class="bp-panel-body">
-<div class="bp-card-title"><svg class="bp-card-icon bp-tone-${tone || 'plain'}" viewBox="0 0 24 24" aria-hidden="true"><use href="#bp-i-${n.icon || 'box'}"/></svg><div><h3>${esc(T(n.label))}</h3>${n.sub ? `<p>${esc(T(n.sub))}</p>` : ''}<small>${esc(T(zone.label))}</small></div></div>
+<div class="bp-card-title"><svg class="bp-card-icon bp-tone-${tone || 'plain'}" viewBox="0 0 24 24" aria-hidden="true"><use href="#bp-i-${n.icon || 'box'}"/></svg><div><h3>${esc(T(n.label))}</h3>${n.sub ? `<p>${esc(T(n.sub))}</p>` : ''}${zone.what ? `<button type="button" class="bp-zone-link" data-zone="${esc(zone.id)}">${esc(T(zone.label))}</button>` : `<small>${esc(T(zone.label))}</small>`}</div></div>
 <h4>${U.what}</h4><p>${esc(T(n.what))}</p>
 ${facts(n, true).map((f) => `<h4>${esc(T(f.label))}</h4><p>${esc(T(f.text))}</p>`).join('')}
 ${n.holds?.length ? `<h4>${U.holds}</h4><div class="bp-chips">${n.holds.map((c) => chip(c)).join('')}</div>` : ''}
@@ -867,6 +886,21 @@ ${it.lessons?.length ? `<h4>${U.deeper}</h4>${it.lessons.map(lessonLink).join(''
 <h4>${U.carriedIn}</h4>${passList(passes((s) => s.carries?.includes(id)))}</div>`;
   }
 
+  // An area: what it is, what it does not do, what is inside it and the journeys that cross it.
+  function zoneView(id) {
+    const U = u(), z = D.zones.find((x) => x.id === id), parent = D.zones.find((x) => x.id === z.parent);
+    const within = (zid) => zid === id || D.zones.some((x) => x.id === zid && x.parent && within(x.parent));
+    const inner = D.zones.filter((x) => x.parent === id), pieces = IDS.filter((n) => NODES[n].zone === id);
+    const crossing = D.journeys.map((j, i) => ({ j, i })).filter(({ j }) => j.stops.some((s) => within(NODES[s.node].zone)));
+    return `${panelHead(U.zone, true)}<div class="bp-panel-body">
+<div class="bp-card-title"><svg class="bp-card-icon bp-tone-${z.tone || 'plain'}" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"${z.parent ? ' stroke-dasharray="3 2"' : ''}/></svg><div><h3>${esc(T(z.label))}</h3>${z.note ? `<p>${esc(T(z.note))}</p>` : ''}${parent ? (parent.what ? `<button type="button" class="bp-zone-link" data-zone="${esc(parent.id)}">${esc(T(parent.label))}</button>` : `<small>${esc(T(parent.label))}</small>`) : ''}</div></div>
+<h4>${U.what}</h4><p>${esc(T(z.what))}</p>
+<h4>${U.not}</h4><p>${esc(T(z.not))}</p>
+${inner.length || pieces.length ? `<h4>${U.inside}</h4><div class="bp-chips">${inner.map((x) => `<button type="button" class="bp-chip bp-chip-zone"${x.what ? ` data-zone="${esc(x.id)}"` : ' disabled'}>${esc(T(x.label))}</button>`).join('')}${pieces.map((n) => `<button type="button" class="bp-chip" data-piece="${n}">${esc(T(NODES[n].label))}</button>`).join('')}</div>` : ''}
+${z.lessons?.length ? `<h4>${U.deeper}</h4>${z.lessons.map(lessonLink).join('')}` : ''}
+<h4>${U.zoneJourneys}</h4>${crossing.length ? `<ol class="bp-journeys">${crossing.map(({ j, i }) => `<li><button type="button" data-journey="${i}"><span class="bp-jletter">${esc(j.id)}</span><span><strong>${esc(T(j.title))}</strong><small>${esc(T(j.summary))}</small></span></button></li>`).join('')}</ol>` : `<p class="bp-muted">${U.noneCross}</p>`}</div>`;
+  }
+
   function renderPlayer() {
     const U = u(), j = journey(), s = stop();
     const caption = j ? `${esc(T(j.title))} · ${U.stop} ${S.s + 1} ${U.of} ${j.stops.length} · ${esc(T(NODES[s.node].label))}` : U.noJourney;
@@ -883,6 +917,7 @@ ${it.lessons?.length ? `<h4>${U.deeper}</h4>${it.lessons.map(lessonLink).join(''
     if (journey()) { q.set('j', journey().id); q.set('s', String(S.s + 1)); }
     if (S.view === 'piece' && S.piece) q.set('piece', S.piece);
     if (S.view === 'item' && S.item) q.set('item', S.item);
+    if (S.view === 'zone' && S.zone) q.set('zone', S.zone);
     try { history.replaceState(null, '', `${location.pathname}?${q}`); } catch { /* file:// in some browsers */ }
   }
   function update({ panel: p = true, bubble: b = true } = {}) {
@@ -1004,6 +1039,14 @@ ${it.lessons?.length ? `<h4>${U.deeper}</h4>${it.lessons.map(lessonLink).join(''
     panel.querySelector('h3')?.setAttribute('tabindex', '-1');
     panel.querySelector('h3')?.focus({ preventScroll: true });
   }
+  function openZone(id) {
+    lastFocus = document.activeElement;
+    S.view = 'zone';
+    S.zone = id;
+    update({ bubble: !!journey() });
+    panel.querySelector('h3')?.setAttribute('tabindex', '-1');
+    panel.querySelector('h3')?.focus({ preventScroll: true });
+  }
   function panelBack() {
     if (journey() && S.view !== 'stop') { S.view = 'stop'; update(); return; }
     reset();
@@ -1011,7 +1054,7 @@ ${it.lessons?.length ? `<h4>${U.deeper}</h4>${it.lessons.map(lessonLink).join(''
   function reset() {
     stopPlay();
     finishMove();
-    S.j = -1; S.s = 0; S.view = 'overview'; S.piece = null; S.item = null;
+    S.j = -1; S.s = 0; S.view = 'overview'; S.piece = null; S.item = null; S.zone = null;
     update();
     S.fitted = true;
     moveCam(fitCam());
@@ -1039,7 +1082,8 @@ ${D.tags ? `<h3>${U.tags}</h3><dl>${Object.keys(D.tags).map((k) => `<dt>${tagBad
   }
   function howTo() {
     const U = u();
-    return `<div class="bp-how"><ol>${U.howItems.map((x) => `<li>${esc(x)}</li>`).join('')}</ol><h3>${U.keys}</h3><dl class="bp-keys">${U.howKeys.map(([k, v]) => `<dt><kbd>${esc(k)}</kbd></dt><dd>${esc(v)}</dd>`).join('')}</dl><h3>${U.mouse}</h3><p>${U.drag}.</p></div>`;
+    const items = D.zones.some((z) => z.what) ? [...U.howItems.slice(0, 3), U.howZones, ...U.howItems.slice(3)] : U.howItems;
+    return `<div class="bp-how"><ol>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ol><h3>${U.keys}</h3><dl class="bp-keys">${U.howKeys.map(([k, v]) => `<dt><kbd>${esc(k)}</kbd></dt><dd>${esc(v)}</dd>`).join('')}</dl><h3>${U.mouse}</h3><p>${U.drag}.</p></div>`;
   }
   function textVersion() {
     return `<div class="bp-text"><p class="bp-muted">${u().textIntro}</p>${BP.outline(D, course, lang, { query: `?lang=${lang}&theme=${theme}` })}</div>`;
@@ -1061,6 +1105,7 @@ ${D.tags ? `<h3>${U.tags}</h3><dl>${Object.keys(D.tags).map((k) => `<dt>${tagBad
       if (t.dataset.goto) { const [a, b] = t.dataset.goto.split(':').map(Number); if (inDialog) dlg.close(); return startJourney(a, b); }
       if (t.dataset.piece) { if (inDialog) dlg.close(); return openPiece(t.dataset.piece); }
       if (t.dataset.item) { if (inDialog) dlg.close(); return openItem(t.dataset.item); }
+      if (t.dataset.zone) { if (inDialog) dlg.close(); return openZone(t.dataset.zone); }
       if (t.dataset.lang) { lang = t.dataset.lang; store(D.config.langKey, lang); rebuild(); return; }
       if (t.dataset.copy) {
         const done = () => { t.textContent = u().copied; setTimeout(() => (t.textContent = u().copy), 1400); };
@@ -1095,7 +1140,7 @@ ${D.tags ? `<h3>${U.tags}</h3><dl>${Object.keys(D.tags).map((k) => `<dt>${tagBad
       const dlg = root.querySelector('.bp-dialog');
       if (dlg.open || ev.altKey || ev.ctrlKey || ev.metaKey) return;
       if (ev.target.closest('input, select, textarea')) return;
-      const k = ev.key, onButton = ev.target.closest('button, a, .bp-node, .bp-dot');
+      const k = ev.key, onButton = ev.target.closest('button, a, .bp-node, .bp-zone-card, .bp-dot');
       if (k === 'ArrowRight') { ev.preventDefault(); stopPlay(); next(); }
       else if (k === 'ArrowLeft') { ev.preventDefault(); prev(); }
       else if (k === ' ' && !onButton) { ev.preventDefault(); S.playing ? stopPlay() : play(); }
@@ -1113,7 +1158,7 @@ ${D.tags ? `<h3>${U.tags}</h3><dl>${Object.keys(D.tags).map((k) => `<dt>${tagBad
       else if (k === 'r' || k === 'R') reset();
       else if (k === 'Escape') {
         if (!bubble.hidden) { S.bubble = false; bubble.hidden = true; }
-        else if (S.view === 'piece' || S.view === 'item') panelBack();
+        else if (S.view === 'piece' || S.view === 'item' || S.view === 'zone') panelBack();
         else if (journey()) reset();
       }
     });
@@ -1162,9 +1207,10 @@ ${D.tags ? `<h3>${U.tags}</h3><dl>${Object.keys(D.tags).map((k) => `<dt>${tagBad
       S.s = Math.max(0, Math.min(D.journeys[ji].stops.length - 1, (Number(query.get('s')) || 1) - 1));
       S.view = 'stop';
     }
-    const piece = query.get('piece'), item = query.get('item');
+    const piece = query.get('piece'), item = query.get('item'), zone = D.zones.find((z) => z.what && z.id === query.get('zone'));
     if (piece && NODES[piece]) { S.view = 'piece'; S.piece = piece; }
     else if (item && ITEMS[item]) { S.view = 'item'; S.item = item; }
+    else if (zone) { S.view = 'zone'; S.zone = zone.id; }
     update();
     if (S.follow && stop()) { S.fitted = false; followTo(stop().node, 0); }
     if (document.fonts?.ready) document.fonts.ready.then(() => { const cam = S.cam; scene(); bindSceneAgain(); S.cam = cam; applyCam(); paint(); placeBubble(); });

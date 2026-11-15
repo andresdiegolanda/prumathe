@@ -1,5 +1,13 @@
 # Evidencia de validación
 
+## Versión 1.6.0, 15/11/2026
+
+Fichas de zona en el panorama: cada una de las 4 zonas abre su ficha con un clic en su nombre o en su espacio libre, o con Enter: qué es, qué no hace, qué hay adentro, lecciones y los recorridos que la cruzan, en inglés y español. El motor común es el de Microsoft Entra 1.4.0; `npm run check` valida los dos textos de cada ficha en los dos idiomas y sus lecciones.
+
+Pasada de navegador en Chromium con la CSP de `_headers`: cada zona abierta con un clic en su espacio libre en 1440x900 (Clásica, español), 1366x768 (Oscura, inglés), 390x844 (Clásica, español), 1920x1080 (Proyector, inglés) y 1440x900 (Lectura, inglés). En cada una: la URL y la zona marcada siguen a la ficha, la ficha no desborda el panel, un arrastre que empieza en una zona no abre nada, Enter abre una zona con el foco, y el primer botón de «Qué hay adentro» y el primer recorrido de cada ficha funcionan, sin errores de consola. Cada parada de cada recorrido, otra vez con el teclado en 1440x900 (Clásica, inglés), 1366x768 (Oscura, español), 390x844 (Clásica, español) y 1920x1080 (Proyector, inglés), sin problemas ni errores de consola, y cada rótulo dentro de su caja con los cuatro estilos en los dos idiomas.
+
+No ejecutado: los experimentos y las actividades de GitHub. Las fichas de zona no corren ningún comando ni cambian el kit.
+
 ## Versión 1.5.0, 14/11/2026
 
 El panorama: `big-picture.html`, que se abre con un botón de la portada. 16 piezas, 18 líneas, 8 elementos, 10 recorridos y 62 paradas, en inglés y español. `npm run check` valida los datos con el motor común (ids, geometría, los dos idiomas, lecciones, recorridos que solo se mueven por líneas) y encuentra cada comando que muestra entre los comandos de las lecciones.

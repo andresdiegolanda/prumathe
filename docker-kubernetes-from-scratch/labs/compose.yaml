@@ -22,7 +22,7 @@ services:
   # course cluster. Start it by naming it, docker compose up -d --wait visor; stop it with
   # docker compose stop visor. DOCKER_GID: the group of the socket, 0 in Docker Desktop.
   visor:
-    image: prumathe-visor:1.5.0
+    image: prumathe-visor:1.6.0
     build: ./visor
     profiles: [visor]
     group_add: ["${DOCKER_GID:-0}"]

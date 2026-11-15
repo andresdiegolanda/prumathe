@@ -330,6 +330,26 @@ html[data-theme='reading'] body {
 .bp-zone-risk .bp-zone-label {
   fill: var(--orange);
 }
+/* An area with a card: a click that does not drag opens it, so the space keeps the grab cursor
+   and the name shows the pointer. */
+.bp-zone-card {
+  outline: none;
+}
+.bp-zone-card .bp-zone-label {
+  cursor: pointer;
+}
+.bp-zone-card:hover .bp-zone-label {
+  text-decoration: underline;
+}
+.bp-zone-card:hover > rect,
+.bp-zone-card.bp-selected > rect {
+  stroke: var(--green);
+  stroke-width: 2;
+}
+.bp-zone-card:focus-visible > rect {
+  stroke: var(--focus);
+  stroke-width: 3;
+}
 
 .bp-edge path {
   fill: none;
@@ -676,6 +696,14 @@ html[data-theme='dark'] .bp-stamp-info text {
 .bp-chip:hover {
   border-color: var(--green);
 }
+.bp-chip-zone {
+  border-style: dashed;
+}
+.bp-chip:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: default;
+}
 
 /* The bubble. */
 .bp-bubble {
@@ -761,6 +789,7 @@ html[data-theme='dark'] .bp-stamp-info text {
 .bp-panel-body p {
   margin: 0 0 10px;
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 .bp-panel-body h4 {
   margin: 16px 0 4px;
@@ -1059,13 +1088,23 @@ html[data-theme='dark'] .bp-stampchip {
   margin: 2px 0 0;
   color: var(--muted);
 }
-.bp-card-title small {
+.bp-card-title small,
+.bp-zone-link {
   display: block;
   margin-top: 4px;
   font: 600 0.5625rem var(--mono);
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--muted);
+}
+.bp-zone-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
 .bp-card-icon {
   width: 2.25rem;

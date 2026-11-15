@@ -21,7 +21,7 @@ window.BIG_PICTURE = (() => {
     subtitle: B('One change, from Ana\'s desk to an accepted history', 'Un cambio, del escritorio de Ana a una historia aceptada'),
     intro: [
       B('Ana and Bruno maintain the Faro library guide. Each has a clone with its own history; GitHub hosts the shared repository and the conversation around a change. This picture puts every piece of the course on one scene.', 'Ana y Bruno mantienen la guía de la biblioteca Faro. Cada uno tiene un clon con su propia historia; GitHub aloja el repositorio compartido y la conversación alrededor de un cambio. Este dibujo pone en una escena todas las piezas del curso.'),
-      B('Pick a journey: the dot is the change, and its letters are what it carries. Each stop says what is decided there and which lesson goes deeper. Click any piece for its card.', 'Elegí un recorrido: el punto es el cambio, y sus letras son lo que lleva. Cada parada dice qué se decide ahí y qué lección lo profundiza. Hacé clic en cualquier pieza para ver su ficha.'),
+      B('Pick a journey: the dot is the change, and its letters are what it carries. Each stop says what is decided there and which lesson goes deeper. Click any piece, or any area, for its card.', 'Elegí un recorrido: el punto es el cambio, y sus letras son lo que lleva. Cada parada dice qué se decide ahí y qué lección lo profundiza. Hacé clic en cualquier pieza, o en cualquier zona, para ver su ficha.'),
       B('Tags say how to see a stop for yourself: LAB with real Git on your computer, GITHUB in your practice repository, MODEL only in the lessons.', 'Las etiquetas dicen cómo ver cada parada por tu cuenta: LABORATORIO con Git real en tu computadora, GITHUB en tu repositorio de práctica, MODELO solo en las lecciones.'),
     ],
     tags: {
@@ -47,11 +47,24 @@ window.BIG_PICTURE = (() => {
     },
     scene: { w: 1300, h: 670 },
     sceneLegend: { x: 928, y: 490, w: 360, h: 96, cols: 2 },
+    // Every zone has a card, like a piece: what it is, what it does not do, and lessons.
     zones: [
-      { id: 'ana', x: 12, y: 36, w: 360, h: 434, label: B('Ana\'s computer', 'La computadora de Ana'), note: B('her clone', 'su clon') },
-      { id: 'github', x: 392, y: 36, w: 516, h: 516, tone: 'outside', label: B('GitHub', 'GitHub'), note: B('repository Faro', 'repositorio Faro') },
-      { id: 'bruno', x: 928, y: 36, w: 360, h: 434, label: B('Bruno\'s computer', 'La computadora de Bruno'), note: B('his clone', 'su clon') },
-      { id: 'env', x: 392, y: 568, w: 180, h: 92, label: B('An environment', 'Un entorno'), labelBottom: true },
+      { id: 'ana', x: 12, y: 36, w: 360, h: 434, label: B('Ana\'s computer', 'La computadora de Ana'), note: B('her clone', 'su clon'),
+        what: B('Ana\'s clone of Faro: her working tree, her staging area, her commits and branches, and origin/main, her last view of main on GitHub. Everything she records here is local until she pushes.', 'El clon de Faro de Ana: su working tree, su staging area, sus commits y ramas, y origin/main, su última vista de main en GitHub. Todo lo que registra acá es local hasta que hace push.'),
+        not: B('Nobody else sees it, and it does not change when Bruno or GitHub change: it learns about new commits only when Ana fetches.', 'Nadie más lo ve, y no cambia cuando cambian Bruno o GitHub: se entera de commits nuevos solo cuando Ana hace fetch.'),
+        lessons: [2, 3, 7] },
+      { id: 'github', x: 392, y: 36, w: 516, h: 516, tone: 'outside', label: B('GitHub', 'GitHub'), note: B('repository Faro', 'repositorio Faro'),
+        what: B('Where the shared repository is hosted, with the conversation around each change: issues, forks, pull requests, reviews, Actions, the ruleset on main and releases. Both clones call it origin.', 'Donde está alojado el repositorio compartido, con la conversación alrededor de cada cambio: issues, forks, pull requests, revisiones, Actions, el ruleset sobre main y las releases. Los dos clones lo llaman origin.'),
+        not: B('It does not edit anyone\'s clone, and being able to read it is not being able to push to it. Merging a pull request or publishing a release deploys nothing by itself.', 'No edita el clon de nadie, y poder leerlo no es poder hacer push. Hacer merge de un pull request o publicar una release no despliega nada por sí solo.'),
+        lessons: [1, 11, 16] },
+      { id: 'bruno', x: 928, y: 36, w: 360, h: 434, label: B('Bruno\'s computer', 'La computadora de Bruno'), note: B('his clone', 'su clon'),
+        what: B('Bruno\'s own clone of the same project: his working tree, his commits and his origin/main. He records his work independently, and his main can diverge from Ana\'s.', 'El clon propio de Bruno, del mismo proyecto: su working tree, sus commits y su origin/main. Registra su trabajo por su cuenta, y su main puede divergir del de Ana.'),
+        not: B('A clone is not a live shared folder: Bruno sees Ana\'s commits only after she pushes and he fetches, and fetching moves his origin/main without touching his main or his files.', 'Un clon no es una carpeta compartida en vivo: Bruno ve los commits de Ana solo después de que ella hace push y él hace fetch, y el fetch mueve su origin/main sin tocar su main ni sus archivos.'),
+        lessons: [7, 8] },
+      { id: 'env', x: 392, y: 568, w: 180, h: 92, label: B('An environment', 'Un entorno'), labelBottom: true,
+        what: B('Where a chosen revision actually runs, such as a server or a site. A deployment places an artifact there; record which revision runs where.', 'Donde corre de verdad una revisión elegida, como un servidor o un sitio. Un despliegue pone un artefacto ahí; anotá qué revisión corre dónde.'),
+        not: B('It is not part of Git or of the repository: a tag or a release puts nothing here unless something is configured to deploy it.', 'No es parte de Git ni del repositorio: un tag o una release no ponen nada acá salvo que algo esté configurado para desplegarlo.'),
+        lessons: [17] },
     ],
     nodes: {
       work: {

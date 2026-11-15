@@ -7,7 +7,7 @@ Un curso visual independiente en **inglés y español rioplatense**. Abrí `inde
 ## What is included / Qué incluye
 
 - 31 individual HTML lessons in 9 ordered units; 93 visual teaching scenes.
-- A big picture (button on the home page): every piece of the course on one scene, from the producer to every group that reads, with 11 journeys and 81 stops that a dot follows (publish and read, keys and partitions, groups, offsets, a broker failure, retention, at-least-once, transactions, the outbox, Streams, Connect and mirroring), a card for every piece and a text version. Each stop names its lesson and, when there is one, the lab command that shows it.
+- A big picture (button on the home page): every piece of the course on one scene, from the producer to every group that reads, with 11 journeys and 81 stops that a dot follows (publish and read, keys and partitions, groups, offsets, a broker failure, retention, at-least-once, transactions, the outbox, Streams, Connect and mirroring), a card for every area and every piece, and a text version. Each stop names its lesson and, when there is one, the lab command that shows it.
 - A five minute “What Kafka is” page: what it is, where it came from, where it fits and where it does not, with its sources.
 - A discussion per lesson, in the Go deeper tab: threads on GitHub Discussions, loaded only when you open them on the published site; reading is open, posting needs a GitHub account.
 - Interactive SVG models, clickable objects, keyboard navigation and an expandable canvas.
@@ -21,7 +21,7 @@ Un curso visual independiente en **inglés y español rioplatense**. Abrí `inde
 - An isolated three-node KRaft cluster plus optional Connect, PostgreSQL, ACL, mirror, share-group, Kafbat UI and Spring Boot services.
 - Static Cloudflare Pages output and a GitHub validation workflow.
 
-El panorama, desde el botón de la portada, pone todas las piezas del curso en una escena y la recorre con 11 recorridos y 81 paradas; cada parada nombra su lección y, cuando hay uno, el comando del laboratorio que la muestra.
+El panorama, desde el botón de la portada, pone todas las piezas del curso en una escena, con una ficha por zona y por pieza, y la recorre con 11 recorridos y 81 paradas; cada parada nombra su lección y, cuando hay uno, el comando del laboratorio que la muestra.
 
 Cada lección combina modelo visual, explicación, laboratorio y control. El español usa voseo rioplatense. Los términos de configuración y las salidas de Kafka se conservan tal como aparecen en las herramientas reales.
 
@@ -89,9 +89,9 @@ Reservá varias sesiones. Repetí experimentos y anotá predicciones en vez de c
 
 ## Versions / Versiones
 
-Course 1.7.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 28 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned. The console of lesson 25, **Kafbat UI v1.5.0** (20 April 2026, the latest release when this version was prepared), is pinned by digest.
+Course 1.8.0. The course pins **Apache Kafka 4.1.2** (brokers and clients) and **Spring Boot 3.5.16** on Java 21, and its text describes those versions. Kafka 4.2 made share groups production-ready and 4.3 is the current line; lesson 28 says so where it matters, and the whole course is reviewed against a newer baseline as a deliberate step, never by changing the pin in silence. Spring Boot 3.5.16 is the last open-source release of the 3.5 line, whose open-source support ended on 30 June 2026; moving the Spring lesson to Boot 4.x is planned. The console of lesson 25, **Kafbat UI v1.5.0** (20 April 2026, the latest release when this version was prepared), is pinned by digest.
 
-Curso 1.7.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 28 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado. La consola de la lección 25, **Kafbat UI v1.5.0** (20 de abril de 2026, la última versión publicada al preparar esta), está fijada por digest.
+Curso 1.8.0. El curso fija **Apache Kafka 4.1.2** (brokers y clientes) y **Spring Boot 3.5.16** sobre Java 21, y su texto describe esas versiones. Kafka 4.2 dejó los share groups production-ready y 4.3 es la línea actual; la lección 28 lo dice donde importa, y la revisión de todo el curso contra una base más nueva es un paso deliberado, nunca un cambio silencioso de la versión fijada. Spring Boot 3.5.16 es la última versión open source de la línea 3.5, cuyo soporte open source terminó el 30 de junio de 2026; pasar la lección de Spring a Boot 4.x está planificado. La consola de la lección 25, **Kafbat UI v1.5.0** (20 de abril de 2026, la última versión publicada al preparar esta), está fijada por digest.
 
 ## Develop and publish / Editá y publicá
 

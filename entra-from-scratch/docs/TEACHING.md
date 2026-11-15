@@ -17,7 +17,7 @@ The local kit is intentionally a resource-server experiment, not an identity-pro
 - `assets/about.js`: orientation, historical milestones with primary sources, scope and design judgments.
 - `assets/visuals.js`: deterministic models with selectable objects and controls, under all four palettes.
 - `assets/app.js`: the established course navigation, models, dialogs, reading view and progress.
-- `assets/big-picture-data.js`: the big picture: zones and pieces with coordinates, lines, tokens, keys and cookies with where each one is, moment by moment, and journeys whose stops name a piece, what the dot carries, a lesson, an optional lab command and how to observe it (KIT, TENANT, WINDOWS or MODEL). `assets/big-picture.js` and `assets/big-picture.css` draw it; the same engine serves every course and is not edited per course.
+- `assets/big-picture-data.js`: the big picture: zones and pieces with coordinates, a card for every zone (what it is, what it does not do, lessons), lines, tokens, keys and cookies with where each one is, moment by moment, and journeys whose stops name a piece, what the dot carries, a lesson, an optional lab command and how to observe it (KIT, TENANT, WINDOWS or MODEL). `assets/big-picture.js` and `assets/big-picture.css` draw it; the same engine serves every course and is not edited per course.
 - `labs/`: runnable application, fixture tests, tenant workbook and worksheets.
 - `scripts/build.mjs`: generated pages, notes and lab archive. `scripts/check.mjs` checks the contract and packaging.
 

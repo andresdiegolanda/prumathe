@@ -25,7 +25,7 @@ El kit corre workerd, el runtime de Workers, con los bindings simulados por wran
 | Texto EN/ES, versión, fecha, recorrido, comandos, controles y expectativas | `assets/curriculum.js` |
 | Fuentes oficiales y glosario | `assets/reference.js` |
 | Modelos, controles y paletas de los dibujos | `assets/visuals.js` |
-| El panorama: piezas con su ficha, líneas, elementos y recorridos | `assets/big-picture-data.js`; lo dibujan `assets/big-picture.js` y `assets/big-picture.css`, iguales en todos los cursos |
+| El panorama: zonas y piezas con su ficha, líneas, elementos y recorridos | `assets/big-picture-data.js`; lo dibujan `assets/big-picture.js` y `assets/big-picture.css`, iguales en todos los cursos |
 | La página "Qué es Cloudflare" | `assets/about.js` |
 | Navegación, progreso y lectura | `assets/app.js` |
 | Apariencias y respuesta a tamaños de pantalla | `assets/course.css` y `assets/theme.js` |

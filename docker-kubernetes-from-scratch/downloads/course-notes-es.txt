@@ -1,5 +1,5 @@
 DOCKER Y KUBERNETES DESDE CERO. APUNTES DEL CURSO
-Kubernetes 1.37.0 | 2026-10-20 | v1.5.0
+Kubernetes 1.37.0 | 2026-10-20 | v1.6.0
 
 QUÉ SON DOCKER Y KUBERNETES
 =================================================================

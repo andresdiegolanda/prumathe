@@ -1,8 +1,8 @@
 # LLM, RAG and MCP kit / Kit de LLM, RAG y MCP
 
-Version 1.1.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. Everything runs in containers: you do not need Java, Node.js, Python or a model runtime on your machine.
+Version 1.2.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. Everything runs in containers: you do not need Java, Node.js, Python or a model runtime on your machine.
 
-Versión 1.1.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. Todo corre en contenedores: no necesitás Java, Node.js, Python ni un runtime de modelos en tu máquina.
+Versión 1.2.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. Todo corre en contenedores: no necesitás Java, Node.js, Python ni un runtime de modelos en tu máquina.
 
 ## Tools and first run / Herramientas y primera ejecución
 

@@ -1,6 +1,6 @@
 /* Canonical bilingual content. Generated HTML and notes are built from this file. */
 window.LLM_COURSE = {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "date": "2026-10-20",
   "stack": "LLAMA.CPP B11749 / SPRING AI 2.0.1",
   "baseline": {
