@@ -2,6 +2,16 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-11-16]
+
+### Agregado
+
+- Portada legible sin JavaScript: el build ([`site/scripts/build.mjs`](site/scripts/build.mjs)) escribe todo el texto de la portada como HTML estático en los dos idiomas, con los seis cursos, y lo reemplaza `site.js` al cargar; agrega datos estructurados de schema.org (el sitio y sus seis cursos), `robots.txt` y `sitemap.xml` con 172 páginas. [`site/index.html`](site/index.html) declara la dirección canónica, una descripción con los seis cursos, palabras clave y Open Graph. El objetivo es que los clasificadores de los filtros web, que no ejecutan JavaScript, vean qué es el sitio: hasta ahora la portada sin JavaScript tenía 58 palabras. Detalle en [`site/README.md`](site/README.md).
+
+### Corregido
+
+- El texto para lectores sin JavaScript de la portada nombraba solo tres de los seis cursos, y la descripción también; ahora nombran los seis, y el build falla si falta uno.
+
 ## [2026-11-15]
 
 ### Agregado

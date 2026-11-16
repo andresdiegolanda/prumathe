@@ -415,6 +415,23 @@ section {
   margin: 3rem auto;
   padding: 0 1.5rem;
 }
+/* The page as static text, written by scripts/build.mjs for readers and tools that do not run
+   JavaScript. When scripts run it stays hidden, and site.js replaces it on load. */
+.static-home {
+  max-width: 46rem;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+  line-height: 1.55;
+}
+.static-home h3 {
+  margin-bottom: 0.25rem;
+}
+.static-home a {
+  color: var(--green);
+}
+html[data-js] .static-home {
+  display: none;
+}
 
 @media (max-width: 900px) {
   .cards,

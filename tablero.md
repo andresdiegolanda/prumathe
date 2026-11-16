@@ -4,6 +4,7 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## Backlog
 
+- [ ] **Clasificación de prumathe.com en los filtros web**: si una red con Zscaler lo sigue bloqueando como Miscellaneous or Unknown después de publicar la portada legible sin JavaScript, pedir la clasificación en Zscaler con una categoría que lo describa, como Education. **Andrés**
 - [ ] **Ejecutar los pasos de cuenta del curso de Cloudflare**: con una cuenta gratuita y un token de la plantilla Edit Cloudflare Workers en `labs/.env`, correr `node scripts/test-labs.mjs --account` (los 8 pasos opcionales de las lecciones 09 y 10: deploy, versiones, despliegue gradual y Workers Cache en workers.dev), borrar el Worker de prueba y registrar el resultado en [VALIDATION.md](cloudflare-from-scratch/docs/VALIDATION.md). **Andrés**
 - [ ] **Publicar Cloudflare 1.1.0 y verificar la entrega**: el curso y la tarjeta están integrados localmente; ejecutar el workflow remoto y comprobar portada, panorama, versión, descargas y cabeceras después del despliegue. **Andrés**
 - [ ] **Discusión por lección en el curso de Cloudflare**: crear en GitHub Discussions la categoría Announcement "Cloudflare from scratch", cargar `repoId` y `categoryId` en [`assets/forum.js`](cloudflare-from-scratch/assets/forum.js) y pasar `enabled` a true; comprobar el widget en el sitio publicado. **Andrés**
@@ -39,6 +40,7 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## Hecho
 
+- [x] **Portada legible sin JavaScript (16/11)**: texto estático en los dos idiomas, datos estructurados, `robots.txt` y `sitemap.xml`, para que los filtros web puedan clasificar `prumathe.com`. **Andrés**
 - [x] **Fichas de zona en el panorama de los otros cinco cursos (15/11)**: Kafka 1.8.0, Docker y Kubernetes 1.6.0, GitHub 1.6.0, LLMs, RAG y MCP 1.2.0 y Cloudflare 1.2.0 suman una ficha por zona, igual que Entra 1.4.0: 34 zonas con qué son, qué no hacen, qué hay adentro y qué recorridos las cruzan, en los dos idiomas. **Andrés**
 - [x] **Microsoft Entra 1.4.0, fichas de zona en el panorama (15/11)**: cada zona de la escena se abre con un clic y explica en el panel qué es, qué no hace, qué hay adentro y qué recorridos la cruzan; la del tenant explica qué es un tenant de Entra. **Andrés**
 - [x] **Microsoft Entra 1.3.0 en dos idiomas (15/11)**: el curso entero en inglés y en español rioplatense, con el mismo contenido: lecciones, modelos, glosario, orientación, panorama, apuntes y los documentos del kit. El código del kit, su salida y la app Angular siguen en inglés. Las pantallas del portal se nombran en inglés, con el nombre en español entre paréntesis solo donde la documentación de Microsoft en español lo verifica; los que no, marcados en [`labs/TENANT.md`](entra-from-scratch/labs/TENANT.md). Detalle en [VALIDATION.md](entra-from-scratch/docs/VALIDATION.md). **Andrés**

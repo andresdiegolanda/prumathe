@@ -201,6 +201,12 @@
     themeNames: { light: B('Light', 'Claro'), dark: B('Dark', 'Oscuro') },
     skip: B('Skip to content', 'Ir al contenido'),
   };
+  // scripts/build.mjs reads this data to write the page as static text, for readers and tools
+  // that do not run JavaScript; in a browser the flag is absent and the page renders as usual.
+  if (window.PRUMATHE_SITE_DATA) {
+    window.PRUMATHE_SITE_DATA.site = site;
+    return;
+  }
 
   const mark =
     '<svg viewBox="99 21 142 298" aria-hidden="true"><path d="M131 313V133C176 133 217 159 217 199" fill="none" stroke="var(--green)" stroke-width="36" stroke-linecap="butt" stroke-linejoin="round"/><path d="M131 27C103 59 105 91 131 117C157 91 159 59 131 27Z" fill="var(--orange)"/></svg>';

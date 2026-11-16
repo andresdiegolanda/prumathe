@@ -1,6 +1,7 @@
 /* Runs in <head>, before the stylesheet, so the page paints in the chosen appearance from the first
    frame. The order is: ?theme= in the address, then the choice saved on this browser, then the
-   system color scheme. site.js reads the result from <html data-theme>. */
+   system color scheme. site.js reads the result from <html data-theme>. It also marks <html data-js>,
+   so the static text written for readers without JavaScript stays hidden until site.js replaces it. */
 (() => {
   const themes = ['light', 'dark'];
   let theme = null;
@@ -19,4 +20,5 @@
         : 'light';
   }
   document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.js = '';
 })();
