@@ -4,9 +4,12 @@
    em dash; when a relative link of a repository document points to nothing that Git knows; when
    the copies of the shared big picture engine differ; when two courses use the same local port;
    when the home page cards disagree with a course about its lessons or lab steps; when a review
-   is not named after a course; when a card of the board has no owner; or when Git tracks
-   something that never enters the repository. It warns, without failing, when the same figure
-   appears in more than one current document (metodo/arranque.md, "Un dueño por hecho").
+   is not named after a course; when the board does not have its four columns, or a card has no
+   owner, names a version while it is open, waits without saying for what or is in progress
+   without its size; when the root README names a version; when a new CHANGELOG entry is long;
+   or when Git tracks something that never enters the repository. It warns, without failing,
+   when the same figure appears in more than one current document (metodo/arranque.md, "Un dueño
+   por hecho").
    Node.js only, no packages; Git must be on the PATH. */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -49,6 +52,7 @@ const TEXT = /\.(md|mjs|js|css|html|yml|yaml|json|jsonc|txt|svg|xml|ps1|py)$|(^|
 const chars = (...codes) => String.fromCharCode(...codes);
 const DASHES = new RegExp(`[${chars(0x2013, 0x2014)}]`);
 const DOUBLE_ENCODED = new RegExp(`${chars(0xc3)}[${chars(0x80)}-${chars(0xbf)}]|${chars(0xe2, 0x20ac)}`);
+const VERSION = /(?<![\d.])\d+\.\d+\.\d+(?![\d.])/;
 const decoder = new TextDecoder('utf-8', { fatal: true });
 // Examples in code fences and names in code spans are not statements of the document.
 const prose = (t) => t.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
@@ -189,6 +193,31 @@ for (const [i, line] of board.split('\n').entries()) {
 }
 const cards = columns.reduce((n, c) => n + c.cards.length, 0);
 if (cards === 0) fail('tablero.md', 'has no cards');
+// Its columns, and what the cards of each one must say. An open card links to the document that
+// owns a version instead of naming it: a version written in a card goes stale without notice.
+const COLUMNS = ['En curso', 'Para empezar', 'Esperando', 'Hecho'];
+if (columns.map((c) => c.name).join('|') !== COLUMNS.join('|')) fail('tablero.md', `has the columns ${columns.map((c) => c.name).join(', ')}; they are ${COLUMNS.join(', ')}`);
+for (const column of columns) {
+  for (const { line, where } of column.cards) {
+    if (column.name !== 'Hecho' && VERSION.test(line)) fail(where, `names version ${VERSION.exec(line)[0]}; an open card links to the document that owns it`);
+    if (column.name === 'Esperando' && !line.includes(' Espera: ')) fail(where, 'card of "Esperando" that does not say what it waits for ("Espera: ...")');
+    if (column.name === 'En curso' && !/Tamaño (chico|mediano|grande)/.test(line)) fail(where, 'card of "En curso" without its size ("Tamaño chico", "mediano" or "grande")');
+  }
+}
+
+// The root README says what each course is and where to look: versions live in the course.
+for (const [i, line] of (text.get('README.md') ?? '').split('\n').entries()) {
+  if (VERSION.test(line)) fail(`README.md:${i + 1}`, `names version ${VERSION.exec(line)[0]}; versions and counts live in each course`);
+}
+
+// A new CHANGELOG entry is short: what changed, where, and the link to the document with the rest.
+const LONG_ENTRY = 600;
+let day = '';
+for (const [i, line] of (text.get('CHANGELOG.md') ?? '').split('\n').entries()) {
+  const heading = /^## \[(\d{4}-\d{2}-\d{2})\]/.exec(line);
+  if (heading) day = heading[1];
+  else if (day > '2026-11-18' && line.startsWith('- ') && line.length > LONG_ENTRY) fail(`CHANGELOG.md:${i + 1}`, `entry of ${line.length} characters; new entries stay under ${LONG_ENTRY} and link to the document with the detail`);
+}
 
 // 8. What never enters the repository (metodo/arranque.md, "Convenciones de trabajo").
 const NEVER = [/^tmp\/(?!README\.md$)/, /(^|\/)\.qa\//, /(^|\/)labs\/runs\//, /(^|\/)labs\/kubeconfig$/, /(^|\/)dist\//, /(^|\/)release\//, /(^|\/)\.wrangler\//, /(^|\/)node_modules\//];

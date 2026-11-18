@@ -1,6 +1,12 @@
 # Changelog
 
-Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
+Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta, de hasta tres oraciones: qué cambió, dónde, y el enlace al documento que tiene el detalle y el porqué (regla 5 del README).
+
+## [2026-11-19]
+
+### Cambiado
+
+- Datos sin repetir: el [`README.md`](README.md) de la raíz dice qué es cada curso y dónde mirar, sin versiones ni conteos, y [`tablero.md`](tablero.md) pasa a las columnas "En curso", "Para empezar" (su orden es la prioridad), "Esperando" (cada card dice qué espera) y "Hecho", con cards abiertas que no nombran versiones. Lo controla [`scripts/check.mjs`](scripts/check.mjs); el porqué, en [`metodo/arranque.md`](metodo/arranque.md), "Un dueño por hecho".
 
 ## [2026-11-18]
 

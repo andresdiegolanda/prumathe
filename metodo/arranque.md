@@ -43,7 +43,7 @@ Es la regla 7 del README, bajada a una tabla. Los demás documentos enlazan al d
 | Cómo se trabaja | Este archivo |
 | Lo aprendido haciendo cursos | [`aprendizaje/`](aprendizaje/README.md) |
 
-`CHANGELOG.md`, la columna "Hecho" del tablero y [`reviews/`](../reviews/) son historia: cuentan lo que pasó con los datos de su momento y no se corrigen cuando el dato cambia. El control de raíz ([`scripts/check.mjs`](../scripts/check.mjs)) avisa, sin fallar, cuando una versión o un conteo aparece en más de un documento vigente.
+`CHANGELOG.md`, la columna "Hecho" del tablero y [`reviews/`](../reviews/) son historia: cuentan lo que pasó con los datos de su momento y no se corrigen cuando el dato cambia. Por eso el `README.md` de la raíz dice qué es cada curso y dónde mirar, sin versiones ni conteos, y las cards abiertas del tablero tampoco nombran versiones. El control de raíz ([`scripts/check.mjs`](../scripts/check.mjs)) falla si aparece una, compara con cada curso lo que la portada repite de él (lecciones y pasos) y avisa, sin fallar, cuando una versión o un conteo aparece en más de un documento vigente.
 
 ## Convenciones de trabajo
 
