@@ -60,3 +60,31 @@ Control: revisión antes de publicar.
 
 Origen: una card del tablero tenía como dueño una herramienta (GitHub §7.4).
 Control: revisión del tablero.
+
+### El trabajo que lleva un cambio depende de su tamaño
+
+Una corrección lleva su entrada en el CHANGELOG; una función nueva, además, su card y su evidencia; un curso o una regla nueva, una propuesta aprobada antes de escribir. La tabla está en [`arranque.md`](../arranque.md).
+
+Origen: revisión de la forma de trabajo del 18/11/2026: la lista de cierre era la misma para una corrección y para un curso nuevo, y lo chico se juntaba hasta ser grande.
+Control: el tamaño se dice al empezar la tarea y, si es mediano o grande, queda en su card.
+
+### Commit y push se autorizan por tarea
+
+El responsable los autoriza al empezar, y con eso se hacen al terminar cada parte, sin volver a pedirlos.
+
+Origen: hasta el 18/11/2026 cada commit esperaba un pedido propio al final, aunque la tarea ya estuviera aprobada; un trabajo en varias partes no podía dejar un commit por parte sin una vuelta más por cada una.
+Control: la autorización figura en la card en curso; sin ella no hay commit ni push.
+
+### Lo temporal tiene un lugar que se puede vaciar
+
+`tmp/` es para lo que se puede volver a armar; lo que se retira del repositorio va aparte, en `tmp/_obsoleto/`, y no se borra.
+
+Origen: el 18/11/2026 `tmp/` tenía 13.295 archivos y unos 5 GB, casi todos de la copia de estudio de un curso, mezclados con lo retirado del repositorio.
+Control: revisión de `tmp/` al cerrar un trabajo grande.
+
+### Las reglas de trabajo viven en el repositorio
+
+Lo que una sesión tiene que cumplir está en [`arranque.md`](../arranque.md). Las instrucciones de fuera del repositorio solo mandan a leerlo.
+
+Origen: el 18/11/2026, dos reglas (no commitear sin autorización y aprobar el índice antes de escribir un curso) estaban solo en las instrucciones que una sesión recibe fuera del repositorio.
+Control: al cambiar una regla, se cambia en `arranque.md` y se revisa que esas instrucciones no la repitan.

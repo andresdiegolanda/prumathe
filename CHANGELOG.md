@@ -8,6 +8,10 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 
 - Fecha y commit de la versión publicada en la portada del sitio y en la portada de cada curso, con enlace al commit y en el idioma elegido. El build del sitio ([`site/scripts/build.mjs`](site/scripts/build.mjs)) los escribe en la página: el commit sale de `WORKERS_CI_COMMIT_SHA` en Workers Builds o de git. Cada curso los muestra en el pie de su portada, en lugar del lema: Microsoft Entra 1.5.0, Kafka 1.9.0, Docker y Kubernetes 1.7.0, GitHub 1.7.0, LLMs, RAG y MCP 1.3.0 y Cloudflare 1.3.0; las etiquetas de imagen del kit que llevan la versión del curso la siguen. Detalle en [`site/README.md`](site/README.md) y en el VALIDATION de cada curso.
 
+### Cambiado
+
+- Forma de trabajo en [`metodo/arranque.md`](metodo/arranque.md): lo que lleva cada cambio depende de su tamaño (chico, mediano o grande), commit y push se autorizan por tarea, cada hecho tiene su dueño en una tabla y `tmp/` pasa a ser temporal y se puede vaciar, salvo `tmp/_obsoleto/`. El porqué de cada regla, en [`metodo/aprendizaje/proceso.md`](metodo/aprendizaje/proceso.md).
+
 ### Corregido
 
 - [`tablero.md`](tablero.md): las cards de publicación de Cloudflare y de Microsoft Entra pasan a pedir solo la verificación de la entrega, porque los dos cursos ya están en el sitio publicado, y la de las suites de Kafka deja de nombrar una versión vieja. [`README.md`](README.md): la lista de revisiones suma las de Microsoft Entra y Cloudflare.

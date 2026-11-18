@@ -38,6 +38,8 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## En curso
 
+- [ ] **Aplicar las mejoras a la forma de trabajo**: reglas nuevas en [`metodo/arranque.md`](metodo/arranque.md), control de raíz, datos sin repetir, suites y control visual automáticos, kit con versión propia y `tmp/` temporal. Tamaño grande; commit y push autorizados por fase. **Andrés**
+
 ## Hecho
 
 - [x] **Fecha y commit de la versión publicada (18/11)**: la portada del sitio y la de cada curso muestran en el pie la fecha del build y el commit publicado. **Andrés**
