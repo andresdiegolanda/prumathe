@@ -88,3 +88,10 @@ Lo que una sesión tiene que cumplir está en [`arranque.md`](../arranque.md). L
 
 Origen: el 18/11/2026, dos reglas (no commitear sin autorización y aprobar el índice antes de escribir un curso) estaban solo en las instrucciones que una sesión recibe fuera del repositorio.
 Control: al cambiar una regla, se cambia en `arranque.md` y se revisa que esas instrucciones no la repitan.
+
+### Lo que cruza cursos lo controla un programa de la raíz
+
+Cada curso controla lo suyo con su `check.mjs`. Lo que ninguno puede controlar de sí mismo (los documentos de la raíz y sus enlaces, el motor común, los puertos, lo que la portada repite de cada curso, el tablero) lo controla [`scripts/check.mjs`](../../scripts/check.mjs), que además avisa cuando un dato aparece en más de un documento vigente.
+
+Origen: el 18/11/2026, tres cards del tablero nombraban versiones viejas de sus cursos y la lista de revisiones del README no tenía las dos últimas; la igualdad del motor común y los puertos se comparaban a mano.
+Control: `node scripts/check.mjs` antes de cerrar un cambio, y el workflow [`validate-repo.yml`](../../.github/workflows/validate-repo.yml) en cada push.

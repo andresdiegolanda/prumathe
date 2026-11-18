@@ -43,14 +43,14 @@ Es la regla 7 del README, bajada a una tabla. Los demás documentos enlazan al d
 | Cómo se trabaja | Este archivo |
 | Lo aprendido haciendo cursos | [`aprendizaje/`](aprendizaje/README.md) |
 
-`CHANGELOG.md`, la columna "Hecho" del tablero y [`reviews/`](../reviews/) son historia: cuentan lo que pasó con los datos de su momento y no se corrigen cuando el dato cambia.
+`CHANGELOG.md`, la columna "Hecho" del tablero y [`reviews/`](../reviews/) son historia: cuentan lo que pasó con los datos de su momento y no se corrigen cuando el dato cambia. El control de raíz ([`scripts/check.mjs`](../scripts/check.mjs)) avisa, sin fallar, cuando una versión o un conteo aparece en más de un documento vigente.
 
 ## Convenciones de trabajo
 
 - Copia de trabajo en `D:\_claude\prumathe`; remoto `github.com/andresdiegolanda/prumathe`, rama `main`.
 - El material de los cursos no menciona cómo se produjo (herramientas, modelos, revisiones, productos de la máquina) ni otros cursos, clientes o sistemas. Los documentos del repositorio se redactan como decisiones u objetivos del proyecto.
 - Cada cambio visible para el alumno sube la versión del curso: menor si agrega contenido o funciones, parche si corrige. Se cambia en todos los lugares que la llevan.
-- Antes de dar un cambio por terminado: `node scripts/build.mjs` y `node scripts/check.mjs` en el curso, y `node site/scripts/build.mjs` desde la raíz.
+- Antes de dar un cambio por terminado: `node scripts/build.mjs` y `node scripts/check.mjs` en el curso, y desde la raíz `node site/scripts/build.mjs` y `node scripts/check.mjs`, el control de lo que cruza cursos.
 - Commit y push se autorizan por tarea: al empezar, el responsable dice si la tarea los incluye. Con esa autorización se hacen al terminar, sin volver a pedirlos; sin ella, no se hace ningún commit ni push hasta que se pidan.
 - Commits: antes, `git fetch` y `git pull --ff-only`; si el remoto divergió, se para. `git add` con rutas explícitas, nunca `git add -A` ni `git commit -a`. Mensaje en español y sin tildes, como el historial, escrito en un archivo de `tmp/` y pasado con `git commit -F`. Sin líneas de atribución.
 - Nunca entran al repositorio: `tmp/` (salvo `tmp/README.md`), `.qa/`, `labs/runs/`, `labs/kubeconfig`, `dist/`, `release/`, `site/dist/` y `.wrangler/`.
@@ -69,7 +69,7 @@ Todo lo temporal de una sesión va en `tmp/`, en la raíz, que no se versiona: m
 
 - Windows 11 con PowerShell 5.1, Docker Desktop, Node y Git. Las versiones de cada validación están en el `docs/VALIDATION.md` del curso.
 - En PowerShell, rutas absolutas. Git se corre desde PowerShell de Windows: el git de otra máquina sobre la misma carpeta (una máquina virtual que la monta, por ejemplo) puede dejar un `.git/index.lock` trabado.
-- Los archivos van en UTF-8 sin BOM y con LF. Después de escribir uno, se relee y se confirma eso y que no tiene guiones largos ni cortos.
+- Los archivos van en UTF-8 sin BOM y con LF. Después de escribir uno, se relee y se confirma eso y que no tiene guiones largos ni cortos: fuera de los cursos lo confirma el control de raíz, y adentro, el `check.mjs` del curso.
 - Git tiene `core.autocrlf=true`: el aviso "LF will be replaced by CRLF" es normal y no cambia lo que se commitea. Para exportar un árbol con `git archive`, `-c core.autocrlf=false -c core.eol=lf`; si no, sale con CRLF y los `check.mjs` lo rechazan.
 - Las llamadas a PowerShell desde una sesión remota se cortan cerca de los 60 s: cada una, en menos de 50 s; lo largo, en segundo plano con un log que se consulta. `Start-Process` con `-RedirectStandardOutput` deja colgada la llamada; funciona `Start-Process powershell -ArgumentList '-NoProfile','-Command',"<comando> 2>&1 | Out-File -Encoding utf8 '<log>'" -WindowStyle Hidden -PassThru`.
 - `git push` escribe en la salida de error y PowerShell lo muestra como error aunque haya salido bien: la línea con `->` lo confirma.

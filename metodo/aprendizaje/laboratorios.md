@@ -104,7 +104,7 @@ Control: la suite de la lección, y una pasada a mano por la interfaz cada vez q
 Quien cursa puede tener dos cursos levantados. Antes de publicar un puerto, se mira cuáles usan los demás.
 
 Origen: el 20/10, el puerto elegido para Kafbat UI (18091) ya lo usaba el visor del curso de Docker y Kubernetes, y la app de ese curso y la de Spring del de Kafka comparten 18080 (card en el [`tablero.md`](../../tablero.md)).
-Control: la lista de puertos en uso de esa card, hasta que exista un control automático.
+Control: [`scripts/check.mjs`](../../scripts/check.mjs), el control de raíz, falla si dos cursos usan el mismo puerto local; el choque conocido de 18080 queda como aviso hasta que se resuelva su card.
 
 ### Una herramienta en vivo muestra el sistema real con el dibujo del curso
 

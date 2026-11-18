@@ -89,7 +89,7 @@ Control: la pasada de navegador que registra VALIDATION; todavía no es un contr
 Las piezas, las líneas y los recorridos son datos del curso (`assets/big-picture-data.js`); el motor que los dibuja (`assets/big-picture.js` y `big-picture.css`) es el mismo archivo en todos los cursos, y `check.mjs` valida los datos con ese motor: ids, cada pieza dentro de su zona y separada de las otras, ninguna línea que cruce una pieza, los dos idiomas, lecciones, recorridos que solo se mueven por líneas y cada comando entre los de las lecciones.
 
 Origen: el panorama de los seis cursos; el mapa de Cloudflare 1.0.0 tenía motor propio y en la 1.1.0 pasó al común, con las mismas fichas ([CHANGELOG](../../CHANGELOG.md), 2026-11-14).
-Control: `check.mjs` de cada curso; que las copias del motor sean iguales todavía se compara a mano.
+Control: `check.mjs` de cada curso; que las copias del motor sean iguales lo controla [`scripts/check.mjs`](../../scripts/check.mjs), el control de raíz.
 
 ### Los rótulos de zona y las burbujas no tapan lo que explican
 

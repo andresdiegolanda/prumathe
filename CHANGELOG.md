@@ -7,6 +7,7 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 ### Agregado
 
 - Fecha y commit de la versión publicada en la portada del sitio y en la portada de cada curso, con enlace al commit y en el idioma elegido. El build del sitio ([`site/scripts/build.mjs`](site/scripts/build.mjs)) los escribe en la página: el commit sale de `WORKERS_CI_COMMIT_SHA` en Workers Builds o de git. Cada curso los muestra en el pie de su portada, en lugar del lema: Microsoft Entra 1.5.0, Kafka 1.9.0, Docker y Kubernetes 1.7.0, GitHub 1.7.0, LLMs, RAG y MCP 1.3.0 y Cloudflare 1.3.0; las etiquetas de imagen del kit que llevan la versión del curso la siguen. Detalle en [`site/README.md`](site/README.md) y en el VALIDATION de cada curso.
+- Control de raíz, [`scripts/check.mjs`](scripts/check.mjs), con su workflow [`validate-repo.yml`](.github/workflows/validate-repo.yml): falla por codificación, guiones o enlaces rotos fuera de los cursos, copias distintas del motor del panorama, puertos repetidos entre cursos, tarjetas de la portada que no coinciden con su curso y cards sin dueño, y avisa cuando un dato aparece en más de un documento vigente. El porqué, en [`metodo/aprendizaje/proceso.md`](metodo/aprendizaje/proceso.md).
 
 ### Cambiado
 
