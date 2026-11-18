@@ -65,7 +65,7 @@ services:
   lab:
     profiles: [tools]
     build: .
-    image: kafka-course-lab:1.8.0
+    image: kafka-course-lab:1.9.0
     environment:
       BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9092,kafka3:9092
     stdin_open: true
@@ -76,7 +76,7 @@ services:
   visor:
     profiles: [visor]
     build: .
-    image: kafka-course-lab:1.8.0
+    image: kafka-course-lab:1.9.0
     command: ["visor"]
     environment:
       BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9092,kafka3:9092
@@ -99,7 +99,7 @@ services:
   spring:
     profiles: [spring]
     build: ./spring
-    image: kafka-course-spring:1.8.0
+    image: kafka-course-spring:1.9.0
     environment:
       BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9092,kafka3:9092
     ports: ["127.0.0.1:18080:8080"]

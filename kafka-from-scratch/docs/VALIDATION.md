@@ -4,6 +4,20 @@ Two layers of evidence: what the Docker suites proved on the platform, and what 
 
 Dos capas de evidencia: lo que las suites Docker probaron sobre la plataforma, y lo que las verificaciones estáticas y las pasadas de navegador probaron sobre el sitio. Cada entrada dice cuándo corrió y contra qué versión, y las verificaciones no ejecutadas figuran como tales.
 
+## 1.9.0, 18 November 2026 / 1.9.0, 18 de noviembre de 2026
+
+Published date and commit: on the course home, the footer shows the build date and the published commit, linked to the commit, in the chosen language. The site build (`site/scripts/build.mjs`) writes them into the page; outside the published site, and on the lessons, the footer keeps the motto. `npm run check` passes.
+
+Browser pass in Chromium under the CSP of `_headers`, on the assembled site: course home at 1440x900 (Classic, Spanish), 390x844 (Dark, English) and 1366x768 (Dark, Spanish), with the date and the commit visible in the footer, no overflow and no console error.
+
+Not executed: the lab. The change does not touch the kit; the image tags move to 1.9.0 only because they carry the course version.
+
+Fecha y commit de la versión publicada: en la portada del curso, el pie muestra la fecha del build y el commit publicado, con enlace al commit, en el idioma elegido. Los escribe en la página el build del sitio (`site/scripts/build.mjs`); fuera del sitio publicado, y en las lecciones, el pie sigue con el lema. `npm run check` pasa.
+
+Pasada de navegador en Chromium con la CSP de `_headers`, sobre el sitio armado: portada del curso en 1440x900 (Clásica, español), 390x844 (Oscura, inglés) y 1366x768 (Oscura, español), con la fecha y el commit visibles en el pie, sin desbordes ni errores de consola.
+
+No ejecutado: el laboratorio. El cambio no toca el kit; las etiquetas de imagen pasan a 1.9.0 solo porque llevan la versión del curso.
+
 ## 1.8.0, 15 November 2026 / 1.8.0, 15 de noviembre de 2026
 
 Zone cards in the big picture: each of the 7 zones opens its card with a click on its name or its empty space, or with Enter: what it is, what it does not do, what is inside, lessons and the journeys that cross it, in English and Spanish. The shared engine is the one of Microsoft Entra 1.4.0; `npm run check` validates both texts of every card in both languages and its lessons.

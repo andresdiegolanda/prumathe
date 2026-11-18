@@ -1,5 +1,5 @@
 MICROSOFT ENTRA FROM SCRATCH
-Version 1.4.0 | Sources reviewed 2026-10-29
+Version 1.5.0 | Sources reviewed 2026-10-29
 Angular 21.2.25 | MSAL Browser 5.27.0 | Spring Boot 4.1.2 | PostgreSQL 18.6
 
 What Microsoft Entra ID does

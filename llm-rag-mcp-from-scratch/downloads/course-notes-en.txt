@@ -1,5 +1,5 @@
 LLMS, RAG & MCP FROM SCRATCH. COURSE NOTES
-LLAMA.CPP B11749 / SPRING AI 2.0.1 | 2026-10-20 | v1.2.0
+LLAMA.CPP B11749 / SPRING AI 2.0.1 | 2026-10-20 | v1.3.0
 
 WHAT LLMS, RAG AND MCP ARE
 =================================================================

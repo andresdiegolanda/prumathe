@@ -194,6 +194,7 @@
     ),
     footer: B('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.'),
     repoLabel: B('Source and courses on GitHub', 'Código y cursos en GitHub'),
+    published: B('Published', 'Publicado'),
     contactLabel: B('Contact', 'Contacto'),
     license: B('MIT license', 'Licencia MIT'),
     languageLabel: B('Language', 'Idioma'),
@@ -245,7 +246,11 @@
       .join('')}</div></section>`;
     const lesson = `<section class="lesson"><div class="section-head"><span class="eyebrow">${e(L(site.lessonTitle))}</span></div><ol class="steps">${site.lesson.map((s) => `<li>${e(L(s))}</li>`).join('')}</ol><p class="note">${e(L(site.lessonNote))}</p></section>`;
     const name = `<section class="name"><div class="section-head"><span class="eyebrow">${e(L(site.nameTitle))}</span></div><div class="name-body">${mark}<p>${e(L(site.nameText))}</p></div></section>`;
-    const footer = `<footer class="bottom"><span>${e(L(site.footer))}</span><span><a href="mailto:${contact}">${e(L(site.contactLabel))}: ${contact}</a> · <a href="${repo}" target="_blank" rel="noopener noreferrer">${e(L(site.repoLabel))} ↗</a> · ${e(L(site.license))}</span></footer>`;
+    // The published version, when scripts/build.mjs wrote it into the page.
+    const at = document.querySelector('meta[name="prumathe-published-at"]')?.content;
+    const commit = document.querySelector('meta[name="prumathe-published-commit"]')?.content;
+    const published = at ? `<span>${e(L(site.published))} ${e(at)}${commit ? ` · commit <a href="${repo}/commit/${e(commit)}" target="_blank" rel="noopener noreferrer">${e(commit.slice(0, 7))}</a>` : ''}</span>` : '';
+    const footer = `<footer class="bottom"><span>${e(L(site.footer))}</span><span><a href="mailto:${contact}">${e(L(site.contactLabel))}: ${contact}</a> · <a href="${repo}" target="_blank" rel="noopener noreferrer">${e(L(site.repoLabel))} ↗</a> · ${e(L(site.license))}</span>${published}</footer>`;
     document.getElementById('app').innerHTML = `<a class="skip-link" href="#courses">${e(L(site.skip))}</a><div class="page">${header}<main id="main">${hero}${courses}${method}${lesson}${name}</main>${footer}</div>`;
     for (const b of document.querySelectorAll('[data-lang]')) {
       b.addEventListener('click', () => {

@@ -1,8 +1,8 @@
 # Cloudflare kit / Kit de Cloudflare
 
-Version 1.2.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. Everything runs in containers: you do not need Node.js, Wrangler, Java or PostgreSQL on your machine.
+Version 1.3.0. Open a terminal in this folder before running the lesson commands. Commands keep their technical names in both languages and use quoting that works in PowerShell, bash and zsh. Everything runs in containers: you do not need Node.js, Wrangler, Java or PostgreSQL on your machine.
 
-Versión 1.2.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. Todo corre en contenedores: no necesitás Node.js, Wrangler, Java ni PostgreSQL en tu máquina.
+Versión 1.3.0. Abrí una terminal en esta carpeta antes de ejecutar los comandos de las lecciones. Los comandos conservan los nombres técnicos en ambos idiomas y usan comillas que funcionan en PowerShell, bash y zsh. Todo corre en contenedores: no necesitás Node.js, Wrangler, Java ni PostgreSQL en tu máquina.
 
 ## First run / Primera ejecución
 

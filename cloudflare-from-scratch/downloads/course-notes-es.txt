@@ -1,5 +1,5 @@
 CLOUDFLARE DESDE CERO. APUNTES DEL CURSO
-WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.2.0
+WRANGLER 4.162.0 / WORKERD | 2026-11-14 | v1.3.0
 
 QUÉ ES CLOUDFLARE
 =================================================================

@@ -104,8 +104,16 @@
   function header() {
     return `<header><a class="brand" href="${homeLink()}" aria-label="${t('Course home', 'Inicio del curso')}">${icon}<span><strong>GitHub from scratch</strong><small>${t('A visual field guide', 'Una guía visual de campo')}</small></span></a><span class="header-meta">${course.lessons.length} ${t('LESSONS', 'LECCIONES')} / GIT + GITHUB</span><div class="header-actions"><button class="btn drawer-only" data-action="map">${t('Course', 'Curso')}</button><button class="btn extra" data-action="glossary">${t('Glossary', 'Glosario')} <span aria-hidden="true">↗</span></button><a class="btn extra" href="${prefix}downloads/github-labs.zip" download>${t('Download labs', 'Descargá los labs')} ↓</a><label class="theme-pick"><span class="sr-only">${t('Skin', 'Apariencia')}</span><select data-theme-pick aria-label="${t('Skin', 'Apariencia')}">${THEMES.map((x) => `<option value="${x}" ${x === theme ? 'selected' : ''}>${themeName(x)}</option>`).join('')}</select></label><div class="language" role="group" aria-label="${t('Language', 'Idioma')}"><button data-lang="en" aria-pressed="${lang === 'en'}" lang="en">EN</button><button data-lang="es" aria-pressed="${lang === 'es'}" lang="es-AR" title="Español rioplatense">ES</button></div><button class="btn extra" data-action="help" aria-label="${t('Help and keyboard shortcuts', 'Ayuda y atajos de teclado')}">?</button></div></header>`;
   }
+  // The published version, when the site build wrote it into the page: date and commit,
+  // shown on the course home in place of the motto.
+  function published() {
+    const meta = (name) => document.querySelector(`meta[name="prumathe-published-${name}"]`)?.content || '';
+    const at = meta('at'), commit = meta('commit');
+    if (!at) return '';
+    return `${t('Published', 'Publicado')} ${e(at)}${commit ? ` · commit <a href="https://github.com/andresdiegolanda/prumathe/commit/${e(commit)}">${e(commit.slice(0, 7))}</a>` : ''}`;
+  }
   function footer() {
-    return `<footer class="footer"><span>${t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${!lesson ? 'GITHUB / FROM SCRATCH' : String(Number(id)).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
+    return `<footer class="footer"><span>${(home && published()) || t('Built to understand. Designed to experiment.', 'Hecho para entender. Diseñado para experimentar.')}</span><span class="center">${!lesson ? 'GITHUB / FROM SCRATCH' : String(Number(id)).padStart(2, '0') + ' / ' + course.lessons.length}</span><div class="footer-nav">${!home ? `<a href="${homeLink()}">${t('All lessons', 'Todas las lecciones')}</a>` : ''}<button class="btn" data-action="help">${t('Help', 'Ayuda')}</button>${lesson && lesson.id < course.lessons.length - 1 ? `<a href="${link(course.lessons[lesson.id + 1])}">${t('Next lesson', 'Siguiente')} →</a>` : ''}</div></footer>`;
   }
   function sidebar() {
     const unit = lesson.unit;

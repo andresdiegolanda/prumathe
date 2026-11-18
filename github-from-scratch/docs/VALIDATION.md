@@ -1,5 +1,13 @@
 # Evidencia de validación
 
+## Versión 1.7.0, 18/11/2026
+
+Fecha y commit de la versión publicada: en la portada del curso, el pie muestra la fecha del build y el commit publicado, con enlace al commit, en el idioma elegido. Los escribe en la página el build del sitio (`site/scripts/build.mjs`); fuera del sitio publicado, y en las lecciones, el pie sigue con el lema. `npm run check` pasa.
+
+Pasada de navegador en Chromium con la CSP de `_headers`, sobre el sitio armado: portada del curso en 1440x900 (Clásica, español), 390x844 (Oscura, inglés) y 1366x768 (Oscura, español), con la fecha y el commit visibles en el pie, sin desbordes ni errores de consola.
+
+No ejecutado: los experimentos y las actividades de GitHub. El cambio no toca el kit.
+
 ## Versión 1.6.0, 15/11/2026
 
 Fichas de zona en el panorama: cada una de las 4 zonas abre su ficha con un clic en su nombre o en su espacio libre, o con Enter: qué es, qué no hace, qué hay adentro, lecciones y los recorridos que la cruzan, en inglés y español. El motor común es el de Microsoft Entra 1.4.0; `npm run check` valida los dos textos de cada ficha en los dos idiomas y sus lecciones.

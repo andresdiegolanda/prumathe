@@ -1,6 +1,6 @@
 /* Canonical bilingual content. Generated HTML and notes are built from this file. */
 window.CF_COURSE = {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "date": "2026-11-14",
   "stack": "WRANGLER 4.162.0 / WORKERD",
   "baseline": { "en": "Wrangler 4.162.0 and workerd 1.20261113.1 on Node 26.13.1; cloudflared 2026.11.0; Spring Boot 4.1.2 on Java 25 with PostgreSQL 18.7; facts of the platform and of the free plan checked on 14 November 2026", "es": "Wrangler 4.162.0 y workerd 1.20261113.1 sobre Node 26.13.1; cloudflared 2026.11.0; Spring Boot 4.1.2 sobre Java 25 con PostgreSQL 18.7; datos de la plataforma y del plan gratuito verificados el 14 de noviembre de 2026" },

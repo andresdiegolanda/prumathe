@@ -40,6 +40,7 @@ Fuente única de trabajo pendiente y en curso (regla 6 del README). Formato comp
 
 ## Hecho
 
+- [x] **Fecha y commit de la versión publicada (18/11)**: la portada del sitio y la de cada curso muestran en el pie la fecha del build y el commit publicado. **Andrés**
 - [x] **Portada legible sin JavaScript (16/11)**: texto estático en los dos idiomas, datos estructurados, `robots.txt` y `sitemap.xml`, para que los filtros web puedan clasificar `prumathe.com`. **Andrés**
 - [x] **Fichas de zona en el panorama de los otros cinco cursos (15/11)**: Kafka 1.8.0, Docker y Kubernetes 1.6.0, GitHub 1.6.0, LLMs, RAG y MCP 1.2.0 y Cloudflare 1.2.0 suman una ficha por zona, igual que Entra 1.4.0: 34 zonas con qué son, qué no hacen, qué hay adentro y qué recorridos las cruzan, en los dos idiomas. **Andrés**
 - [x] **Microsoft Entra 1.4.0, fichas de zona en el panorama (15/11)**: cada zona de la escena se abre con un clic y explica en el panel qué es, qué no hace, qué hay adentro y qué recorridos la cruzan; la del tenant explica qué es un tenant de Entra. **Andrés**

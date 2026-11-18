@@ -1,6 +1,14 @@
 # Validation record
 
-Release 1.4.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, releases 1.2.1, 1.3.0 and 1.4.0 on 15 November 2026.
+Release 1.5.0. Validation date: 29 October 2026; the big picture of 1.1.0 and release 1.2.0 were validated on 14 November 2026, releases 1.2.1, 1.3.0 and 1.4.0 on 15 November 2026, release 1.5.0 on 18 November 2026.
+
+## Release 1.5.0
+
+Published date and commit: on the course home, the footer shows the build date and the published commit, linked to the commit, in the chosen language. The site build (`site/scripts/build.mjs`) writes them into the page; outside the published site, and on the lessons, the footer keeps the motto. `node scripts/check.mjs` passes.
+
+Browser pass in Chromium under the site CSP, on the assembled site: course home at 1440x900 (Classic, Spanish), 390x844 (Dark, English) and 1366x768 (Dark, Spanish), with the date and the commit visible in the footer, no overflow and no console error.
+
+- NOT EXECUTED: the tenant workbook, as in 1.3.0.
 
 ## Release 1.4.0
 

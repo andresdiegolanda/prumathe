@@ -33,6 +33,6 @@ Preview: http://127.0.0.1:4175. Build generates lesson shells, notes in English 
 
 The local suite leaves its services running. Its concurrency case resets only practice row 42. Stop with `docker compose stop` from labs; stop Angular with Ctrl+C. Do not run fixture checks against a tenant exercise in progress.
 
-Version 1.4.0. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026; the Spanish names of portal screens, 15 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
+Version 1.5.0. Sources reviewed 29 October 2026; those of the Windows sign-in lesson, 14 November 2026; the Spanish names of portal screens, 15 November 2026. Baseline: Angular 21.2.25, MSAL Browser 5.27.0, Spring Boot 4.1.2, Java 21, PostgreSQL 18.6, Node.js 24. Angular 21 is the selected LTS line; the course does not silently track latest. Dependency updates require a rebuild and renewed validation.
 
 See [teaching and editing](docs/TEACHING.md), [deployment](docs/DEPLOYMENT.md), [validation](docs/VALIDATION.md) and the [MIT license](LICENSE).

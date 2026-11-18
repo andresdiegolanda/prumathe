@@ -2,6 +2,12 @@
 
 Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); fechas en ISO 8601. Cada entrada nueva va arriba y es corta: qué cambió, dónde, y el enlace al documento que tiene el porqué (regla 5 del README).
 
+## [2026-11-18]
+
+### Agregado
+
+- Fecha y commit de la versión publicada en la portada del sitio y en la portada de cada curso, con enlace al commit y en el idioma elegido. El build del sitio ([`site/scripts/build.mjs`](site/scripts/build.mjs)) los escribe en la página: el commit sale de `WORKERS_CI_COMMIT_SHA` en Workers Builds o de git. Cada curso los muestra en el pie de su portada, en lugar del lema: Microsoft Entra 1.5.0, Kafka 1.9.0, Docker y Kubernetes 1.7.0, GitHub 1.7.0, LLMs, RAG y MCP 1.3.0 y Cloudflare 1.3.0; las etiquetas de imagen del kit que llevan la versión del curso la siguen. Detalle en [`site/README.md`](site/README.md) y en el VALIDATION de cada curso.
+
 ## [2026-11-16]
 
 ### Agregado

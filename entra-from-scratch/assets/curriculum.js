@@ -306,5 +306,5 @@ window.ENTRA_COURSE = (() => {
     S({ en: 'Defend the residual risk', es: 'Defendé el riesgo que queda' }, { en: 'Use the rubric to explain a compromised browser, compromised API, a removed role with an existing token and an identity-provider outage. Stop the lab when finished with docker compose stop.', es: 'Usá la rúbrica para explicar un navegador comprometido, una API comprometida, un rol quitado con un token existente y una caída del proveedor de identidad. Cuando termines, detené el lab con docker compose stop.' }, { en: 'A reviewer can see the guarantee, its assumptions and the next validation needed.', es: 'Quien revisa puede ver la garantía, sus supuestos y la próxima validación que hace falta.' })
   ], 'security-review');
 
-  return { version: '1.4.0', date: '2026-10-29', angular: '21.2.25', msal: '5.27.0', spring: '4.1.2', postgres: '18.6', units, lessons };
+  return { version: '1.5.0', date: '2026-10-29', angular: '21.2.25', msal: '5.27.0', spring: '4.1.2', postgres: '18.6', units, lessons };
 })();

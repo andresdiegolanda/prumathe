@@ -1,6 +1,6 @@
 {
   "name": "cloudflare-from-scratch",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "description": "Cloudflare in front of an application and as a platform to run code next to the user, through visual models and real labs, EN / ES",
   "scripts": {
