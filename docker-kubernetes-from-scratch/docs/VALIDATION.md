@@ -4,9 +4,9 @@ Este documento registra evidencia ejecutada y límites por versión; los modelos
 
 ## Kit 1.7.0 en Linux, 19 de noviembre de 2026
 
-Primera corrida de las prácticas fuera de la laptop del curso, en un runner de GitHub Actions: Ubuntu 26.04.1 LTS (kernel 7.0.0-1019-azure), Docker Engine 29.4.2, Compose 5.1.3, kind 0.33.0, kubectl 1.37.0 y Node.js 22.23.4. Las corre el workflow `suites.yml` del repositorio, de noche si el repositorio cambió en el día, y a demanda. El kit tiene desde esta fecha su propia versión, 1.7.0, la etiqueta que ya llevaba la imagen del visor (ver TEACHING.md).
+Primera corrida de las prácticas fuera de la laptop del curso, en runners de GitHub Actions: Ubuntu 26.04.1 LTS, Docker Engine 29.4.2, Compose 5.1.3, kind 0.33.0, kubectl 1.37.0 y Node.js 22. Las corridas anotan sus versiones desde la de las 09:21 UTC; el kernel y el parche de Node.js cambian de un runner a otro. Las corre el workflow `suites.yml` del repositorio, de noche si el repositorio cambió en el día, y a demanda. El kit tiene desde esta fecha su propia versión, 1.7.0, la etiqueta que ya llevaba la imagen del visor (ver TEACHING.md).
 
-Ejecutado: `node scripts/test-labs.mjs all`, las 102 prácticas de las 25 lecciones más la comprobación del puerto publicado, con kubectl desde el host y el kubeconfig del curso. Es la ruta que enseñan las lecciones 13 a 24, que en la laptop solo se había ejecutado dentro del nodo kind. Pasó completa en cuatro corridas del 19 de noviembre.
+Ejecutado: `node scripts/test-labs.mjs all`, las 102 prácticas de las 25 lecciones más la comprobación del puerto publicado, con kubectl desde el host y el kubeconfig del curso. Es la ruta que enseñan las lecciones 13 a 24, que en la laptop solo se había ejecutado dentro del nodo kind. Pasó completa en cinco corridas del 19 de noviembre.
 
 La primera corrida de ese día falló en el paso 2.2, que esperaba `exited 0` y vio `exited 137`: la suite detenía el contenedor antes de que su proceso instalara el manejador de SIGTERM. No depende de Linux: en la laptop, detener el contenedor apenas creado dio 137 tres veces de tres, y esperando dos segundos dio 0. La suite espera ahora el primer health check de un contenedor iniciado en segundo plano. El texto del paso no cambia, porque quien escribe los comandos a mano tarda más que eso.
 
