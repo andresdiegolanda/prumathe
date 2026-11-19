@@ -8,6 +8,8 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 
 - Suites de laboratorio en GitHub Actions: [`suites.yml`](.github/workflows/suites.yml) corre en un runner de Linux las prácticas de Docker y Kubernetes, con kubectl desde el host, y las suites de Kafka, de noche si `main` cambió en el último día y a demanda. Cada corrida guarda su evidencia como artefacto.
 - [`suites.yml`](.github/workflows/suites.yml): cuando falla la suite del visor de Docker y Kubernetes, la corrida deja como anotación lo que el visor ve del clúster.
+- Control visual, [`scripts/test-visual.mjs`](scripts/test-visual.mjs): abre en Chrome todas las páginas de cada curso y de la portada, en los dos idiomas, en escritorio y en teléfono, y falla por errores de consola, desborde horizontal o textos fuera de su caja en el panorama; deja capturas en `tmp/capturas/`. Corre también de noche en [`suites.yml`](.github/workflows/suites.yml), que ahora anota las versiones de cada trabajo. El porqué, en [`metodo/aprendizaje/interfaz.md`](metodo/aprendizaje/interfaz.md).
+- [`metodo/arranque.md`](metodo/arranque.md): cómo correr `npm` en la máquina de trabajo, donde Node no conoce el certificado con el que se vuelve a firmar el HTTPS de salida.
 
 ### Corregido
 

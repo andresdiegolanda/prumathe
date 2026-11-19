@@ -28,7 +28,7 @@ Control: `check.mjs` dibuja cada modelo en cada apariencia e idioma.
 Los dos idiomas, las cuatro apariencias, 390 px de ancho, el teclado, cero errores de consola y cero desborde horizontal.
 
 Origen: es lo que midieron las revisiones de Docker y Kubernetes y de GitHub sobre todas sus páginas (§2 de cada una).
-Control: la misma lista en cada VALIDATION.
+Control: [`scripts/test-visual.mjs`](../../scripts/test-visual.mjs) abre todas las páginas en los dos idiomas, en escritorio y en teléfono, y falla por errores de consola o desborde horizontal; el teclado y las apariencias Lectura y Proyector de las lecciones siguen en la pasada que registra cada VALIDATION.
 
 ### Redibujar no puede disparar otro redibujo
 
@@ -82,7 +82,7 @@ Control: pedir al sitio publicado un archivo que cambió y buscar la versión.
 Los modelos se dibujan en cada escena y en cada valor de sus controles, en los dos idiomas, y en el navegador se comprueba que cada texto quede dentro de su caja y del dibujo. El español suele ser más largo, y un estado que nadie capturó es el que se desborda.
 
 Origen: Cloudflare 1.0.0: en las capturas, `movements-dead` se salía de su caja, una leyenda quedaba fuera de su panel y el mapa cortaba el subtítulo del WAF; la medición de todos los estados encontró una caja más ([VALIDATION](../../cloudflare-from-scratch/docs/VALIDATION.md)).
-Control: la pasada de navegador que registra VALIDATION; todavía no es un control de `check.mjs`.
+Control: [`scripts/test-visual.mjs`](../../scripts/test-visual.mjs) mide que cada texto quede dentro del dibujo en el estado inicial de cada modelo; cada escena y cada valor de los controles siguen en la pasada de navegador que registra VALIDATION.
 
 ### El panorama de un curso usa el motor común y se valida con él
 
@@ -96,11 +96,18 @@ Control: `check.mjs` de cada curso; que las copias del motor sean iguales lo con
 Un rótulo de zona no toca líneas ni piezas, y la burbuja de una parada no tapa la pieza ni el carril de esa parada; si no entra, el rótulo se mueve o se acorta, y en un teléfono la burbuja le deja el lugar al panel.
 
 Origen: en LLMs, RAG y MCP 1.1.0 y Cloudflare 1.1.0 la medición encontró rótulos de zona cruzados por líneas y textos fuera de su caja; se corrigieron moviendo rótulos, ensanchando piezas y acortando subtítulos ([VALIDATION de LLMs, RAG y MCP](../../llm-rag-mcp-from-scratch/docs/VALIDATION.md), [de Cloudflare](../../cloudflare-from-scratch/docs/VALIDATION.md)).
-Control: la pasada de navegador que recorre cada parada con el teclado en cuatro tamaños de pantalla y mide cada rótulo en las cuatro apariencias; todavía no es un control de `check.mjs`.
+Control: [`scripts/test-visual.mjs`](../../scripts/test-visual.mjs) mide, en los dos idiomas, que cada texto de una pieza quede en su caja, que ninguna pieza pise a otra y que cada rótulo de zona quede dentro de su zona y fuera de las piezas. Las burbujas de cada parada y los rótulos contra las líneas siguen en la pasada de navegador.
 
 ### Una fila de botones se prueba con un botón más
 
 Toda fila de botones lleva `flex-wrap`, porque el próximo botón que se sume la desborda en un teléfono.
 
 Origen: el botón del panorama desbordó en 390 px la fila de la portada de los cursos que no tenían `flex-wrap` en `.home-actions` (todos menos Cloudflare).
-Control: pasada de navegador en 390 px de ancho, sin desborde horizontal.
+Control: [`scripts/test-visual.mjs`](../../scripts/test-visual.mjs) abre cada página en 390 px de ancho y falla si desborda.
+
+### Lo que se puede medir en el navegador lo mide un programa, y lo demás se mira en capturas
+
+La pasada de navegador que se repite igual en cada versión (abrir cada página, buscar errores de consola y desbordes, medir los textos del panorama contra sus cajas) la hace [`scripts/test-visual.mjs`](../../scripts/test-visual.mjs) en un Chrome sin interfaz. Lo que no se puede medir, que el dibujo se entienda, se mira en las capturas que deja en `tmp/capturas/`: el panorama y la portada en teléfono de cada curso, y cada página con un problema.
+
+Origen: hasta el 19/11/2026 cada versión repetía esa pasada a mano y la contaba en su VALIDATION. La primera corrida abrió las 179 páginas de los seis cursos y la portada sin encontrar problemas, y se comprobó que falla cuando debe: con las cajas 30 px más chicas y con una pantalla de 150 px.
+Control: `node scripts/test-visual.mjs` antes de cerrar un cambio que se ve, y el workflow [`suites.yml`](../../.github/workflows/suites.yml) de noche y a demanda.
