@@ -85,6 +85,18 @@ jobs:
         if: failure()
         run: |
           tail -c 3500 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
+      - name: Qué ve el visor del clúster
+        if: failure()
+        working-directory: docker-kubernetes-from-scratch/labs
+        run: |
+          {
+            ls -ln kubeconfig
+            docker exec prumathe-dk-visor-1 id
+            docker exec prumathe-dk-visor-1 sh -c 'head -c 1 /course/kubeconfig >/dev/null && echo "kubeconfig legible" || echo "kubeconfig no legible"'
+            curl -fsS http://127.0.0.1:18091/api/state | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const k=JSON.parse(s).k8s;console.log(JSON.stringify({ok:k.ok,reason:k.reason,detail:k.detail,since:k.since}))})"
+            docker logs --tail 12 prumathe-dk-visor-1
+          } > "$RUNNER_TEMP/visor.log" 2>&1 || true
+          node -e "const s=require('fs').readFileSync(process.argv[1],'utf8').slice(-3000);console.log('::error title=Visor::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A'))" "$RUNNER_TEMP/visor.log" || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:
