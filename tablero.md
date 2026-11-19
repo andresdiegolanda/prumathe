@@ -11,8 +11,6 @@ Las columnas:
 
 ## En curso
 
-- [ ] **Aplicar las mejoras a la forma de trabajo**: reglas nuevas en [`metodo/arranque.md`](metodo/arranque.md), control de raíz, datos sin repetir, suites y control visual automáticos, kit con versión propia y `tmp/` temporal. Tamaño grande; commit y push autorizados por fase. **Andrés**
-
 ## Para empezar
 
 - [ ] **Verificar la entrega del curso de Cloudflare**: el curso ya está en el sitio publicado, su workflow remoto pasó y sus descargas responden como adjunto (comprobado el 19/11); falta mirar portada, panorama y versión, y el resto de las cabeceras. **Andrés**
@@ -50,6 +48,7 @@ Las columnas:
 
 ## Hecho
 
+- [x] **Mejoras a la forma de trabajo (19/11)**: tamaño de cada cambio, un dueño por hecho y commit autorizado por tarea en [`metodo/arranque.md`](metodo/arranque.md); control de raíz en cada push; suites y control visual de noche en un runner de Linux; kit con versión propia; `downloads/` fuera de Git y `tmp/` temporal. Lo que apareció al correrlas quedó en cards de "Para empezar". **Andrés**
 - [x] **Suites de Kafka sobre el kit vigente (19/11)**: `core`, `failures`, `integrations`, `spring`, `visor` y `kafbat` pasaron en un runner de Linux y corren cada noche que el repositorio cambia; detalle en [`docs/VALIDATION.md`](kafka-from-scratch/docs/VALIDATION.md). **Andrés**
 - [x] **Fecha y commit de la versión publicada (18/11)**: la portada del sitio y la de cada curso muestran en el pie la fecha del build y el commit publicado. **Andrés**
 - [x] **Portada legible sin JavaScript (16/11)**: texto estático en los dos idiomas, datos estructurados, `robots.txt` y `sitemap.xml`, para que los filtros web puedan clasificar `prumathe.com`. **Andrés**

@@ -19,6 +19,8 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 
 ### Cambiado
 
+- [`suites.yml`](.github/workflows/suites.yml): la suite del visor de Docker y Kubernetes y el control visual pueden fallar sin hacer fallar la corrida, hasta que se resuelvan sus cards de [`tablero.md`](tablero.md); lo que encuentran queda como anotación.
+- [`tablero.md`](tablero.md): la card de las mejoras a la forma de trabajo pasa a "Hecho".
 - `tmp/` se vació con la regla nueva: pasó de unos 5 GB a 74 MB. Lo que podía ser la única copia de un registro quedó en `tmp/_obsoleto/trabajo-de-tmp-2026-11-19/`, y [`tmp/README.md`](tmp/README.md) dice qué hay.
 - Kit con versión propia en Kafka, Docker y Kubernetes y LLMs, RAG y MCP: `kit` en el `assets/curriculum.js` de cada curso, que sube solo cuando cambia algo de `labs/`; la llevan las etiquetas de imagen y el README del kit, y `check.mjs` lo exige. Hoy coincide con la versión de cada curso, así que nada cambia para quien cursa. Detalle en el `docs/TEACHING.md` de cada curso y en [`metodo/aprendizaje/versiones-y-fuentes.md`](metodo/aprendizaje/versiones-y-fuentes.md).
 - El `downloads/` de cada curso (los apuntes y el ZIP del kit) sale de Git: lo genera el build y se publica con el sitio, y un build nuevo podía dejar un ZIP distinto con el mismo contenido. Cada curso lo suma a su `.gitignore` y [`scripts/check.mjs`](scripts/check.mjs) falla si vuelve a entrar; detalle en [`metodo/arranque.md`](metodo/arranque.md).
