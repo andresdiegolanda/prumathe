@@ -14,6 +14,7 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 ### Corregido
 
 - La suite de prácticas de Docker y Kubernetes ([`scripts/test-labs.mjs`](docker-kubernetes-from-scratch/scripts/test-labs.mjs)) espera el primer health check de un contenedor iniciado en segundo plano antes de seguir: en la primera corrida en un runner de Linux, el paso 2.2 lo detenía antes de que su proceso atendiera SIGTERM y veía `exited 137`. El curso no cambia.
+- [`suites.yml`](.github/workflows/suites.yml): el trabajo del control visual definía dos variables con un contexto que no existe a nivel de trabajo, y GitHub rechazaba el archivo entero, con lo que no corría ninguna suite. Ahora las define en un paso.
 
 ### Cambiado
 

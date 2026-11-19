@@ -175,9 +175,6 @@ jobs:
     if: needs.hace-falta.outputs.correr == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      PRUMATHE_TOOLS: ${{ runner.temp }}/herramientas
-      CAPTURAS: ${{ runner.temp }}/capturas
     steps:
       - uses: actions/checkout@v7
         with:
@@ -186,7 +183,10 @@ jobs:
         with:
           node-version: '22'
       - name: La biblioteca que maneja el navegador
-        run: npm install --no-audit --no-fund --prefix "$PRUMATHE_TOOLS" puppeteer-core@25
+        run: |
+          echo "PRUMATHE_TOOLS=$RUNNER_TEMP/herramientas" >> "$GITHUB_ENV"
+          echo "CAPTURAS=$RUNNER_TEMP/capturas" >> "$GITHUB_ENV"
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/herramientas" puppeteer-core@25
       - name: Versiones
         run: |
           {
