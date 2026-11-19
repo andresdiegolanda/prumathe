@@ -1,0 +1,143 @@
+# Corre en un runner de GitHub (Ubuntu, con Docker Engine) las suites de laboratorio que hasta
+# ahora solo corrían en una laptop: de noche, si main cambió en el último día, a demanda y cuando
+# cambia este archivo. Cada trabajo guarda su evidencia (.qa/) como artefacto y, si falla, deja el
+# final de su salida como anotación. Lo que corre acá es la ruta de Linux: no reemplaza la
+# validación en macOS ni dice nada de los tiempos en la máquina de quien cursa.
+name: Suites de laboratorio
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/suites.yml'
+permissions:
+  contents: read
+concurrency:
+  group: suites
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+jobs:
+  hace-falta:
+    runs-on: ubuntu-latest
+    outputs:
+      correr: ${{ steps.mirar.outputs.correr }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Si main cambió en el último día
+        id: mirar
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ] || [ -n "$(git log --since='25 hours ago' --format=%h -1)" ]; then
+            echo "correr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "correr=false" >> "$GITHUB_OUTPUT"
+            echo "main no cambió desde la última noche: no hay nada nuevo que probar."
+          fi
+
+  docker-kubernetes:
+    needs: hace-falta
+    if: needs.hace-falta.outputs.correr == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+        working-directory: docker-kubernetes-from-scratch
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: kind y kubectl, en las versiones que fija el curso
+        run: |
+          leer() { node -p "const fs=require('fs'),vm=require('vm');const c={window:{}};vm.runInNewContext(fs.readFileSync('assets/curriculum.js','utf8'),c);c.window.DK_COURSE.$1"; }
+          KIND="$(leer kind)"
+          K8S="$(leer kubernetes)"
+          cd "$RUNNER_TEMP"
+          curl -fsSLo kind "https://kind.sigs.k8s.io/dl/v${KIND}/kind-linux-amd64"
+          echo "$(curl -fsSL "https://kind.sigs.k8s.io/dl/v${KIND}/kind-linux-amd64.sha256sum" | cut -d' ' -f1)  kind" | sha256sum --check
+          curl -fsSLo kubectl "https://dl.k8s.io/release/v${K8S}/bin/linux/amd64/kubectl"
+          echo "$(curl -fsSL "https://dl.k8s.io/release/v${K8S}/bin/linux/amd64/kubectl.sha256")  kubectl" | sha256sum --check
+          chmod +x kind kubectl
+          mkdir -p "$HOME/bin"
+          mv kind kubectl "$HOME/bin/"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          # En Linux con Docker Engine, el visor abre el socket con el grupo del socket.
+          echo "DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)" >> "$GITHUB_ENV"
+      - name: Versiones
+        run: |
+          docker version
+          docker compose version
+          kind version
+          kubectl version --client
+      - name: Las prácticas de todas las lecciones, con kubectl desde el host
+        run: node scripts/test-labs.mjs all 2>&1 | tee "$RUNNER_TEMP/suite.log"
+      - name: La suite del visor
+        run: node scripts/test-labs.mjs visor 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Qué falló
+        if: failure()
+        run: |
+          tail -c 6000 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: docker-kubernetes-qa
+          path: docker-kubernetes-from-scratch/.qa
+          include-hidden-files: true
+          if-no-files-found: warn
+
+  kafka:
+    needs: hace-falta
+    if: needs.hace-falta.outputs.correr == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+        working-directory: kafka-from-scratch
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Versiones
+        run: |
+          docker version
+          docker compose version
+      - name: Construir el kit y levantar el clúster, como en la lección 01
+        working-directory: kafka-from-scratch/labs
+        run: |
+          docker compose build lab 2>&1 | tee "$RUNNER_TEMP/suite.log"
+          docker compose up -d --wait 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Suite core
+        run: node scripts/test-labs.mjs core 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Suite failures
+        run: node scripts/test-labs.mjs failures 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Suite integrations
+        run: node scripts/test-labs.mjs integrations 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Suite spring
+        run: node scripts/test-labs.mjs spring 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Suite visor
+        run: node scripts/test-labs.mjs visor 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Suite kafbat
+        run: node scripts/test-labs.mjs kafbat 2>&1 | tee -a "$RUNNER_TEMP/suite.log"
+      - name: Qué falló
+        if: failure()
+        run: |
+          tail -c 6000 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: kafka-qa
+          path: kafka-from-scratch/.qa
+          include-hidden-files: true
+          if-no-files-found: warn
