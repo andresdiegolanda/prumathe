@@ -8,6 +8,10 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 
 - Suites de laboratorio en GitHub Actions: [`suites.yml`](.github/workflows/suites.yml) corre en un runner de Linux las prácticas de Docker y Kubernetes, con kubectl desde el host, y las suites de Kafka, de noche si `main` cambió en el último día y a demanda. Cada corrida guarda su evidencia como artefacto.
 
+### Corregido
+
+- La suite de prácticas de Docker y Kubernetes ([`scripts/test-labs.mjs`](docker-kubernetes-from-scratch/scripts/test-labs.mjs)) espera el primer health check de un contenedor iniciado en segundo plano antes de seguir: en la primera corrida en un runner de Linux, el paso 2.2 lo detenía antes de que su proceso atendiera SIGTERM y veía `exited 137`. El curso no cambia.
+
 ### Cambiado
 
 - Datos sin repetir: el [`README.md`](README.md) de la raíz dice qué es cada curso y dónde mirar, sin versiones ni conteos, y [`tablero.md`](tablero.md) pasa a las columnas "En curso", "Para empezar" (su orden es la prioridad), "Esperando" (cada card dice qué espera) y "Hecho", con cards abiertas que no nombran versiones. Lo controla [`scripts/check.mjs`](scripts/check.mjs); el porqué, en [`metodo/arranque.md`](metodo/arranque.md), "Un dueño por hecho".

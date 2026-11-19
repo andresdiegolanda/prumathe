@@ -84,7 +84,7 @@ jobs:
       - name: Qué falló
         if: failure()
         run: |
-          tail -c 6000 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
+          tail -c 3500 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -133,7 +133,7 @@ jobs:
       - name: Qué falló
         if: failure()
         run: |
-          tail -c 6000 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
+          tail -c 3500 "$RUNNER_TEMP/suite.log" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log('::error title=Suite::'+s.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')))" || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:

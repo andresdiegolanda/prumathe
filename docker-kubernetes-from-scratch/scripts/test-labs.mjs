@@ -147,6 +147,14 @@ try {
         const expectedExit=i===lines.length-1 ? (checks.find(c=>c.exit!==undefined)?.exit??0):0;
         if(last.exit!==expectedExit)throw Error(`${lesson.id}.${index+1}: exit ${last.exit}, expected ${expectedExit}\n${line}\n${last.output}`);
         output+=last.output+'\n';
+        // A container started in the background needs a moment: until its process installs its
+        // SIGTERM handler, a stop is ignored and ends in SIGKILL (exit 137). A person types slower
+        // than that; the suite waits for the first health check before the next command.
+        const started=/^docker run -d .*--name (\S+)/.exec(line);
+        if(started) {
+          const end=Date.now()+30000;
+          while(Date.now()<end && run(`docker inspect --format '{{.State.Health.Status}}' ${started[1]}`).output.trim()==='starting')await pause(500);
+        }
         if(inNode && line.startsWith('kind load docker-image')) {
           const copy=run('docker cp k8s/. prumathe-dk-control-plane:/course-k8s');
           if(copy.exit!==0)throw Error(copy.output);
