@@ -1,4 +1,5 @@
 dist/
+downloads/
 release/
 node_modules/
 .qa/

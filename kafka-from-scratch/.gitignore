@@ -1,4 +1,5 @@
 dist/
+downloads/
 node_modules/
 labs/target/
 .wrangler/

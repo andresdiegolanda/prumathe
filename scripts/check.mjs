@@ -220,7 +220,7 @@ for (const [i, line] of (text.get('CHANGELOG.md') ?? '').split('\n').entries()) 
 }
 
 // 8. What never enters the repository (metodo/arranque.md, "Convenciones de trabajo").
-const NEVER = [/^tmp\/(?!README\.md$)/, /(^|\/)\.qa\//, /(^|\/)labs\/runs\//, /(^|\/)labs\/kubeconfig$/, /(^|\/)dist\//, /(^|\/)release\//, /(^|\/)\.wrangler\//, /(^|\/)node_modules\//];
+const NEVER = [/^tmp\/(?!README\.md$)/, /(^|\/)downloads\//, /(^|\/)\.qa\//, /(^|\/)labs\/runs\//, /(^|\/)labs\/kubeconfig$/, /(^|\/)dist\//, /(^|\/)release\//, /(^|\/)\.wrangler\//, /(^|\/)node_modules\//];
 for (const f of tracked) {
   if (NEVER.some((r) => r.test(f))) fail(f, 'is tracked, and it never enters the repository');
 }

@@ -17,6 +17,7 @@ Registro de todos los cambios del repositorio. Formato inspirado en [Keep a Chan
 
 ### Cambiado
 
+- El `downloads/` de cada curso (los apuntes y el ZIP del kit) sale de Git: lo genera el build y se publica con el sitio, y un build nuevo podía dejar un ZIP distinto con el mismo contenido. Cada curso lo suma a su `.gitignore` y [`scripts/check.mjs`](scripts/check.mjs) falla si vuelve a entrar; detalle en [`metodo/arranque.md`](metodo/arranque.md).
 - Datos sin repetir: el [`README.md`](README.md) de la raíz dice qué es cada curso y dónde mirar, sin versiones ni conteos, y [`tablero.md`](tablero.md) pasa a las columnas "En curso", "Para empezar" (su orden es la prioridad), "Esperando" (cada card dice qué espera) y "Hecho", con cards abiertas que no nombran versiones. Lo controla [`scripts/check.mjs`](scripts/check.mjs); el porqué, en [`metodo/arranque.md`](metodo/arranque.md), "Un dueño por hecho".
 
 ## [2026-11-18]

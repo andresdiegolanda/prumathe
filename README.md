@@ -24,7 +24,7 @@ Sitio publicado: [prumathe.com](https://prumathe.com) (también responde en [pru
 
 ## Estructura
 
-Cada curso es una carpeta independiente y es el dueño de sus datos: su versión, sus conteos, las versiones de producto que fija y sus requisitos están en su `README.md`, y lo que se ejecutó y lo que no, en su `docs/VALIDATION.md` (regla 7).
+Cada curso es una carpeta independiente y es el dueño de sus datos: su versión, sus conteos, las versiones de producto que fija y sus requisitos están en su `README.md`, y lo que se ejecutó y lo que no, en su `docs/VALIDATION.md` (regla 7). Los apuntes y el ZIP del kit (`downloads/`) los genera el build de cada curso y no se versionan: están en el sitio publicado.
 
 - [`entra-from-scratch/`](entra-from-scratch/): Microsoft Entra desde cero. La autenticación y la autorización seguidas por una app Angular con MSAL, una API Spring Security y PostgreSQL, desde el inicio de sesión de Windows hasta la fila. [README](entra-from-scratch/README.md) y [validación](entra-from-scratch/docs/VALIDATION.md).
 - [`kafka-from-scratch/`](kafka-from-scratch/): Apache Kafka desde cero, el primer curso y el que marca el patrón. El log, las particiones, la replicación, los grupos de consumidores, exactly once y su frontera, Connect, Streams, seguridad y share groups, sobre un clúster KRaft de tres nodos en Docker. [README](kafka-from-scratch/README.md), [cómo se enseña](kafka-from-scratch/docs/TEACHING.md) y [validación](kafka-from-scratch/docs/VALIDATION.md).

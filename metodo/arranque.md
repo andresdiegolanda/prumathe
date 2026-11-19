@@ -53,7 +53,7 @@ Es la regla 7 del README, bajada a una tabla. Los demás documentos enlazan al d
 - Antes de dar un cambio por terminado: `node scripts/build.mjs` y `node scripts/check.mjs` en el curso, y desde la raíz `node site/scripts/build.mjs` y `node scripts/check.mjs`, el control de lo que cruza cursos. Si el cambio se ve en el navegador, además `node scripts/test-visual.mjs` (o con el nombre de la carpeta, para un solo curso) y una mirada a las capturas que deja en `tmp/capturas/`.
 - Commit y push se autorizan por tarea: al empezar, el responsable dice si la tarea los incluye. Con esa autorización se hacen al terminar, sin volver a pedirlos; sin ella, no se hace ningún commit ni push hasta que se pidan.
 - Commits: antes, `git fetch` y `git pull --ff-only`; si el remoto divergió, se para. `git add` con rutas explícitas, nunca `git add -A` ni `git commit -a`. Mensaje en español y sin tildes, como el historial, escrito en un archivo de `tmp/` y pasado con `git commit -F`. Sin líneas de atribución.
-- Nunca entran al repositorio: `tmp/` (salvo `tmp/README.md`), `.qa/`, `labs/runs/`, `labs/kubeconfig`, `dist/`, `release/`, `site/dist/` y `.wrangler/`.
+- Nunca entran al repositorio: `tmp/` (salvo `tmp/README.md`), `.qa/`, `labs/runs/`, `labs/kubeconfig`, `dist/`, `release/`, `site/dist/`, `.wrangler/` y el `downloads/` de cada curso, que son los apuntes y el ZIP del kit que genera su build: se publican con el sitio.
 - Del repositorio no se borra nada: lo que sobra va a `tmp/_obsoleto/`.
 - Cuando un trabajo deja algo sobre cómo hacer cursos que habría convenido saber antes, se agrega en [`aprendizaje/`](aprendizaje/README.md) en la misma sesión, con el formato de su README.
 
