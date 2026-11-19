@@ -137,7 +137,7 @@ fs.writeFileSync(
   path.join(root, 'labs/visor/static/lessons.json'),
   JSON.stringify(
     {
-      version: course.version,
+      version: course.kit,
       lessons: course.lessons.map((l) => ({ id: l.id, title: l.title, ...(l.visor && { visor: l.visor }) })),
       commands: visorCommands,
     },

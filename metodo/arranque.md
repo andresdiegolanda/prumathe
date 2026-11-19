@@ -35,7 +35,7 @@ Es la regla 7 del README, bajada a una tabla. Los demás documentos enlazan al d
 
 | Hecho | Dónde vive |
 |---|---|
-| La versión de un curso, sus conteos (lecciones, escenas, pasos, términos) y las versiones de producto que fija | El curso: `assets/curriculum.js` y su `README.md` |
+| La versión de un curso, la de su kit, sus conteos (lecciones, escenas, pasos, términos) y las versiones de producto que fija | El curso: `assets/curriculum.js` y su `README.md` |
 | Qué se ejecutó, cuándo y sobre qué | El `docs/VALIDATION.md` del curso |
 | Cómo se enseña y cómo se edita un curso | Su `docs/TEACHING.md` |
 | El estado de un pendiente | Su card en `tablero.md` |
@@ -50,6 +50,7 @@ Es la regla 7 del README, bajada a una tabla. Los demás documentos enlazan al d
 - Copia de trabajo en `D:\_claude\prumathe`; remoto `github.com/andresdiegolanda/prumathe`, rama `main`.
 - El material de los cursos no menciona cómo se produjo (herramientas, modelos, revisiones, productos de la máquina) ni otros cursos, clientes o sistemas. Los documentos del repositorio se redactan como decisiones u objetivos del proyecto.
 - Cada cambio visible para el alumno sube la versión del curso: menor si agrega contenido o funciones, parche si corrige. Se cambia en todos los lugares que la llevan.
+- El kit de laboratorio puede llevar su propia versión (`kit` en el `assets/curriculum.js` del curso): sube solo cuando cambia algo de `labs/`, la llevan sus etiquetas de imagen, y lo que corre una suite se anota contra ella. Una versión del curso que no toca el kit no la mueve.
 - Antes de dar un cambio por terminado: `node scripts/build.mjs` y `node scripts/check.mjs` en el curso, y desde la raíz `node site/scripts/build.mjs` y `node scripts/check.mjs`, el control de lo que cruza cursos. Si el cambio se ve en el navegador, además `node scripts/test-visual.mjs` (o con el nombre de la carpeta, para un solo curso) y una mirada a las capturas que deja en `tmp/capturas/`.
 - Commit y push se autorizan por tarea: al empezar, el responsable dice si la tarea los incluye. Con esa autorización se hacen al terminar, sin volver a pedirlos; sin ella, no se hace ningún commit ni push hasta que se pidan.
 - Commits: antes, `git fetch` y `git pull --ff-only`; si el remoto divergió, se para. `git add` con rutas explícitas, nunca `git add -A` ni `git commit -a`. Mensaje en español y sin tildes, como el historial, escrito en un archivo de `tmp/` y pasado con `git commit -F`. Sin líneas de atribución.

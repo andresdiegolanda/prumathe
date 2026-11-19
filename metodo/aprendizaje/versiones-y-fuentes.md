@@ -46,3 +46,10 @@ Cuando la especificación vigente todavía no está en el framework del público
 
 Origen: LLMs, RAG y MCP 1.0.0: MCP 2026-07-28 vigente, Spring AI 2.0.1 en 2025-11-25; la lección 21 compara las dos con un servidor del SDK de TypeScript v2.
 Control: la lección de revisiones y la revisión de versiones de cada entrega.
+
+### El kit tiene su propia versión, y sube solo cuando cambia
+
+La versión del curso cuenta lo que ve quien cursa; la del kit, lo que corre en su máquina. Si la etiqueta de una imagen sigue a la versión del curso, cada versión tiene que aclarar que el kit no cambió, y lo que una suite probó queda dicho sobre una etiqueta que ya no existe.
+
+Origen: de la 1.7.0 a la 1.9.0 de Kafka, las etiquetas `kafka-course-lab` y `kafka-course-spring` subieron tres veces sin que cambiara el kit, y cada entrada de VALIDATION tuvo que aclararlo; lo mismo pasó con la etiqueta del visor en Docker y Kubernetes y en LLMs, RAG y MCP ([CHANGELOG](../../CHANGELOG.md), 2026-11-19).
+Control: el `check.mjs` del curso compara las etiquetas de imagen y el README del kit con `kit` de `assets/curriculum.js`. Que el kit no cambie sin subir su versión todavía se revisa a mano (card en el [`tablero.md`](../../tablero.md)).

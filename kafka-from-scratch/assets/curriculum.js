@@ -2252,5 +2252,6 @@ window.KAFKA_COURSE = (() => {
     'spring',
   );
 
-  return { version: '1.9.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
+  // version is the course; kit is the lab kit, and it rises only when something under labs/ changes.
+  return { version: '1.9.0', kit: '1.9.0', kafka: '4.1.2', date: '2026-10-18', units, lessons, B };
 })();

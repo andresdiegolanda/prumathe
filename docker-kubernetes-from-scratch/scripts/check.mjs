@@ -11,6 +11,10 @@ const pair=(v,label)=>{assert.equal(typeof v?.en,'string',label);assert.equal(ty
 assert.equal(course.lessons.length,25);
 assert.equal(course.units.length,7);
 assert.equal(course.version,JSON.parse(fs.readFileSync(path.join(root,'package.json'))).version);
+// The kit has its own version: it rises only when something under labs/ changes, so a course release
+// that leaves the kit alone keeps the tag of the viewer image and the first line of labs/README.md.
+assert.match(course.kit??'',/^\d+\.\d+\.\d+$/,'curriculum.js does not declare the kit version');
+for(const needle of ['Version '+course.kit+'.','Versión '+course.kit+'.'])assert.ok(fs.readFileSync(path.join(root,'labs/README.md'),'utf8').includes(needle),'labs/README.md does not say: '+needle);
 const slugs=new Set();let steps=0,renders=0;
 for(const [i,l] of course.lessons.entries()) {
   assert.equal(l.id,i);assert.ok(!slugs.has(l.slug));slugs.add(l.slug);
@@ -29,12 +33,12 @@ for(const [i,l] of course.lessons.entries()) {
 }
 assert.equal(steps,102);
 // The live viewer: lesson 01 opens it, lesson 13 connects it to the cluster, Compose publishes it only on
-// 127.0.0.1 with the version of the course, it shares the pinned base image and it only issues GET requests.
+// 127.0.0.1 with the version of the kit, it shares the pinned base image and it only issues GET requests.
 assert.equal(course.lessons[1].lab[0].command,'docker compose up -d --wait visor','lesson 01 opens the viewer');
 assert.ok(course.lessons[13].lab.some(s=>s.command.includes('docker network connect kind prumathe-dk-visor-1')),'lesson 13 connects the viewer to the cluster');
 const compose=fs.readFileSync(path.join(root,'labs/compose.yaml'),'utf8');
 const visorService=compose.split(/\n  visor:\n/)[1]?.split(/\n[a-z]/)[0]||'';
-for(const needle of ['profiles: [visor]','image: prumathe-visor:'+course.version,'build: ./visor','/var/run/docker.sock:/var/run/docker.sock','.:/course:ro','"127.0.0.1:18091:18091"','group_add:'])assert.ok(visorService.includes(needle),'compose visor service: '+needle);
+for(const needle of ['profiles: [visor]','image: prumathe-visor:'+course.kit,'build: ./visor','/var/run/docker.sock:/var/run/docker.sock','.:/course:ro','"127.0.0.1:18091:18091"','group_add:'])assert.ok(visorService.includes(needle),'compose visor service: '+needle);
 const fromOf=f=>fs.readFileSync(path.join(root,f),'utf8').match(/^FROM (\S+)/m)[1];
 assert.equal(fromOf('labs/visor/Dockerfile'),fromOf('labs/app/Dockerfile'),'the viewer image shares the pinned base');
 for(const f of ['visor.py','docker_watch.py','kube_watch.py','static/index.html','static/visor.css','static/visor.js','static/favicon.svg'])assert.ok(fs.existsSync(path.join(root,'labs/visor',f)),'viewer file '+f);

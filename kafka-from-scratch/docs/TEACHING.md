@@ -116,23 +116,25 @@ Al actualizar Kafka, revisá defaults, protocolos, share groups, réplicas inter
 
 ### Where the version lives / Dónde vive la versión
 
-`assets/curriculum.js` declares `version`, `kafka` and `date`; the interface, the notes and the reference texts read them from there. `npm run check` verifies that these other places agree, because their tools cannot read `curriculum.js`:
+`assets/curriculum.js` declares `version` (the course), `kit` (the lab kit), `kafka` and `date`; the interface, the notes and the reference texts read them from there. The kit has its own version since 19 November 2026: it rises only when something under `labs/` changes, so a course release that leaves the kit alone keeps its image tags, and what a suite proved on a kit stays true. `npm run check` verifies that these other places agree, because their tools cannot read `curriculum.js`:
 
-- `package.json` (`version`, the complete course version);
-- `labs/compose.yaml` (the `apache/kafka` image tag and the `kafka-course-lab` and `kafka-course-spring` tags, which since 1.2.0 carry the complete course version, for example `kafka-course-lab:1.2.0`; lesson 01 prints that tag);
-- `labs/pom.xml` and `labs/spring/pom.xml` (`version`, and the `kafka-clients` and `kafka-streams` versions in the first one);
-- `labs/README.md`, `labs/spring/README.md`, `README.md` and `docs/VALIDATION.md`, by hand.
+- `package.json` (`version`, the course version);
+- `labs/compose.yaml` (the `apache/kafka` image tag, and the `kafka-course-lab` and `kafka-course-spring` tags, which carry the kit version, for example `kafka-course-lab:1.9.0`; lesson 01 prints that tag);
+- `labs/pom.xml` and `labs/spring/pom.xml` (`version`, the kit version, and the `kafka-clients` and `kafka-streams` versions in the first one);
+- `labs/README.md` and `labs/spring/README.md` (the kit version), and the image tags printed in the lessons;
+- `README.md` and `docs/VALIDATION.md`, by hand.
 
-`assets/curriculum.js` declara `version`, `kafka` y `date`; la interfaz, los apuntes y los textos de referencia los leen de ahí. `npm run check` verifica que estos otros lugares coincidan, porque sus herramientas no pueden leer `curriculum.js`:
+`assets/curriculum.js` declara `version` (el curso), `kit` (el kit de laboratorio), `kafka` y `date`; la interfaz, los apuntes y los textos de referencia los leen de ahí. El kit tiene su propia versión desde el 19 de noviembre de 2026: sube solo cuando cambia algo de `labs/`, así que una versión del curso que no toca el kit conserva sus etiquetas de imagen, y lo que una suite probó sobre un kit sigue siendo cierto. `npm run check` verifica que estos otros lugares coincidan, porque sus herramientas no pueden leer `curriculum.js`:
 
-- `package.json` (`version`, la versión completa del curso);
-- `labs/compose.yaml` (la etiqueta de la imagen `apache/kafka` y las de `kafka-course-lab` y `kafka-course-spring`, que desde 1.2.0 llevan la versión completa del curso, por ejemplo `kafka-course-lab:1.2.0`; la lección 01 imprime esa etiqueta);
-- `labs/pom.xml` y `labs/spring/pom.xml` (`version`, y en el primero las versiones de `kafka-clients` y `kafka-streams`);
-- `labs/README.md`, `labs/spring/README.md`, `README.md` y `docs/VALIDATION.md`, a mano.
+- `package.json` (`version`, la versión del curso);
+- `labs/compose.yaml` (la etiqueta de la imagen `apache/kafka`, y las de `kafka-course-lab` y `kafka-course-spring`, que llevan la versión del kit, por ejemplo `kafka-course-lab:1.9.0`; la lección 01 imprime esa etiqueta);
+- `labs/pom.xml` y `labs/spring/pom.xml` (`version`, la versión del kit, y en el primero las versiones de `kafka-clients` y `kafka-streams`);
+- `labs/README.md` y `labs/spring/README.md` (la versión del kit), y las etiquetas de imagen impresas en las lecciones;
+- `README.md` y `docs/VALIDATION.md`, a mano.
 
-For each release, update the date and all course versions above, including image tags printed in lesson text. Keep product pins unless the release changes the baseline. Rebuild the pages, notes, ZIP and dist, run the checks, exercise the affected pages in both languages and all four skins, and record executed and unexecuted checks in VALIDATION.md. Update the root course summary, changelog and owned backlog cards. Read every changed text file back as UTF-8 without BOM and LF line endings.
+For each release, update the date and the course version in the places above; the kit version, its image tags and the tags printed in lesson text change only when the release touches something under `labs/`. Keep product pins unless the release changes the baseline. Rebuild the pages, notes, ZIP and dist, run the checks, exercise the affected pages in both languages and all four skins, and record executed and unexecuted checks in VALIDATION.md. Update the root course summary, changelog and owned backlog cards. Read every changed text file back as UTF-8 without BOM and LF line endings.
 
-Para cada versión, actualizá la fecha y todas las versiones del curso de arriba, incluidas las etiquetas de imagen impresas en las lecciones. Conservá las versiones de productos salvo que cambie la base. Reconstruí páginas, apuntes, ZIP y dist, ejecutá los controles, recorré las páginas afectadas en ambos idiomas y las cuatro apariencias, y registrá lo ejecutado y lo pendiente en VALIDATION.md. Actualizá el resumen del curso en la raíz, el changelog y las cards con dueño. Releé cada archivo de texto cambiado como UTF-8 sin BOM y con finales LF.
+Para cada versión, actualizá la fecha y la versión del curso en los lugares de arriba; la versión del kit, sus etiquetas de imagen y las impresas en las lecciones cambian solo si la versión toca algo de `labs/`. Conservá las versiones de productos salvo que cambie la base. Reconstruí páginas, apuntes, ZIP y dist, ejecutá los controles, recorré las páginas afectadas en ambos idiomas y las cuatro apariencias, y registrá lo ejecutado y lo pendiente en VALIDATION.md. Actualizá el resumen del curso en la raíz, el changelog y las cards con dueño. Releé cada archivo de texto cambiado como UTF-8 sin BOM y con finales LF.
 
 Advanced production topics such as full TLS lifecycle, real Debezium deployment, registry operations, MirrorMaker checkpoint translation, tiered-storage plugins, multi-region failover and large-scale capacity testing require expanded labs beyond these bounded introductory experiments. The lessons identify those boundaries and link to official documentation.
 

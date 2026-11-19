@@ -192,30 +192,43 @@ for (const command of supported) {
   assert.ok(java.includes(`case "${command}"`), 'Java command missing ' + command);
 }
 
-// One version, declared in curriculum.js and repeated only where a tool requires it.
+// Two versions, declared in curriculum.js and repeated only where a tool requires it: the course
+// version, and the kit version, which rises only when something under labs/ changes. A course
+// release that leaves the kit alone keeps its image tags, so what was run on a kit stays true.
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 assert.ok(
   pkg.version === course.version,
   'package.json version disagrees with curriculum.js',
 );
+assert.match(course.kit ?? '', /^\d+\.\d+\.\d+$/, 'curriculum.js does not declare the kit version');
 const compose = fs.readFileSync(path.join(root, 'labs/compose.yaml'), 'utf8');
 assert.ok(
   compose.includes(`image: apache/kafka:${course.kafka}`),
   'compose.yaml Kafka image disagrees with curriculum.js',
 );
 assert.ok(
-  compose.includes(`kafka-course-lab:${course.version}`),
-  'compose.yaml lab image tag disagrees with curriculum.js',
+  compose.includes(`kafka-course-lab:${course.kit}`),
+  'compose.yaml lab image tag disagrees with the kit version in curriculum.js',
 );
 
 assert.ok(
-  compose.includes('image: kafka-course-spring:' + course.version),
-  'compose.yaml Spring image tag disagrees with curriculum.js',
+  compose.includes('image: kafka-course-spring:' + course.kit),
+  'compose.yaml Spring image tag disagrees with the kit version in curriculum.js',
 );
+// The kit names its version where a person reads it, and the lessons print its image tags.
+for (const [file, needles] of [
+  ['labs/README.md', [`Course kit ${course.kit}.`, `Kit del curso ${course.kit}.`]],
+  ['labs/spring/README.md', [`Course kit ${course.kit}; image \`kafka-course-spring:${course.kit}\`.`, `Kit del curso ${course.kit}; imagen \`kafka-course-spring:${course.kit}\`.`]],
+]) {
+  const text = fs.readFileSync(path.join(root, file), 'utf8');
+  for (const needle of needles) assert.ok(text.includes(needle), `${file} does not say: ${needle}`);
+}
+const printedTags = JSON.stringify(lessons).match(/kafka-course-(?:lab|spring):\d+\.\d+\.\d+/g) ?? [];
+assert.ok(printedTags.length > 0 && printedTags.every((tag) => tag.endsWith(':' + course.kit)), 'a lesson prints an image tag that is not the kit version');
 for (const filename of ['labs/pom.xml', 'labs/spring/pom.xml']) {
   const pom = fs.readFileSync(path.join(root, filename), 'utf8');
   const project = pom.replace(/<parent>[\s\S]*?<\/parent>/, '');
-  assert.equal(project.match(/<version>([^<]+)<\/version>/)?.[1], course.version, filename);
+  assert.equal(project.match(/<version>([^<]+)<\/version>/)?.[1], course.kit, filename);
 }
 const labPom = fs.readFileSync(path.join(root, 'labs/pom.xml'), 'utf8');
 for (const artifact of ['kafka-clients', 'kafka-streams'])
@@ -254,7 +267,7 @@ for (const l of lessons)
   }
 assert.deepEqual(visorTable, expectedTable, 'visor.js LESSONS disagrees with the curriculum');
 assert.ok(/\n  visor:\n[\s\S]*?ports: \["127\.0\.0\.1:18090:18090"\]/.test(compose), 'compose.yaml visor service');
-assert.ok(/\n  visor:\n[\s\S]*?image: kafka-course-lab:/.test(compose) && !compose.match(/kafka-course-lab:[\d.]+/g).some((x) => x !== 'kafka-course-lab:' + course.version), 'visor image tag disagrees with curriculum.js');
+assert.ok(/\n  visor:\n[\s\S]*?image: kafka-course-lab:/.test(compose) && !compose.match(/kafka-course-lab:[\d.]+/g).some((x) => x !== 'kafka-course-lab:' + course.kit), 'visor image tag disagrees with the kit version in curriculum.js');
 assert.ok(java.includes('case "visor" -> Visor.run();'), 'Java dispatcher starts the viewer');
 assert.ok(lessons[1].lab.some((s) => s.command === 'docker compose up -d visor'), 'lesson 01 opens the viewer');
 // The console lesson: Kafbat UI pinned by digest, read-only, published only on 127.0.0.1, started
