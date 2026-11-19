@@ -4,6 +4,24 @@ Two layers of evidence: what the Docker suites proved on the platform, and what 
 
 Dos capas de evidencia: lo que las suites Docker probaron sobre la plataforma, y lo que las verificaciones estáticas y las pasadas de navegador probaron sobre el sitio. Cada entrada dice cuándo corrió y contra qué versión, y las verificaciones no ejecutadas figuran como tales.
 
+## Kit 1.9.0 on Linux, 19 November 2026 / Kit 1.9.0 en Linux, 19 de noviembre de 2026
+
+First run of the Docker suites away from the course laptop, on a GitHub Actions runner: Ubuntu 26.04.1 LTS (kernel 7.0.0-1019-azure), Docker Engine 29.4.2, Compose 5.1.3 and Node.js 22.23.4. The repository workflow `suites.yml` runs them at night, when the repository changed during the day, and on demand. After `docker compose build lab` and `docker compose up -d --wait`, as in lesson 01, the six suites passed in order: `core`, `failures`, `integrations`, `spring`, `visor` and `kafbat`, in four runs on 19 November. It is the first complete run since course 1.5.0, and the first one on the kit that carries the console of lesson 25.
+
+The first run of that day failed while building the kit and starting the cluster, before any suite ran; its output was not kept, and the same step passed in the four runs that followed.
+
+The kit has its own version from this date: 1.9.0, the tag its images already carried. It rises only when something under `labs/` changes (see TEACHING.md), so this entry stays true while later course versions leave the kit alone.
+
+Not executed: macOS; Windows since course 1.5.0, except the `kafbat` suite on 1.6.0; times per lesson and cluster memory.
+
+Primera corrida de las suites Docker fuera de la laptop del curso, en un runner de GitHub Actions: Ubuntu 26.04.1 LTS (kernel 7.0.0-1019-azure), Docker Engine 29.4.2, Compose 5.1.3 y Node.js 22.23.4. Las corre el workflow `suites.yml` del repositorio, de noche si el repositorio cambió en el día, y a demanda. Después de `docker compose build lab` y `docker compose up -d --wait`, como en la lección 01, las seis suites pasaron en orden: `core`, `failures`, `integrations`, `spring`, `visor` y `kafbat`, en cuatro corridas del 19 de noviembre. Es la primera corrida completa desde la 1.5.0 del curso, y la primera sobre el kit que trae la consola de la lección 25.
+
+La primera corrida de ese día falló al construir el kit y levantar el clúster, antes de cualquier suite; su salida no quedó guardada, y el mismo paso pasó en las cuatro corridas siguientes.
+
+El kit tiene su propia versión desde esta fecha: 1.9.0, la etiqueta que ya llevaban sus imágenes. Sube solo cuando cambia algo de `labs/` (ver TEACHING.md), así que esta entrada sigue siendo cierta mientras las versiones siguientes del curso no toquen el kit.
+
+No ejecutado: macOS; Windows desde la 1.5.0 del curso, salvo la suite `kafbat` sobre la 1.6.0; tiempos por lección y memoria del clúster.
+
 ## 1.9.0, 18 November 2026 / 1.9.0, 18 de noviembre de 2026
 
 Published date and commit: on the course home, the footer shows the build date and the published commit, linked to the commit, in the chosen language. The site build (`site/scripts/build.mjs`) writes them into the page; outside the published site, and on the lessons, the footer keeps the motto. `npm run check` passes.

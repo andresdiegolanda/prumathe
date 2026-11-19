@@ -2,6 +2,20 @@
 
 Este documento registra evidencia ejecutada y límites por versión; los modelos del navegador siguen siendo ilustrativos. Cada sección dice qué se ejecutó, en qué plataforma y qué quedó fuera.
 
+## Kit 1.7.0 en Linux, 19 de noviembre de 2026
+
+Primera corrida de las prácticas fuera de la laptop del curso, en un runner de GitHub Actions: Ubuntu 26.04.1 LTS (kernel 7.0.0-1019-azure), Docker Engine 29.4.2, Compose 5.1.3, kind 0.33.0, kubectl 1.37.0 y Node.js 22.23.4. Las corre el workflow `suites.yml` del repositorio, de noche si el repositorio cambió en el día, y a demanda. El kit tiene desde esta fecha su propia versión, 1.7.0, la etiqueta que ya llevaba la imagen del visor (ver TEACHING.md).
+
+Ejecutado: `node scripts/test-labs.mjs all`, las 102 prácticas de las 25 lecciones más la comprobación del puerto publicado, con kubectl desde el host y el kubeconfig del curso. Es la ruta que enseñan las lecciones 13 a 24, que en la laptop solo se había ejecutado dentro del nodo kind. Pasó completa en cuatro corridas del 19 de noviembre.
+
+La primera corrida de ese día falló en el paso 2.2, que esperaba `exited 0` y vio `exited 137`: la suite detenía el contenedor antes de que su proceso instalara el manejador de SIGTERM. No depende de Linux: en la laptop, detener el contenedor apenas creado dio 137 tres veces de tres, y esperando dos segundos dio 0. La suite espera ahora el primer health check de un contenedor iniciado en segundo plano. El texto del paso no cambia, porque quien escribe los comandos a mano tarda más que eso.
+
+De la suite `visor`, el plano Docker: la página, 405 para los métodos de escritura, 403 para otro host, CSP y encabezados; la app con su puerto, su volumen, su red y su secreto; los eventos de Docker; y diez segundos sin efectos. El visor abre el socket con `DOCKER_GID` puesto en el grupo del socket, la vía que el kit describe para Linux con Docker Engine y que hasta ahora no se había corrido.
+
+No anda en Linux con Docker Engine: el plano de Kubernetes del visor. kind escribe `kubeconfig` con permisos 600 y con dueño el usuario del host (uid 1001 en el runner), y el visor corre con el usuario 10001, así que no lo puede leer: su `/api/state` informa `PermissionError` y la suite se corta en la espera de los dos nodos. En la laptop, con Docker Desktop, el visor sí lo lee (entrada de la 1.4.0). Tiene su card en el tablero del repositorio; hasta que se corrija, el workflow deja fallar esa suite sin hacer fallar la corrida y anota lo que el visor ve.
+
+No ejecutado: macOS; la apertura por archivo en un navegador convencional; las prácticas de Kubernetes por la ruta de host en Windows, porque la laptop del curso sigue interceptando TLS en el endpoint local.
+
 ## Versión 1.7.0, 18 de noviembre de 2026
 
 Fecha y commit de la versión publicada: en la portada del curso, el pie muestra la fecha del build y el commit publicado, con enlace al commit, en el idioma elegido. Los escribe en la página el build del sitio (`site/scripts/build.mjs`); fuera del sitio publicado, y en las lecciones, el pie sigue con el lema. `npm run check` pasa.

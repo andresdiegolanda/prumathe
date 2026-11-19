@@ -210,3 +210,24 @@ Si lo que se observa no dice qué comando lo causó, cada comando deja antes una
 
 Origen: Cloudflare 1.0.0: los spans de wrangler dev no guardan los encabezados del pedido. `lab` pide `/health?run=<comando>&poll=lab` antes de cada comando, y `lab spans` deja afuera lo que termina en `poll=lab` ([TEACHING](../../cloudflare-from-scratch/docs/TEACHING.md)).
 Control: `npm run test:visor` exige que cada evento con paso lleve el comando de ese paso, y eventos en 21 lecciones.
+
+### Las suites corren solas, en una máquina que no es la de trabajo
+
+Una suite que solo corre cuando alguien abre una sesión en la laptop corre poco, y lo que probó envejece. Un workflow las corre de noche, si el repositorio cambió en el día, y a demanda, anota las versiones de su plataforma y guarda la evidencia. Es otra plataforma: lo que pasa ahí se anota como tal y no reemplaza a las demás.
+
+Origen: hasta el 19/11/2026 las suites Docker solo corrían en la laptop, y la última corrida completa de las de Kafka era de la 1.5.0 del curso. La primera noche en un runner de Linux pasaron las seis suites de Kafka y las 102 prácticas de Docker y Kubernetes por la ruta de host, que la laptop no puede correr, y aparecieron dos cosas que en la laptop no se veían ([VALIDATION de Docker y Kubernetes](../../docker-kubernetes-from-scratch/docs/VALIDATION.md)).
+Control: el workflow [`suites.yml`](../../.github/workflows/suites.yml); cada curso que suma una suite Docker suma su trabajo ahí.
+
+### Una suite espera a que el contenedor esté listo, como lo haría una persona
+
+Un contenedor recién iniciado en segundo plano todavía no atiende señales: si la suite lo detiene enseguida, el proceso ignora SIGTERM y termina con 137. Quien escribe los comandos a mano tarda más que eso; la suite espera el primer health check.
+
+Origen: Docker y Kubernetes, paso 2.2, en la primera corrida en un runner de Linux: esperaba `exited 0` y vio `exited 137`. En la laptop el mismo corte se reproduce deteniendo el contenedor apenas creado ([VALIDATION](../../docker-kubernetes-from-scratch/docs/VALIDATION.md)).
+Control: `scripts/test-labs.mjs` del curso espera el health check después de cada `docker run -d` con nombre; la suite corre cada noche en `suites.yml`.
+
+### Lo que se monta desde el host llega con los permisos del host
+
+En Linux con Docker Engine, un archivo montado llega con su dueño y sus permisos: un contenedor que corre con usuario propio no lee un archivo 600 de quien lo creó. En Docker Desktop el mismo montaje no dio ese problema, así que probar ahí no alcanza: una herramienta que lee un archivo generado en el host se prueba en Linux antes de darla por portable.
+
+Origen: el visor de Docker y Kubernetes no pudo leer el `kubeconfig` que kind escribe con permisos 600, en la primera corrida en Linux; su plano Docker, que abre el socket por grupo, sí anduvo ([VALIDATION](../../docker-kubernetes-from-scratch/docs/VALIDATION.md)).
+Control: la suite `visor` en `suites.yml`, que hoy puede fallar sin cortar la corrida hasta que se resuelva su card del [`tablero.md`](../../tablero.md).

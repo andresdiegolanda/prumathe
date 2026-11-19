@@ -111,3 +111,10 @@ La pasada de navegador que se repite igual en cada versión (abrir cada página,
 
 Origen: hasta el 19/11/2026 cada versión repetía esa pasada a mano y la contaba en su VALIDATION. La primera corrida abrió las 179 páginas de los seis cursos y la portada sin encontrar problemas, y se comprobó que falla cuando debe: con las cajas 30 px más chicas y con una pantalla de 150 px.
 Control: `node scripts/test-visual.mjs` antes de cerrar un cambio que se ve, y el workflow [`suites.yml`](../../.github/workflows/suites.yml) de noche y a demanda.
+
+### Un dibujo con cajas de tamaño fijo depende de la fuente de quien lo mira
+
+Las cajas del panorama y de los modelos tienen el ancho que se les dio, y el texto, el que le da la fuente. La hoja de estilos pide primero Segoe UI, que viene con Windows; con otra fuente el mismo texto puede no entrar. Medir en una sola máquina no alcanza: se mide también con las fuentes de otro sistema.
+
+Origen: el 19/11/2026, el control visual pasó sin problemas en la laptop y encontró 54 en un runner de Linux: textos fuera de su caja en el panorama de Docker y Kubernetes, de Microsoft Entra, de Kafka y de LLMs, RAG y MCP, y en un modelo de la página de presentación de este último.
+Control: `scripts/test-visual.mjs` en el runner de `suites.yml`, que hoy puede fallar sin cortar la corrida hasta que se resuelva su card del [`tablero.md`](../../tablero.md).

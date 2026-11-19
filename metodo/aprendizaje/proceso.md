@@ -95,3 +95,10 @@ Cada curso controla lo suyo con su `check.mjs`. Lo que ninguno puede controlar d
 
 Origen: el 18/11/2026, tres cards del tablero nombraban versiones viejas de sus cursos y la lista de revisiones del README no tenía las dos últimas; la igualdad del motor común y los puertos se comparaban a mano.
 Control: `node scripts/check.mjs` antes de cerrar un cambio, y el workflow [`validate-repo.yml`](../../.github/workflows/validate-repo.yml) en cada push.
+
+### Después de cambiar un workflow se mira su corrida
+
+Un workflow con un error de sintaxis no corre ningún trabajo: GitHub marca cada push como fallido con el nombre del archivo, y las suites de noche dejan de correr sin otro aviso. Nada local lo detecta, así que el cambio no está terminado hasta ver su primera corrida.
+
+Origen: el 19/11/2026, `suites.yml` quedó inválido durante tres pushes: un trabajo definía variables de entorno con el contexto `runner`, que a ese nivel no existe.
+Control: consultar las corridas del workflow después del push que lo cambia.
